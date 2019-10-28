@@ -46,3 +46,4 @@ glib_dep = dependency ('glib-2.0')
 #   Sub directories
 #
 subdir('src')
+subdir('tests')

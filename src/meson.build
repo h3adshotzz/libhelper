@@ -8,7 +8,7 @@
 #
 #   Sources
 #
-sources = ['libhelper.c']
+sources = ['libhelper.c', 'file.c', 'macho/macho.c']
 incdir = include_directories('../include')
 
 #
@@ -19,4 +19,4 @@ deps = [glib_dep]
 #
 #   dont quite know what im doing here. ignore for now.
 #
-libhelper = shared_library('libhelper', sources, version : '1.0', include_directories : incdir)
+libhelper = shared_library('libhelper', sources, version : '1.0', dependencies: deps, include_directories : incdir)
