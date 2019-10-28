@@ -9,6 +9,7 @@
 #   Sources
 #
 sources = ['libhelper.c']
+incdir = include_directories('../include')
 
 #
 #   Dependencies
@@ -18,5 +19,4 @@ deps = [glib_dep]
 #
 #   dont quite know what im doing here. ignore for now.
 #
-libhelper_lib = static_library ('runtime', sources, install: false)
-libhelper_shared = shared_library ('runtime', sources, version: '1.0', install: false)
+libhelper = shared_library('libhelper', sources, version : '1.0', include_directories : incdir)
