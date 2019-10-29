@@ -58,7 +58,6 @@ file_t* file_open(const char* path) {
 		file->size = ftell(file->desc);
 		fseek(file->desc, 0, SEEK_SET);
 
-		file->offset = 0;
 		file->data = (unsigned char*) malloc(file->size);
 		if (file->data == NULL) {
 			g_printerr("Unable to allocate memory for file\n");
@@ -66,22 +65,10 @@ file_t* file_open(const char* path) {
 			return NULL;
 		}
 
-		uint64_t offset = 0;
-		while (offset < file->size) {
-			memset(buffer, '\0', BUFSIZE);
-			got = fread(buffer, 1, BUFSIZE, file->desc);
-			if (got > 0) {
-				offset += got;
-				memcpy(&(file->data[offset]), buffer, got);
-			} else {
-				break;
-			}
-		}
-		g_printerr("Read in %llu of %llu bytes from %s\n", file->offset, file->size, file->path);
+		g_printerr("Read in %llu bytes from %s\n", file->size, file->path);
 		// We have the data stored in memory now, so we don't need to keep this open anymore
 		//fseek(file->desc, 0, SEEK_SET);
 		file_close(file);
-		file->offset = 0;
 	}
 	return file;
 }

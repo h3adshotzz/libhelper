@@ -19,3 +19,33 @@
 
 #include "libhelper.h"
 #include "file.h"
+
+
+#define MACH_MAGIC_32   0xfeedface
+#define MACH_MAGIC_64   0xfeedfacf
+
+typedef struct mach_header_t {
+    uint32_t	magic;		/* mach magic number identifier */
+	uint32_t	cputype;	/* cpu specifier */
+	uint32_t	cpusubtype;	/* machine specifier */
+	uint32_t	filetype;	/* type of file */
+	uint32_t	ncmds;		/* number of load commands */
+	uint32_t	sizeofcmds;	/* the size of all the load commands */
+	uint32_t	flags;		/* flags */
+} mach_header_t;
+
+typedef struct macho_t {
+    macho_header_t* header;         /* macho header */
+	//macho_symtab_t** symtabs;
+	//macho_command_t** commands;
+	//macho_segment_t** segments;
+    uint8_t* data;                  /* data */
+	uint32_t size;                  /* file size */ 
+	uint32_t offset;
+	uint32_t command_count;
+	uint32_t segment_count;
+	uint32_t symtab_count;
+} macho_t;
+
+
+macho_t* macho_create ();

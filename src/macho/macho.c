@@ -19,3 +19,7 @@
 
 #include "macho.h"
 
+macho_t* macho_create ()
+{
+    macho_t *ret = malloc (sizeof(macho_t));
+}
