@@ -1,10 +1,4 @@
 /**
- *     ===== ORIGINAL LICENSE ====
- *     libcrippy-1.0 - file.h
- *     Copyright (C) 2013 Crippy-Dev Team
- *     Copyright (C) 2010-2013 Joshua Hill
- *     ===========================
- * 
  *     libhelper
  *     Copyright (C) 2019, @h3adsh0tzz
  *
@@ -33,21 +27,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef struct file_t {
-	FILE* desc;
-	char* path;
-	uint64_t size;
-	uint64_t offset;
-	unsigned char* data;
-} file_t;
-
-file_t* file_create();
-void file_close(file_t* file);
-void file_free(file_t* file);
-file_t* file_open(const char* path);
-
-int file_read(file_t* file, unsigned char** buf, unsigned int* length);
-int file_write(const char* file, unsigned char* buf, unsigned int length);
-int file_copy(const char* from, const char* to);
+int file_read (const char *path, unsigned char **buf, unsigned int *len);
+int file_write (const char *path, unsigned char *buf, unsigned int len);
 
 #endif /* FILE_H_ */

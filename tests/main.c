@@ -1,7 +1,6 @@
 #include <libhelper.h>
 #include <file.h>
-
-#include <mach-o/loader.h>
+#include <macho.h>
 
 #include <glib-2.0/glib.h>
 
@@ -18,11 +17,12 @@ int main (int argc, char* argv[])
         g_print ("[%d]: %s\n", i, argv[i]);
     }
 
-    /* Load the file in argv[1]; */
-    file_t *file = file_create ();
-    file = file_open (argv[1]);
+    /* Test the macho functionality */
+    unsigned char *buf = NULL;
+    unsigned int size = 0;
+    int err = file_read (argv[1], &buf, &size);
 
-
+    g_print ("magic: %d\n", macho_read_magic(buf, 0));
 
     return 0;
 }

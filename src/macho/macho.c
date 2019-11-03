@@ -1,4 +1,5 @@
 /**
+ * 
  *     libhelper
  *     Copyright (C) 2019, @h3adsh0tzz
  *
@@ -19,7 +20,15 @@
 
 #include "macho.h"
 
-macho_t* macho_create ()
+
+uint32_t macho_read_magic (unsigned char *buf, int offset)
 {
-    macho_t *ret = malloc (sizeof(macho_t));
+    uint32_t magic = 0;
+    memcpy (magic, &buf, sizeof(uint32_t));
+    if (!magic) {
+        g_print ("[*] Error: Could not read magic from Mach-O.\n");
+        exit (0);
+    }
+
+    return magic;
 }

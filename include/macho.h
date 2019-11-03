@@ -1,4 +1,5 @@
 /**
+ * 
  *     libhelper
  *     Copyright (C) 2019, @h3adsh0tzz
  *
@@ -21,31 +22,49 @@
 #include "file.h"
 
 
-#define MACH_MAGIC_32   0xfeedface
-#define MACH_MAGIC_64   0xfeedfacf
+/**
+ * 	Part of the point of this is that I want to implement Mach-O
+ * 	loading / parsing independently, i.e. without relying on AAPL
+ * 	headers like loader.h. This would (I think?) allow this to run
+ * 	without much modification on Linux.
+ * 
+ * 	So, yeah, I'm basically rewriting loader.h.
+ * 
+ * 
+ * 	Another note, for now I'm only implementing 64-bit, since iOS and
+ * 	macOS no longer support anything compiled for 32bit archs.
+ */
 
-typedef struct mach_header_t {
-    uint32_t	magic;		/* mach magic number identifier */
+
+/**
+ * 	Mach-O header.
+ * 
+ * 	parts of machine.h need to be implemented so cputype and cpusubtype
+ * 	can be represented as cpu_type_t and cpu_subtype_t.
+ */
+struct mach_header_64_t {
+	uint32_t	magic;		/* mach magic number identifier */
 	uint32_t	cputype;	/* cpu specifier */
 	uint32_t	cpusubtype;	/* machine specifier */
 	uint32_t	filetype;	/* type of file */
 	uint32_t	ncmds;		/* number of load commands */
 	uint32_t	sizeofcmds;	/* the size of all the load commands */
 	uint32_t	flags;		/* flags */
-} mach_header_t;
-
-typedef struct macho_t {
-    macho_header_t* header;         /* macho header */
-	//macho_symtab_t** symtabs;
-	//macho_command_t** commands;
-	//macho_segment_t** segments;
-    uint8_t* data;                  /* data */
-	uint32_t size;                  /* file size */ 
-	uint32_t offset;
-	uint32_t command_count;
-	uint32_t segment_count;
-	uint32_t symtab_count;
-} macho_t;
+	uint32_t	reserved;	/* reserved */
+};
 
 
-macho_t* macho_create ();
+/**
+ * 	Mach-O 64bit magic
+ * 
+ */
+#define MACH_MAGIC_64		0xfeedfacf	/* 64bit magic number */
+#define MACH_CIGAM_64		0xcffaedfe	/* NXSwapInt */
+
+
+
+/**
+ * 	Mach-O parser function definitiosn
+ * 	
+ */
+uint32_t macho_read_magic (unsigned char *buf, int offset);
