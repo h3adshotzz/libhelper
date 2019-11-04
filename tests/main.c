@@ -24,7 +24,8 @@ int main (int argc, char* argv[])
 
     //g_print ("magic: 0x%x\n", macho_read_magic(buf, 0));
 
-    mach_header_dump_test(buf, 0);
+    mach_header_t *mach_header = mach_header_load (buf);
+    mach_header_dump_test (mach_header);
 
     return 0;
 }

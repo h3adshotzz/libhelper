@@ -37,21 +37,63 @@
 
 
 /**
+ * 	Redefinitions for machine.h. Again, this is to allow compatibility
+ * 	with operating systems other than Linux. 
+ * 
+ * 	I'm only bothering with ARM and x86 cpu types. 
+ * 
+ */
+
+/*
+ * Capability bits used in the definition of cpu_type.
+ */
+#define CPU_ARCH_MASK           0xff000000      /* mask for architecture bits */
+#define CPU_ARCH_ABI64          0x01000000      /* 64 bit ABI */
+#define CPU_ARCH_ABI64_32       0x02000000      /* ABI for 64-bit hardware with 32-bit types; LP32 */
+
+
+/**
+ * 	cpu_type_t definition. Originally machine.h
+ * 
+ */
+typedef enum cpu_type_t {
+	CPU_TYPE_ANY = -1,
+
+	CPU_TYPE_X86 = 6,
+	CPU_TYPE_X86_64 = 0x01000007,
+
+	CPU_TYPE_ARM = 12,
+	CPU_TYPE_ARM64 = (CPU_TYPE_ARM | CPU_ARCH_ABI64),
+	CPU_TYPE_ARM64_32 = (CPU_TYPE_ARM | CPU_ARCH_ABI64_32),
+
+} cpu_type_t;
+
+
+/**
  * 	Mach-O header.
  * 
  * 	parts of machine.h need to be implemented so cputype and cpusubtype
  * 	can be represented as cpu_type_t and cpu_subtype_t.
  */
-struct mach_header_64_t {
+typedef struct mach_header_t {
 	uint32_t	magic;		/* mach magic number identifier */
-	uint32_t	cputype;	/* cpu specifier */
+	cpu_type_t	cputype;	/* cpu specifier */
 	uint32_t	cpusubtype;	/* machine specifier */
 	uint32_t	filetype;	/* type of file */
 	uint32_t	ncmds;		/* number of load commands */
 	uint32_t	sizeofcmds;	/* the size of all the load commands */
 	uint32_t	flags;		/* flags */
 	uint32_t	reserved;	/* reserved */
-};
+} mach_header_t;
+
+
+/**
+ * 	Mach-O file type specifiers
+ * 
+ */
+#define MACH_TYPE_OBJECT 	0x1
+#define MACH_TYPE_EXECUTE	0x2
+/* Add more */
 
 
 /**
@@ -61,11 +103,12 @@ struct mach_header_64_t {
 #define MACH_MAGIC_64		0xfeedfacf	/* 64bit magic number */
 #define MACH_CIGAM_64		0xcffaedfe	/* NXSwapInt */
 
-
-
 /**
  * 	Mach-O parser function definitiosn
  * 	
  */
 uint32_t macho_read_magic (unsigned char *buf, int offset);
-void mach_header_dump_test (unsigned char *buf, int offset);
+mach_header_t *mach_header_load (unsigned char *buf);
+char *mach_header_read_cpu_type (cpu_type_t type);
+char *mach_header_read_file_type (uint32_t type);
+void mach_header_dump_test (mach_header_t *header);
