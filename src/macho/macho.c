@@ -24,11 +24,21 @@
 uint32_t macho_read_magic (unsigned char *buf, int offset)
 {
     uint32_t magic = 0;
-    memcpy (magic, &buf, sizeof(uint32_t));
+    memcpy (&magic, buf, sizeof(uint32_t));
     if (!magic) {
         g_print ("[*] Error: Could not read magic from Mach-O.\n");
         exit (0);
     }
-
     return magic;
+}
+
+void mach_header_dump_test (unsigned char *buf, int offset)
+{
+    //struct mach_header_64_t *header = malloc (sizeof(struct mach_header_64_t));
+    //memcpy (&header, buf, sizeof(struct mach_header_64_t));
+    struct mach_header_64_t *header = (struct mach_header_64_t *) buf;
+
+    g_print ("magic: 0x%x\n", header->magic);
+    g_print ("cputype: 0x%x\n", header->cputype);
+    g_print ("lc: 0x%x\n", header->ncmds);
 }

@@ -22,7 +22,9 @@ int main (int argc, char* argv[])
     unsigned int size = 0;
     int err = file_read (argv[1], &buf, &size);
 
-    g_print ("magic: %d\n", macho_read_magic(buf, 0));
+    //g_print ("magic: 0x%x\n", macho_read_magic(buf, 0));
+
+    mach_header_dump_test(buf, 0);
 
     return 0;
 }

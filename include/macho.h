@@ -68,3 +68,4 @@ struct mach_header_64_t {
  * 	
  */
 uint32_t macho_read_magic (unsigned char *buf, int offset);
+void mach_header_dump_test (unsigned char *buf, int offset);
