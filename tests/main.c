@@ -27,5 +27,47 @@ int main (int argc, char* argv[])
     mach_header_t *mach_header = mach_header_load (buf);
     mach_header_dump_test (mach_header);
 
+    size_t offset = sizeof (mach_header_t);
+
+    for (int i = 0; i < mach_header->ncmds; i++) {
+
+        offset += i * sizeof (mach_load_command_t);
+
+        mach_load_command_t *lc = malloc (sizeof(mach_load_command_t));
+        memcpy (&lc, &buf[offset], sizeof(mach_load_command_t));
+
+        g_print ("LC Type: %d\n", lc->cmd);
+        g_print ("LC Size: %d\n\n", lc->cmdsize);
+
+
+        /**
+         *  LC_SEGMENT_64 == 0x19
+         */
+        if (lc->cmd == 0x19) {
+
+
+        } else {
+
+
+
+        }
+    }
+
+    /*
+
+    typedef struct mach_command_t {
+	uint32_t	cmd;
+	uint32_t	cmdsize;
+	char		segname[16];
+	uint32_t	vmaddr;
+	uint32_t	vmsize;
+	uint32_t	fileoff;
+	uint32_t	filesize;
+	uint32_t	maxprot;
+	uint32_t	initprot;
+	uint32_t	nsects;
+	uint32_t	flags;
+} mach_command_t;*/
+
     return 0;
 }

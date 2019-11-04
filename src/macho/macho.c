@@ -86,8 +86,11 @@ char *mach_header_read_file_type (uint32_t type)
         case MACH_TYPE_EXECUTE:
             ret = "Mach Executable (MH_EXECUTE)";
             break;
+        case MACH_TYPE_DYLIB:
+            ret = "Mach Dynamic Library (MH_DYLIB)";
+            break;
         default:
-            ret = "Mach Unknown";
+            ret = "Unknown";
             break;
     }
     return ret;
@@ -101,6 +104,6 @@ void mach_header_dump_test (mach_header_t *header)
     g_print ("CPU Type: \t%s\n", mach_header_read_cpu_type(header->cputype));
     g_print ("CPU Sub-Type: \t0x%x\n", header->cpusubtype);
     g_print ("File Type: \t%s\n", mach_header_read_file_type (header->filetype));
-    g_print ("Load Commands: \t0x%x\n", header->ncmds);
+    g_print ("Load Commands: \t%d\n", header->ncmds);
     g_print ("LC Size: \t%d\n", header->sizeofcmds);
 }

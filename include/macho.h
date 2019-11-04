@@ -93,6 +93,8 @@ typedef struct mach_header_t {
  */
 #define MACH_TYPE_OBJECT 	0x1
 #define MACH_TYPE_EXECUTE	0x2
+
+#define MACH_TYPE_DYLIB		0x6
 /* Add more */
 
 
@@ -102,6 +104,42 @@ typedef struct mach_header_t {
  */
 #define MACH_MAGIC_64		0xfeedfacf	/* 64bit magic number */
 #define MACH_CIGAM_64		0xcffaedfe	/* NXSwapInt */
+
+/**
+ * 
+ */
+typedef struct mach_load_command_t {
+	uint32_t cmd;		/* type of load command */
+	uint32_t cmdsize;	/* total size of command in bytes */
+} mach_load_command_t;
+
+/**
+ * 
+ */
+typedef struct mach_segment_command_t {
+	uint32_t	cmd;
+	uint32_t	cmdsize;
+	char		segname[16];
+	uint32_t	vmaddr;
+	uint32_t	vmsize;
+	uint32_t	fileoff;
+	uint32_t	filesize;
+	uint32_t	maxprot;
+	uint32_t	initprot;
+	uint32_t	nsects;
+	uint32_t	flags;
+} mach_segment_command_t;
+
+
+/**
+ * 
+ */
+typedef struct macho_t {
+	mach_header_t *header;
+	
+} macho_t;
+
+
 
 /**
  * 	Mach-O parser function definitiosn

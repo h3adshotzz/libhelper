@@ -108,6 +108,8 @@ static void dump_segment_commands(FILE *obj_file, off_t offset, bool is_swap, ui
       printf("segname: %s\n", segment->segname);
 
       free(segment);
+    } else {
+      printf("cmd_Type: %d\n", cmd->cmd);
     }
 
     actual_offset += cmd->cmdsize;
