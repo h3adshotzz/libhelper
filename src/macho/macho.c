@@ -32,14 +32,20 @@ uint32_t macho_read_magic (unsigned char *buf, int offset)
     return magic;
 }
 
-mach_header_t *mach_header_load (unsigned char *buf)
+mach_header_t *mach_header_load (char *buf)
 {
     // Create a mach_header_t, and cast buf.
     mach_header_t *header = (mach_header_t *) buf;
 
+    // Check that the header has a val
+    if (!header->magic) {
+        g_print ("[*] Error: Header was not loaded correctly. 0x%x\n", header);
+        exit (0);
+    } 
+
     // Check that it was allocated correctly
     if (header->magic != MACH_MAGIC_64) {
-        g_print ("[*] Error: File not 64bit Mach-O\n");
+        g_print ("[*] Error: File not 64bit Mach-O. 0x%x\n", header->magic);
         exit (0);
     }
 

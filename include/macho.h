@@ -130,6 +130,23 @@ typedef struct mach_segment_command_t {
 	uint32_t	flags;
 } mach_segment_command_t;
 
+/**
+ * 
+ */
+typedef struct mach_segment_command_64_t {
+	uint32_t	cmd;
+	uint32_t	cmdsize;
+	char		segname[16];
+	uint32_t	vmaddr;
+	uint64_t	vmsize;
+	uint64_t	fileoff;
+	uint64_t	filesize;
+	uint64_t	maxprot;
+	uint64_t	initprot;
+	uint32_t	nsects;
+	uint32_t	flags;
+} mach_segment_command_64_t;
+
 
 /**
  * 
@@ -146,7 +163,7 @@ typedef struct macho_t {
  * 	
  */
 uint32_t macho_read_magic (unsigned char *buf, int offset);
-mach_header_t *mach_header_load (unsigned char *buf);
+mach_header_t *mach_header_load (char *buf);
 char *mach_header_read_cpu_type (cpu_type_t type);
 char *mach_header_read_file_type (uint32_t type);
 void mach_header_dump_test (mach_header_t *header);

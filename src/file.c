@@ -19,6 +19,45 @@
 
 #include "file.h"
 
+
+file_t *file_load (const char *path)
+{
+	/* Create a new file struct */
+	file_t *ret = malloc (sizeof(file_t));
+	memset (ret, '\0', sizeof(file_t));
+
+	/* Set the file path */
+	if (!path) {
+		g_print ("[*] Error: File path no valid.\n");
+		exit (0);
+	}
+	ret->path = path;
+
+	/* Load the file */
+	ret->desc = fopen (ret->path, "rb");
+	if (!ret->desc) {
+		g_print ("[*] Error: File could not be loaded\n");
+		exit(0);
+	}
+
+	/* Calculate the size of the file */
+	fseek (ret->desc, 0, SEEK_END);
+	ret->size = ftell (ret->desc);
+	fseek (ret->desc, 0, SEEK_SET);
+
+	return ret;
+}
+
+char *file_load_bytes (file_t *f, size_t size, off_t offset)
+{
+	char *buf = malloc (size);
+
+	fseek (f->desc, offset, SEEK_SET);
+	fread (buf, size, 1, f->desc);
+
+	return buf;
+}
+
 int file_read (const char *path, unsigned char **buf, unsigned int *len)
 {
 	FILE *f = fopen (path, "rb");
@@ -30,17 +69,13 @@ int file_read (const char *path, unsigned char **buf, unsigned int *len)
 	size_t size = ftell (f);
 	fseek (f, 0, SEEK_SET);
 
-	unsigned char *data = malloc (size);
-	
-	int bytes = fread (data, 1, size, f);
-	if (bytes != size) {
-		g_print ("[*] Error: File size and read bytes do not match!\n");
-		fclose (f);
-		return -1;
-	}
+	unsigned char *data = NULL; //= malloc (size);
+
+	data = mmap(data, size, PROT_READ | PROT_WRITE, MAP_FILE, f, 0);
+
 	fclose (f);
 
 	*buf = data;
-	*len = bytes;
-	return bytes;
+	*len = size;
+	return size;
 }

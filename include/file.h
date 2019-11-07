@@ -26,8 +26,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
 
+typedef struct file_t {
+    FILE    *desc;      /* Loaded file */
+    size_t   size;      /* Size of the file */
+    char    *path;      /* Original path */
+} file_t;
+
+file_t *file_load (const char *path);
 int file_read (const char *path, unsigned char **buf, unsigned int *len);
 int file_write (const char *path, unsigned char *buf, unsigned int len);
+
+char *file_load_bytes (file_t *f, size_t size, off_t offset);
+
 
 #endif /* FILE_H_ */
