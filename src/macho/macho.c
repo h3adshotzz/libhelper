@@ -21,15 +21,11 @@
 #include "macho.h"
 
 
-uint32_t macho_read_magic (unsigned char *buf, int offset)
+mach_header_t *mach_header_create ()
 {
-    uint32_t magic = 0;
-    memcpy (&magic, buf, sizeof(uint32_t));
-    if (!magic) {
-        g_print ("[*] Error: Could not read magic from Mach-O.\n");
-        exit (0);
-    }
-    return magic;
+    mach_header_t *header = malloc(sizeof(mach_header_t));
+    memset (header, '\0', sizeof (mach_header_t));
+    return header;
 }
 
 mach_header_t *mach_header_load (char *buf)
@@ -53,10 +49,20 @@ mach_header_t *mach_header_load (char *buf)
     return header;
 }
 
-char *mach_header_read_cpu_type (cpu_type_t type)
+uint32_t macho_read_magic (unsigned char *buf, int offset)
+{
+    uint32_t magic = 0;
+    memcpy (&magic, buf, sizeof(uint32_t));
+    if (!magic) {
+        g_print ("[*] Error: Could not read magic from Mach-O.\n");
+        exit (0);
+    }
+    return magic;
+}
+
+char *mach_header_read_cpu_type_string (cpu_type_t type)
 {
     char *cpu_type = "";
-
     switch (type) {
         case CPU_TYPE_X86:
             cpu_type = "x86";
@@ -77,14 +83,12 @@ char *mach_header_read_cpu_type (cpu_type_t type)
             cpu_type = "unknown";
             break;
     }
-
     return cpu_type;
 }
 
-char *mach_header_read_file_type (uint32_t type)
+char *mach_header_read_type_string (uint32_t type)
 {
     char *ret = "";
-
     switch (type) {
         case MACH_TYPE_OBJECT:
             ret = "Mach Object (MH_OBJECT)";
@@ -107,9 +111,9 @@ void mach_header_dump_test (mach_header_t *header)
     g_print ("==================\nMach-O Header Dump\n==================\n\n");
 
     g_print ("Magic: \t\t0x%x\n", header->magic);
-    g_print ("CPU Type: \t%s\n", mach_header_read_cpu_type(header->cputype));
+    g_print ("CPU Type: \t%s\n", mach_header_read_cpu_type_string(header->cputype));
     g_print ("CPU Sub-Type: \t0x%x\n", header->cpusubtype);
-    g_print ("File Type: \t%s\n", mach_header_read_file_type (header->filetype));
+    g_print ("File Type: \t%s\n", mach_header_read_type_string (header->filetype));
     g_print ("Load Commands: \t%d\n", header->ncmds);
     g_print ("LC Size: \t%d\n", header->sizeofcmds);
 }

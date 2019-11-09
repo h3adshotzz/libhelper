@@ -97,6 +97,7 @@ static void dump_segment_commands(FILE *obj_file, off_t offset, bool is_swap, ui
       }
 
       printf("segname: %s\n", segment->segname);
+      printf("nsects: %d\n", segment->nsects);
 
       free(segment);
     } else if (cmd->cmd == LC_SEGMENT) {
