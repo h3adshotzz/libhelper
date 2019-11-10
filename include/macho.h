@@ -80,7 +80,37 @@
 #define	LC_TWOLEVEL_HINTS 	0x16	/* two-level namespace lookup hints */
 #define	LC_PREBIND_CKSUM  	0x17	/* prebind checksum */
 
-#define LC_SEGMENT_64		0x19	/* 64-bit segment of this file to be mapped */
+#define	LC_LOAD_WEAK_DYLIB (0x18 | 0x80000000)
+
+#define LC_SEGMENT_64					0x19	/* 64-bit segment of this file to be mapped */
+#define	LC_ROUTINES_64					0x1a	/* 64-bit image routines */
+#define LC_UUID							0x1b	/* the uuid */
+#define LC_RPATH       					(0x1c | 0x80000000)    /* runpath additions */
+#define LC_CODE_SIGNATURE 				0x1d	/* local of code signature */
+#define LC_SEGMENT_SPLIT_INFO 			0x1e 	/* local of info to split segments */
+#define LC_REEXPORT_DYLIB 				(0x1f | 0x80000000) 	/* load and re-export dylib */
+#define	LC_LAZY_LOAD_DYLIB 				0x20	/* delay load of dylib until first use */
+#define	LC_ENCRYPTION_INFO 				0x21	/* encrypted segment information */
+#define	LC_DYLD_INFO 					0x22	/* compressed dyld information */
+#define	LC_DYLD_INFO_ONLY 				(0x22| 0x80000000)		/* compressed dyld information only */
+#define	LC_LOAD_UPWARD_DYLIB 			(0x23 | 0x80000000) 	/* load upward dylib */
+#define LC_VERSION_MIN_MACOSX 			0x24   	/* build for MacOSX min OS version */
+#define LC_VERSION_MIN_IPHONEOS 		0x25 	/* build for iPhoneOS min OS version */
+#define LC_FUNCTION_STARTS 				0x26 	/* compressed table of function start addresses */
+#define LC_DYLD_ENVIRONMENT				0x27 	/* string for dyld to treat like environment variable */
+#define LC_MAIN 						(0x28| 0x80000000) 		/* replacement for LC_UNIXTHREAD */
+#define LC_DATA_IN_CODE 				0x29 	/* table of non-instructions in __text */
+#define LC_SOURCE_VERSION 				0x2A 	/* source version used to build binary */
+#define LC_DYLIB_CODE_SIGN_DRS 			0x2B 	/* Code signing DRs copied from linked dylibs */
+#define	LC_ENCRYPTION_INFO_64 			0x2C 	/* 64-bit encrypted segment information */
+#define LC_LINKER_OPTION 				0x2D 	/* linker options in MH_OBJECT files */
+#define LC_LINKER_OPTIMIZATION_HINT 	0x2E 	/* optimization hints in MH_OBJECT files */
+#define LC_VERSION_MIN_TVOS 			0x2F 	/* build for AppleTV min OS version */
+#define LC_VERSION_MIN_WATCHOS 			0x30 	/* build for Watch min OS version */
+#define LC_NOTE 						0x31 	/* arbitrary data included within a Mach-O file */
+#define LC_BUILD_VERSION 				0x32 	/* build for platform min OS version */
+#define LC_DYLD_EXPORTS_TRIE 			(0x33 | 0x80000000) 	/* used with linkedit_data_command, payload is trie */
+#define LC_DYLD_CHAINED_FIXUPS 			(0x34 | 0x80000000) 	/* used with linkedit_data_command */
 
 
 /**
@@ -243,6 +273,24 @@ typedef struct mach_section_64_t {
 
 
 /**
+ * 
+ */
+typedef struct macho_t {
+	file_t 			*file;
+	mach_header_t 	*header;
+	GSList			*lcmds;
+	GSList			*scmds;
+	GSList			*sections;
+} macho_t;
+
+
+/**
+ * 
+ */
+macho_t *macho_create ();
+macho_t *macho_load (file_t *file);
+
+/**
  * 	Mach Header functions
  * 
  */
@@ -261,5 +309,16 @@ void mach_header_dump_test (mach_header_t *header);
 mach_load_command_t *mach_load_command_create ();
 mach_load_command_t *mach_load_command_load (file_t *file, off_t offset);
 void mach_load_command_dump (mach_load_command_t *lc);
+
+
+/**
+ * 
+ */
+mach_segment_command_64_t *mach_segment_command_create ();
+mach_segment_command_64_t *mach_segment_command_load (file_t *file, off_t offset);
+mach_segment_command_64_t *mach_segment_command_search (macho_t *mach, char *segname);
+GSList *mach_segment_get_list (macho_t *mach);
+void mach_segment_command_dump (mach_segment_command_64_t *sc);
+
 
 #endif /* MACH_O_H */

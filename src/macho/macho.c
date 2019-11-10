@@ -28,8 +28,10 @@ mach_header_t *mach_header_create ()
     return header;
 }
 
-mach_header_t *mach_header_load (char *buf)
+mach_header_t *mach_header_load (file_t *file)
 {
+    char *buf = file_load_bytes (file, 32, 0);
+
     // Create a mach_header_t, and cast buf.
     mach_header_t *header = (mach_header_t *) buf;
 
@@ -116,4 +118,45 @@ void mach_header_dump_test (mach_header_t *header)
     g_print ("File Type: \t%s\n", mach_header_read_type_string (header->filetype));
     g_print ("Load Commands: \t%d\n", header->ncmds);
     g_print ("LC Size: \t%d\n", header->sizeofcmds);
+}
+
+
+/**
+ * 
+ */
+macho_t *macho_create ()
+{
+    macho_t *macho = malloc(sizeof(macho_t));
+    memset (macho, '\0', sizeof(macho_t));
+    return macho;
+}
+
+macho_t *macho_load (file_t *file)
+{
+    macho_t *mach = macho_create ();
+
+    mach->file = file;
+
+    mach->header = mach_header_load (mach->file);
+    
+    GSList *seglist = NULL;
+    GSList *cmdlist = NULL;
+    off_t offset = sizeof(mach_header_t);
+
+    for (int i = 0; i < mach->header->ncmds; i++) {
+        mach_load_command_t *lc = mach_load_command_load (mach->file, offset);
+        if (lc->cmd == LC_SEGMENT_64) {
+            mach_segment_command_64_t *s = mach_segment_command_load (mach->file, offset);
+            seglist = g_slist_append (seglist, s);
+        } else {
+            cmdlist = g_slist_append (cmdlist, lc);
+        }
+        offset += lc->cmdsize;
+    }
+
+    mach->lcmds = cmdlist;
+    mach->scmds = seglist;
+    
+
+    return mach;
 }

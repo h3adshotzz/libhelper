@@ -48,6 +48,12 @@ file_t *file_load (const char *path)
 	return ret;
 }
 
+void file_close (file_t *file)
+{
+	fclose (file->desc);
+	free(file);
+}
+
 char *file_load_bytes (file_t *f, size_t size, off_t offset)
 {
 	char *buf = malloc (size);
