@@ -308,6 +308,8 @@ void mach_header_dump_test (mach_header_t *header);
  */
 mach_load_command_t *mach_load_command_create ();
 mach_load_command_t *mach_load_command_load (file_t *file, off_t offset);
+GSList *mach_load_command_get_list (macho_t *mach);
+char *mach_load_command_get_string (mach_load_command_t *lc);
 void mach_load_command_dump (mach_load_command_t *lc);
 
 

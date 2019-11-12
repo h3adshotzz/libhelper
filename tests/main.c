@@ -21,6 +21,12 @@ int main (int argc, char* argv[])
 
     mach_segment_command_dump (mach_segment_command_search (macho, argv[2]));
 
+    GSList *lc_names = mach_load_command_get_list (macho);
+    for (int i = 0; i < g_slist_length (lc_names); i++) {
+        g_print ("%s, ", g_slist_nth_data (lc_names, i));
+    }
+    g_print ("\n\n");
+
     file_close (f);
 
     /* 

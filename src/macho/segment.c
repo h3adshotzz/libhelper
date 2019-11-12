@@ -42,6 +42,11 @@ mach_segment_command_64_t *mach_segment_command_load (file_t *file, off_t offset
 
 mach_segment_command_64_t *mach_segment_command_search (macho_t *mach, char *segname)
 {
+    if (!segname) {
+        g_print ("[*] Segment name not valid\n");
+        exit (0);
+    }
+
     int c = g_slist_length (mach->scmds);
     if (!c) {
         g_print ("[*] Error: No Segment Commands\n");
@@ -54,6 +59,8 @@ mach_segment_command_64_t *mach_segment_command_search (macho_t *mach, char *seg
             return s;
         }
     }
+    
+    g_print ("[*] Could not find Segment %s\n", segname);
     return NULL;
 }
 

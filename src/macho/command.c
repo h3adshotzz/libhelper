@@ -41,7 +41,17 @@ mach_load_command_t *mach_load_command_load (file_t *file, off_t offset)
     return lc;
 }
 
-void mach_load_command_dump (mach_load_command_t *lc)
+GSList *mach_load_command_get_list (macho_t *mach)
+{
+    GSList *r = NULL;
+    for (int i = 0; i < g_slist_length (mach->lcmds); i++) {
+        mach_load_command_t *lc = (mach_load_command_t *) g_slist_nth_data (mach->lcmds, i);
+        r = g_slist_append (r, mach_load_command_get_string(lc->cmd));
+    }
+    return r;
+}
+
+char *mach_load_command_get_string (mach_load_command_t *lc)
 {
     char *cmd_str = "";
     switch (lc->cmd) {
@@ -208,7 +218,11 @@ void mach_load_command_dump (mach_load_command_t *lc)
             cmd_str = "LC_UNKNOWN";
             break;
     }
+    return cmd_str;
+}
 
-    g_print ("Command:\t\t%s\n", cmd_str);
+void mach_load_command_dump (mach_load_command_t *lc)
+{
+    g_print ("Command:\t\t%s\n", mach_load_command_get_string(lc));
     g_print ("Command Size:\t\t%d\n", lc->cmdsize);
 }
