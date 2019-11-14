@@ -56,6 +56,7 @@ void file_close (file_t *file)
 
 char *file_load_bytes (file_t *f, size_t size, off_t offset)
 {
+	g_print ("[*] Loading %d bytes from 0x%x\n", size, offset);
 	char *buf = malloc (size);
 
 	fseek (f->desc, offset, SEEK_SET);

@@ -238,18 +238,23 @@ typedef struct mach_load_command_t {
  */
 typedef int		vm_prot_t;
 typedef struct mach_segment_command_64_t {
-	uint32_t	cmd;
-	uint32_t	cmdsize;
-	char		segname[16];
-	uint64_t	vmaddr;
-	uint64_t	vmsize;
-	uint64_t	fileoff;
-	uint64_t	filesize;
-	vm_prot_t	maxprot;
-	vm_prot_t	initprot;
-	uint32_t	nsects;
-	uint32_t	flags;
+	uint32_t	cmd;			/* LC_SEGMENT_64 */
+	uint32_t	cmdsize;		/* includes sizeof section_64 structs */
+	char		segname[16];	/* segment name */
+	uint64_t	vmaddr;			/* memory address of this segment */
+	uint64_t	vmsize;			/* memory size of this segment */
+	uint64_t	fileoff;		/* file offset of this segment */
+	uint64_t	filesize;		/* amount to map from the file */
+	vm_prot_t	maxprot;		/* maximum VM protection */
+	vm_prot_t	initprot;		/* initial VM protection */
+	uint32_t	nsects;			/* number of sections in segment */
+	uint32_t	flags;			/* flags */
 } mach_segment_command_64_t;
+
+typedef struct mach_segment_info_t {
+	mach_segment_command_64_t 	*segcmd;		/* Segment command */
+	GSList 						*sections;		/* List of sections */
+}
 
 
 /**
@@ -280,7 +285,6 @@ typedef struct macho_t {
 	mach_header_t 	*header;
 	GSList			*lcmds;
 	GSList			*scmds;
-	GSList			*sections;
 } macho_t;
 
 
@@ -322,5 +326,12 @@ mach_segment_command_64_t *mach_segment_command_search (macho_t *mach, char *seg
 GSList *mach_segment_get_list (macho_t *mach);
 void mach_segment_command_dump (mach_segment_command_64_t *sc);
 
+
+/**
+ * 
+ */
+mach_section_64_t *mach_section_create ();
+mach_section_64_t *mach_section_load (file_t *file, off_t offset);
+GSList *mach_sections_load_from_segment (macho_t *macho, mach_segment_command_64_t *seg);
 
 #endif /* MACH_O_H */

@@ -27,7 +27,31 @@ mach_section_64_t *mach_section_create ()
     return s;
 }
 
-mach_section_64_t *mach_section_load (file_t *file, offset_t *offset)
+mach_section_64_t *mach_section_load (file_t *file, off_t offset)
 {
+    mach_section_64_t *s = NULL; //mach_section_create ();
+    s = (mach_section_64_t *) file_load_bytes (file, sizeof(mach_section_64_t), offset);
+
+    if (!s) {
+        g_print ("[*] Error: Problem loading section at offset 0x%x\n", offset);
+        exit (0);
+    }
+
+    return s;
+}
+
+GSList *mach_sections_load_from_segment (macho_t *macho, mach_segment_command_64_t *seg)
+{
+    GSList *ret = NULL;
+    uint64_t offset = seg->vmaddr;
     
+    for (int i = 0; i < seg->nsects; i++) {
+        g_print ("Loading %d bytes from 0x%x\n", sizeof(mach_section_64_t), offset);
+        mach_section_64_t *sect = (mach_section_64_t *) file_load_bytes (macho->file, sizeof(mach_section_64_t), offset);
+        ret = g_slist_append (ret, sect);
+
+        offset += sizeof(mach_section_64_t);
+    }
+
+    return ret;
 }

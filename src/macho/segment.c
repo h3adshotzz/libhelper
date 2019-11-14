@@ -76,6 +76,7 @@ GSList *mach_segment_get_list (macho_t *mach)
 
 void mach_segment_command_dump (mach_segment_command_64_t *sc)
 {
+    g_print ("Command:\t\t%s\n", mach_load_command_get_string ((mach_load_command_t *) sc));
     g_print ("Segment Name:\t\t%s\n", sc->segname);
     g_print ("VM Address:\t\t0x%x\n", sc->vmaddr);
     g_print ("VM Size:\t\t%d\n", sc->vmsize);

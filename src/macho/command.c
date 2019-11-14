@@ -46,13 +46,17 @@ GSList *mach_load_command_get_list (macho_t *mach)
     GSList *r = NULL;
     for (int i = 0; i < g_slist_length (mach->lcmds); i++) {
         mach_load_command_t *lc = (mach_load_command_t *) g_slist_nth_data (mach->lcmds, i);
-        r = g_slist_append (r, mach_load_command_get_string(lc->cmd));
+        r = g_slist_append (r, lc);
     }
     return r;
 }
 
 char *mach_load_command_get_string (mach_load_command_t *lc)
 {
+    if (!lc->cmd) {
+        g_print ("[*] Error: lc->cmd not valid\n");
+        exit (0);
+    }
     char *cmd_str = "";
     switch (lc->cmd) {
         case LC_SEGMENT:
