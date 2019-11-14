@@ -37,7 +37,7 @@ mach_header_t *mach_header_load (file_t *file)
 
     // Check that the header has a val
     if (!header->magic) {
-        g_print ("[*] Error: Header was not loaded correctly. 0x%x\n", header);
+        g_print ("[*] Error: Header was not loaded correctly.\n");
         exit (0);
     } 
 
@@ -53,6 +53,9 @@ mach_header_t *mach_header_load (file_t *file)
 
 uint32_t macho_read_magic (unsigned char *buf, int offset)
 {
+    // invalidate offset
+    offset = 0;
+
     uint32_t magic = 0;
     memcpy (&magic, buf, sizeof(uint32_t));
     if (!magic) {
@@ -143,11 +146,17 @@ macho_t *macho_load (file_t *file)
     GSList *cmdlist = NULL;
     off_t offset = sizeof(mach_header_t);
 
-    for (int i = 0; i < mach->header->ncmds; i++) {
+    for (int i = 0; i < (int) mach->header->ncmds; i++) {
         mach_load_command_t *lc = mach_load_command_load (mach->file, offset);
         if (lc->cmd == LC_SEGMENT_64) {
-            mach_segment_command_64_t *s = mach_segment_command_load (mach->file, offset);
-            seglist = g_slist_append (seglist, s);
+
+            /**
+             *  Migrate to using mach_segment_info_t instead of
+             *  mach_segment_command_64_t
+             */
+            mach_segment_info_t *seginfo = mach_segment_info_load (mach->file, offset);
+
+            seglist = g_slist_append (seglist, seginfo);
         } else {
             cmdlist = g_slist_append (cmdlist, lc);
         }

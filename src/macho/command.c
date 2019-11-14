@@ -34,7 +34,7 @@ mach_load_command_t *mach_load_command_load (file_t *file, off_t offset)
     lc = (mach_load_command_t *) file_load_bytes (file, sizeof(mach_load_command_t), offset);
 
     if (!lc) {
-        g_print ("[*] Error: Problem with loading the Mach Load Command for offset 0x%x\n", offset);
+        g_print ("[*] Error: Problem with loading the Mach Load Command for offset 0x%llx\n", offset);
         return NULL;
     }
 
@@ -44,7 +44,7 @@ mach_load_command_t *mach_load_command_load (file_t *file, off_t offset)
 GSList *mach_load_command_get_list (macho_t *mach)
 {
     GSList *r = NULL;
-    for (int i = 0; i < g_slist_length (mach->lcmds); i++) {
+    for (int i = 0; i < (int) g_slist_length (mach->lcmds); i++) {
         mach_load_command_t *lc = (mach_load_command_t *) g_slist_nth_data (mach->lcmds, i);
         r = g_slist_append (r, lc);
     }

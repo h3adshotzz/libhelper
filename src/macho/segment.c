@@ -33,14 +33,45 @@ mach_segment_command_64_t *mach_segment_command_load (file_t *file, off_t offset
     sc = (mach_segment_command_64_t *) file_load_bytes (file, sizeof(mach_segment_command_64_t), offset);
 
     if (!sc) {
-        g_print ("[*] Error: Problem loading Mach Segment Command at offset 0x%x\n", offset);
+        g_print ("[*] Error: Problem loading Mach Segment Command at offset 0x%llx\n", offset);
         exit (0);
     } 
 
     return sc;
 }
 
-mach_segment_command_64_t *mach_segment_command_search (macho_t *mach, char *segname)
+
+mach_segment_info_t *mach_segment_info_create ()
+{
+    mach_segment_info_t *si = malloc (sizeof (mach_segment_info_t));
+    memset (si, '\0', sizeof(mach_segment_info_t));
+    return si;
+}
+
+mach_segment_info_t *mach_segment_info_load (file_t *file, off_t offset)
+{
+    mach_segment_info_t *si = mach_segment_info_create ();
+    si->segcmd = (mach_segment_command_64_t *) file_load_bytes (file, sizeof(mach_segment_command_64_t), offset);
+
+    if (!si->segcmd) {
+        g_print ("[*] Error: Could not load Segment at offset 0x%llx\n", offset);
+    }
+
+    offset = si->segcmd->vmaddr;
+    for (int i = 0; i < (int) si->segcmd->nsects; i++) {
+        mach_section_64_t *sect = mach_section_create ();
+        sect = (mach_section_64_t *) file_load_bytes (file, sizeof(mach_section_64_t), offset);
+
+        si->sections = g_slist_append (si->sections, sect);
+
+        offset += sizeof(mach_section_64_t);
+    }
+
+    return si;
+} 
+
+
+mach_segment_info_t *mach_segment_command_search (macho_t *mach, char *segname)
 {
     if (!segname) {
         g_print ("[*] Segment name not valid\n");
@@ -54,9 +85,10 @@ mach_segment_command_64_t *mach_segment_command_search (macho_t *mach, char *seg
     }
 
     for (int i = 0; i < c; i++) {
-        mach_segment_command_64_t *s = (mach_segment_command_64_t *) g_slist_nth_data (mach->scmds, i);
+        mach_segment_info_t *si = (mach_segment_info_t *) g_slist_nth_data (mach->scmds, i);
+        mach_segment_command_64_t *s = si->segcmd;
         if (!strcmp(s->segname, segname)) {
-            return s;
+            return si;
         }
     }
     
@@ -67,21 +99,24 @@ mach_segment_command_64_t *mach_segment_command_search (macho_t *mach, char *seg
 GSList *mach_segment_get_list (macho_t *mach)
 {
     GSList *r = NULL;
-    for (int i = 0; i < g_slist_length (mach->scmds); i++) {
-        mach_segment_command_64_t *s = (mach_segment_command_64_t *) g_slist_nth_data (mach->scmds, i);
+    for (int i = 0; i < (int) g_slist_length (mach->scmds); i++) {
+        mach_segment_info_t *si = (mach_segment_info_t *) g_slist_nth_data (mach->scmds, i);
+        mach_segment_command_64_t *s = (mach_segment_command_64_t *) si->segcmd;
         r = g_slist_append (r, s->segname);
     }
     return r;
 }
 
-void mach_segment_command_dump (mach_segment_command_64_t *sc)
+void mach_segment_command_dump (mach_segment_info_t *si)
 {
+    mach_segment_command_64_t *sc = si->segcmd;
+
     g_print ("Command:\t\t%s\n", mach_load_command_get_string ((mach_load_command_t *) sc));
     g_print ("Segment Name:\t\t%s\n", sc->segname);
-    g_print ("VM Address:\t\t0x%x\n", sc->vmaddr);
-    g_print ("VM Size:\t\t%d\n", sc->vmsize);
-    g_print ("File Offset:\t\t0x%x\n", sc->fileoff);
-    g_print ("File Size:\t\t%d\n", sc->filesize);
+    g_print ("VM Address:\t\t0x%llx\n", sc->vmaddr);
+    g_print ("VM Size:\t\t%llu\n", sc->vmsize);
+    g_print ("File Offset:\t\t0x%llx\n", sc->fileoff);
+    g_print ("File Size:\t\t%llu\n", sc->filesize);
     g_print ("Max VM Protection:\t%d\n", sc->maxprot);
     g_print ("Initial VM Protection:\t%d\n", sc->initprot);
     g_print ("Number of Sections:\t%d\n", sc->nsects);

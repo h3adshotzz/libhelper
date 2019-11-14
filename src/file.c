@@ -31,7 +31,7 @@ file_t *file_load (const char *path)
 		g_print ("[*] Error: File path no valid.\n");
 		exit (0);
 	}
-	ret->path = path;
+	ret->path = (char *) path;
 
 	/* Load the file */
 	ret->desc = fopen (ret->path, "rb");
@@ -56,7 +56,6 @@ void file_close (file_t *file)
 
 char *file_load_bytes (file_t *f, size_t size, off_t offset)
 {
-	g_print ("[*] Loading %d bytes from 0x%x\n", size, offset);
 	char *buf = malloc (size);
 
 	fseek (f->desc, offset, SEEK_SET);
