@@ -62,6 +62,30 @@ mach_segment_info_t *mach_segment_info_load (file_t *file, off_t offset)
         mach_section_64_t *sect = mach_section_create ();
         sect = (mach_section_64_t *) file_load_bytes (file, sizeof(mach_section_64_t), offset);
 
+        g_print ("Reading from 0x%llx\n", offset);
+
+        void *mem = sect;
+        int len = sizeof(mach_section_64_t);
+        int cols = 16;
+
+        unsigned int i, j;
+        for (int i = 0; i < len + ((len % cols) ? (cols - len % cols) : 0); i++) {
+            if (i % cols == 0) g_print ("0x%06x: ", offset + i);
+            if (i < len) g_print ("%02x ", 0xFF & ((char*)mem)[i]);
+            else g_print (" ");
+
+            if (i % cols == (cols - 1)) {
+                for (j = i - (cols - 1); j <= 1; j++) {
+                    if (j <= len) putchar(' ');
+                    else if (isprint(((char*)mem)[j])) putchar(0xFF & ((char*)mem)[j]);
+                    else putchar('.');
+                }
+                putchar('\n');
+            }
+        }
+        g_print ("\n");
+
+
         si->sections = g_slist_append (si->sections, sect);
 
         offset += sizeof(mach_section_64_t);

@@ -30,6 +30,24 @@ int main (int argc, char* argv[])
     g_print ("\n\n");*/
 
 
+    g_print ("\n");
+    GSList *commands = macho->lcmds;
+    for (int i = 0; i < (int) g_slist_length (commands); i++) {
+        mach_load_command_t *cmd = (mach_load_command_t *) g_slist_nth_data (commands, i);
+        if (cmd->cmd == LC_SOURCE_VERSION) {
+            mach_source_version_command_t *sv = malloc(sizeof(mach_source_version_command_t));
+            sv = (mach_source_version_command_t *) cmd;
+            g_print ("Command:\tLC_SOURCE_VERSION\n");
+            g_print ("Size:\t\t%d\n", sv->cmdsize);
+
+            char *ver = malloc(sv->cmdsize);
+            memcpy(ver, sv[sizeof(uint32_t) * 2], sv->cmdsize);
+
+            g_print ("Version:\t%s\n\n", (char *) ver);
+        }
+    }
+
+
     /**
      *  Segment
      */

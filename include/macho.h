@@ -24,6 +24,8 @@
 #include "libhelper.h"
 #include "file.h"
 
+#include <ctype.h>
+
 
 /**	
  * 	This file contains definitions for different aspects of loading and parsing
@@ -229,6 +231,24 @@ typedef struct mach_load_command_t {
 	uint32_t cmd;		/* type of load command */
 	uint32_t cmdsize;	/* total size of command in bytes */
 } mach_load_command_t;
+
+
+/*
+ * The source_version_command is an optional load command containing
+ * the version of the sources used to build the binary.
+ */
+typedef struct mach_source_version_command_t {
+    uint32_t  cmd;	/* LC_SOURCE_VERSION */
+    uint32_t  cmdsize;	/* 16 */
+    uint64_t  version;	/* A.B.C.D.E packed as a24.b10.c10.d10.e10 */
+} mach_source_version_command_t;
+
+typedef struct mach_source_test_t {
+	char 	a[12];
+	char	b[5];
+	char 	c[5];
+	char	d[5];
+} mach_source_test_t;
 
 
 /**
