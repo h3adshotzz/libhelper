@@ -147,8 +147,12 @@ macho_t *macho_load (file_t *file)
     off_t offset = sizeof(mach_header_t);
 
     for (int i = 0; i < (int) mach->header->ncmds; i++) {
-        mach_load_command_t *lc = mach_load_command_load (mach->file, offset);
-        if (lc->cmd == LC_SEGMENT_64) {
+
+        //
+        mach_command_info_t *lc = mach_command_info_load (mach->file, offset);
+
+        //
+        if (lc->type == LC_SEGMENT_64) {
 
             /**
              *  Migrate to using mach_segment_info_t instead of
@@ -158,9 +162,11 @@ macho_t *macho_load (file_t *file)
 
             seglist = g_slist_append (seglist, seginfo);
         } else {
+
+            lc->off = offset;
             cmdlist = g_slist_append (cmdlist, lc);
         }
-        offset += lc->cmdsize;
+        offset += lc->lc->cmdsize;
     }
 
     mach->lcmds = cmdlist;

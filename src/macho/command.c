@@ -21,36 +21,273 @@
 #include "macho.h"
 
 
+/**
+ *  libhelper-macho - Load Commands Documentation.
+ * 
+ *  == Introduction ==
+ * 
+ *  The way Mach-O Load Commands are handled in libhelper are as follows:
+ *  
+ *  The base Load Command, meaning the mach_load_command_t struct that just
+ *  contains the command type and size, is read from the file. This is then
+ *  added to a mach_command_info_t structure that also contains the offset of
+ *  the LC in the file, this is so it can be re-read later when we want to
+ *  grab the entire load command, not just the type and size.
+ * 
+ *  The macho_t structure has a GSList of Load Commands, they are stored in
+ *  that list in the mach_command_info_t structure. 
+ * 
+ *  So, there are two ways one can read a Load Command. 1) Use the Mach-O
+ *  loading, or 2) Specify an offset of the Load Command and a file.
+ * 
+ *  1)  Use implemented Mach-O Loading
+ *  
+ *      Load commands are stored in the macho_t struct as a glib GSList. So
+ *      they can be retrieved using GSList functions.
+ * 
+ *      The first example is fetching a Load Command at a given index that you
+ *      already know:
+ *      
+ *          mach_command_info_t *cmdinfo = malloc (sizeof(mach_command_info_t));
+ *          cmdinfo = (mach_command_info_t *) g_slist_nth_data (mach->lcmds, 2);
+ * 
+ *      Another method is using a for loop to go through each Load Command and,
+ *      for example, print it out:
+ *  
+ *          GSList *cmds = mach->lcmds;
+ *          for (int i = 0; i < g_slist_length (cmds); i++) {
+ * 
+ *              // Fetch command at index `i`
+ *              mach_command_info_t *tmp = malloc (sizeof(mach_command_info_t));
+ *              tmp = (mach_command_info_t *) g_slist_nth_data (mach->lcmds, i);
+ * 
+ *              // Print the entire load command info struct (includes libhelper data)
+ *              mach_load_command_info_print (tmp);
+ *          }
+ * 
+ *      More on printing load commands later.
+ *
+ * 
+ *  2)  Specify an offset of a Load Command.
+ * 
+ *      Two function calls, one to create a command info structure in memory,
+ *      the other to load the data from an offset in the file into that struct.
+ * 
+ *          // Create a new mach_command_info_t
+ *          mach_command_info_t *lc = mach_command_info_create ();
+ * 
+ *          // Load a LC with a given file and offset.
+ *          lc = mach_command_info_load (file_t, off_t);
+ * 
+ *  A list of all Load Commands (excluding Segment Commands) can be retrieved
+ *  either by calling mach_load_command_info_get_list(), or simply grabbing the
+ *  `lcmds` property of a macho_t, providing the macho_load() function has been
+ *  invoked.
+ * 
+ * 
+ *  == Command Dump / Printing ==
+ * 
+ *  A Load Command can be printed with a single function call. The Command type
+ *  is detected and everything relevant is printed.
+ * 
+ *      // Load an LC (see above)
+ *      lc = mach_command_info_load (macho, offset);
+ * 
+ *      // Print the command
+ *      mach_command_info_print (lc);
+ * 
+ *      // Print the entire load command info struct (includes libhelper data)
+ *      mach_load_command_info_print (tmp);
+ * 
+ *      // Print just the load command data
+ *      mach_load_command_print (tmp, LC_INFO);
+ *      mach_load_command_print (tmp->lc, LC_RAW)
+ * 
+ *  In the above example, there are two options for printing load command data,
+ *  either the entire mach_command_info_t struct, or just the actual load
+ *  command data stored within the file. Notice the seccond arg, this is a flag
+ *  to tell the print function the type of struct it has passed, so you can either
+ *  give the function a mach_command_info_t or mach_load_command_t struct.
+ * 
+ * 
+ *  == Command Types ==
+ * 
+ *  There are a wide range of command types. As Segment Commands are so common,
+ *  and contain so much more data, they are implemented seperately and stored
+ *  seperately in the macho_t structure. 
+ * 
+ *  The only load commands that have more than one present in a Mach-O file are
+ *  segment commands, so instead of returning a list for commands that will only
+ *  ever have one element, fetching different command data is impleted as follows,
+ *  with fetching the LC_SOURCE_VERSION Load Command as an example.
+ * 
+ *      mach_source_version_t *srcv = mach_command_get_source_version_lc (macho);
+ * 
+ *  Operations on different Load Commands could be implemented at a later stage.
+ * 
+ */
+
+
+//////////////////////////////////////////////////////////////////////////
+//                  Base Mach-O Load commands                           //
+//////////////////////////////////////////////////////////////////////////
+
+
+/**
+ *  Function:   mach_load_command_create
+ *  ------------------------------------
+ * 
+ *  Creates a new Mach-O Load Command structure and assigns sufficient memory. Should
+ *  be called to safely create a new raw Load Command structure.
+ * 
+ *  returns:    A mach_load_command_t structure with sufficient allocated memory.
+ * 
+ */
 mach_load_command_t *mach_load_command_create ()
 {
-    mach_load_command_t *lc = malloc(sizeof(mach_load_command_t));
+    mach_load_command_t *lc = malloc(MACH_LOAD_COMMAND_SIZE);
     memset (lc, '\0', sizeof(mach_load_command_t));
     return lc;
 }
 
-mach_load_command_t *mach_load_command_load (file_t *file, off_t offset)
-{
-    mach_load_command_t *lc = mach_load_command_create ();
-    lc = (mach_load_command_t *) file_load_bytes (file, sizeof(mach_load_command_t), offset);
 
+/**
+ *  mach_command_info_create ()
+ * 
+ *  Create a new Mach-O Load Command Info structure and assign enough memory 
+ *  for it.
+ */
+
+/**
+ *  Function:   mach_command_info_create
+ *  ------------------------------------
+ * 
+ *  Creates a new Mach-O Load Command Info structure and assigns sufficient memory. 
+ *  Should be called to safely create a new Load Command Info structure.
+ * 
+ *  returns:    A mach_command_info_t structure with sufficient allocated memory.
+ * 
+ */
+mach_command_info_t *mach_command_info_create ()
+{
+    mach_command_info_t *cmd = malloc(MACH_COMMAND_INFO_SIZE);
+    memset (cmd, '\0', sizeof(mach_command_info_t));
+    return cmd;
+}
+
+
+/**
+ *  Function:   mach_command_info_load
+ *  ----------------------------------
+ * 
+ *  Loads a raw Mach-O Load Command from a given offset in a verified Mach-O file, and
+ *  returns the resulting structure.
+ *  
+ *  file:       The verified Mach-O file.
+ *  offset:     The offset of the Load Command within the file.
+ * 
+ *  returns:    A verified Mach Command Info structure.
+ * 
+ */
+mach_command_info_t *mach_command_info_load (file_t *file, off_t offset)
+{
+    mach_command_info_t *ret = mach_command_info_create ();
+    mach_load_command_t *lc = mach_load_command_create ();
+
+    lc = (mach_load_command_t *) file_load_bytes (file, MACH_LOAD_COMMAND_SIZE, offset);
     if (!lc) {
-        g_print ("[*] Error: Problem with loading the Mach Load Command for offset 0x%llx\n", offset);
+        g_print ("[*] Error: Unable to find Load Command at offset 0x%llx\n", offset);
         return NULL;
     }
 
-    return lc;
+    ret->lc = lc;
+    ret->off = offset;
+    ret->type = lc->cmd;
+
+    return ret;
 }
 
-GSList *mach_load_command_get_list (macho_t *mach)
+
+/**
+ *  Function:   mach_load_command_info_get_list
+ *  -------------------------------------------
+ * 
+ *  Returns a list of Mach-O Load Command Info (mach_command_info_t) structs from a given
+ *  Mach-O struct.
+ * 
+ *  mach:       The Mach-O file containing a list of Load Commands
+ * 
+ *  returns:    A GSList of Command Info structs.
+ * 
+ */
+GSList *mach_load_command_info_get_list (macho_t *mach)
 {
-    GSList *r = NULL;
-    for (int i = 0; i < (int) g_slist_length (mach->lcmds); i++) {
-        mach_load_command_t *lc = (mach_load_command_t *) g_slist_nth_data (mach->lcmds, i);
-        r = g_slist_append (r, lc);
-    }
-    return r;
+    return mach->lcmds;
 }
 
+
+/**
+ *  Function:   mach_load_command_info_print
+ *  ----------------------------------------
+ * 
+ *  Prints a given mach_command_info_t struct in a formatted way. 
+ * 
+ *  cmd:        The Mach Command Info to print
+ * 
+ */
+void mach_load_command_info_print (mach_command_info_t *cmd)
+{
+    mach_load_command_print (cmd, LC_INFO);
+    g_print ("--- Meta:\n");
+    g_print ("  Type:\t0x%x\n", cmd->type);
+    g_print ("Offset:\t0x%llx\n", cmd->off);
+}
+
+
+/**
+ *  Function:   mach_load_command_print
+ *  -----------------------------------
+ * 
+ *  Prints a given struct, either mach_load_command_t or mach_command_info_t
+ *  in a formatted way, guided by a flag.
+ * 
+ *  cmd:        The Mach Load Command (mach_load_command_t / mach_command_info_t)
+ *  flag:       LC_RAW / LC_INFO
+ * 
+ */
+void mach_load_command_print (void *cmd, int flag)
+{
+    // flag = 0     -   cmd is mach_load_command_t
+    // flag = 1     -   cmd is mach_command_info_t
+
+    mach_load_command_t *lc = mach_load_command_create ();
+    if (flag == LC_RAW) {
+        lc = (mach_load_command_t *) cmd;
+    } else if (flag == LC_INFO) {
+        mach_command_info_t *inf = (mach_command_info_t *) cmd;
+        lc = (mach_load_command_t *) inf->lc;
+    } else {
+        g_print ("[*] Error: Unknown Load Command print flag: 0x%x\n", flag);
+        return;
+    }
+
+    g_print ("     Command:\t%s\n", mach_load_command_get_string (lc));
+    g_print ("Command Size:\t%d\n", lc->cmdsize);
+}
+
+
+/**
+ *  Function:   mach_load_command_get_string
+ *  ----------------------------------------
+ * 
+ *  Returns a string representation of the Load Command Type, for example
+ *  LC_SOURCE_VERSION.
+ * 
+ *  lc:         The Load Command to translate to a string
+ * 
+ *  returns:    The string representation of the Load Command.
+ * 
+ */
 char *mach_load_command_get_string (mach_load_command_t *lc)
 {
     if (!lc->cmd) {
@@ -223,10 +460,4 @@ char *mach_load_command_get_string (mach_load_command_t *lc)
             break;
     }
     return cmd_str;
-}
-
-void mach_load_command_dump (mach_load_command_t *lc)
-{
-    g_print ("Command:\t\t%s\n", mach_load_command_get_string(lc));
-    g_print ("Command Size:\t\t%d\n", lc->cmdsize);
 }

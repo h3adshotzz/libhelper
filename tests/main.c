@@ -34,40 +34,39 @@ int main (int argc, char* argv[])
     GSList *commands = macho->lcmds;
     int c = 0;
     for (int i = 0; i < (int) g_slist_length (commands); i++) {
-        mach_load_command_t *cmd = (mach_load_command_t *) g_slist_nth_data (commands, i);
-        if (cmd->cmd == LC_SOURCE_VERSION) {
+        mach_command_info_t *cmd = (mach_command_info_t *) g_slist_nth_data (commands, i);
+        mach_load_command_t *lc = cmd->lc;
+
+
+        if (lc->cmd == LC_SOURCE_VERSION) {
+
             mach_source_version_command_t *sv = malloc(sizeof(mach_source_version_command_t));
-            sv = (mach_source_version_command_t *) cmd;
+            sv = (mach_source_version_command_t *) file_load_bytes (macho->file, sizeof(mach_source_version_command_t), cmd->off);
+            
             g_print ("Command:\tLC_SOURCE_VERSION\n");
             g_print ("Size:\t\t%d\n", sv->cmdsize);
 
-            off_t offset = sizeof(mach_header_t) + (sizeof(mach_load_command_t) * c) + (sizeof(uint32_t) * 2);
-            char *ver = file_load_bytes (macho->file, sizeof(uint64_t), offset);
+            uint64_t a, b, c, d, e;
 
-            g_print ("Version:\t%s\n\n", (char *) ver);
-
-            g_print ("Reading from 0x%llx\n", offset);
-
-            void *mem = sv;
-            int len = sizeof(mach_source_version_command_t);
-            int cols = 16;
-
-            unsigned int i, j;
-            for (int i = 0; i < len + ((len % cols) ? (cols - len % cols) : 0); i++) {
-                if (i % cols == 0) g_print ("0x%06x: ", offset + i);
-                if (i < len) g_print ("%02x ", 0xFF & ((char*)mem)[i]);
-                else g_print (" ");
-
-                if (i % cols == (cols - 1)) {
-                    for (j = i - (cols - 1); j <= 1; j++) {
-                        if (j <= len) putchar(' ');
-                        else if (isprint(((char*)mem)[j])) putchar(0xFF & ((char*)mem)[j]);
-                        else putchar('.');
-                    }
-                    putchar('\n');
-                }
+            if (sv->cmdsize != sizeof(mach_source_version_command_t)) {
+                g_print ("Incorrect size\n");
             }
-            g_print ("\n");
+
+            a = (sv->version >> 40) & 0xffffff;
+            b = (sv->version >> 30) & 0x3ff;
+            c = (sv->version >> 20) & 0x3ff;
+            d = (sv->version >> 10) & 0x3ff;
+            e = sv->version & 0x3ff;
+
+            if (e != 0) {
+                g_print ("Version:\t%llu.%llu.%llu.%llu.%llu\n", a, b, c, d, e);
+            } else if (d != 0) {
+                g_print ("Version:\t%llu.%llu.%llu.%llu\n", a, b, c, d);
+            } else if (c != 0) {
+                g_print ("Version:\t%llu.%llu.%llu\n", a, b, c);
+            } else {
+                g_print ("Version:\t%llu.%llu\n", a, b);
+            }
 
 
         } else {

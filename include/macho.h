@@ -53,6 +53,13 @@
 
 
 /**
+ * 	Flags for Load Command printing functions
+ */	
+#define	LC_RAW		0x0
+#define LC_INFO		0x1
+
+
+/**
  * 	Load command definitions. Mach-O's use these to map out the file structure, like
  * 	specifying where segment data, symbol tables, etc are located. These are simply 
  * 	the names, a structure definitions is later on.
@@ -228,9 +235,25 @@ typedef struct mach_header_t {
  * 
  */
 typedef struct mach_load_command_t {
-	uint32_t cmd;		/* type of load command */
-	uint32_t cmdsize;	/* total size of command in bytes */
+	uint32_t cmd;					/* type of load command */
+	uint32_t cmdsize;				/* total size of command in bytes */
 } mach_load_command_t;
+
+
+/**
+ * 	Mach-O Load Command Info structure.
+ * 
+ * 	Used to carry the offset of the load command in the file with the load command structure.
+ * 	I guess it is architecture specific, because the offset is a uint64_t.
+ */
+typedef struct mach_command_info_t {
+	mach_load_command_t		*lc;		/* load command structure */
+	uint32_t				type;		/* load command type */
+	uint64_t				off;		/* offset within the file */
+} mach_command_info_t;
+
+#define MACH_LOAD_COMMAND_SIZE		sizeof(mach_load_command_t)
+#define MACH_COMMAND_INFO_SIZE		sizeof(mach_command_info_t)
 
 
 /*
@@ -238,17 +261,10 @@ typedef struct mach_load_command_t {
  * the version of the sources used to build the binary.
  */
 typedef struct mach_source_version_command_t {
-    uint32_t  cmd;	/* LC_SOURCE_VERSION */
-    uint32_t  cmdsize;	/* 16 */
-    uint64_t  version;	/* A.B.C.D.E packed as a24.b10.c10.d10.e10 */
+    uint32_t  cmd;						/* LC_SOURCE_VERSION */
+    uint32_t  cmdsize;					/* 16 */
+    uint64_t  version;					/* A.B.C.D.E packed as a24.b10.c10.d10.e10 */
 } mach_source_version_command_t;
-
-typedef struct mach_source_test_t {
-	char 	a[12];
-	char	b[5];
-	char 	c[5];
-	char	d[5];
-} mach_source_test_t;
 
 
 /**
@@ -328,10 +344,19 @@ void mach_header_dump_test (mach_header_t *header);
 
 
 /**
+ * 	Mach-O Load Commands - defined in command.c
  * 
+ * 	
  */
 mach_load_command_t *mach_load_command_create ();
-mach_load_command_t *mach_load_command_load (file_t *file, off_t offset);
+mach_command_info_t *mach_command_info_create ();
+mach_command_info_t *mach_command_info_load (file_t *file, off_t offset);
+
+void mach_load_command_info_print (mach_command_info_t *cmd);
+void mach_load_command_print (void *cmd, int flag);
+
+// To be moved
+
 GSList *mach_load_command_get_list (macho_t *mach);
 char *mach_load_command_get_string (mach_load_command_t *lc);
 void mach_load_command_dump (mach_load_command_t *lc);
