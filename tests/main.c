@@ -32,6 +32,7 @@ int main (int argc, char* argv[])
 
     g_print ("\n");
     GSList *commands = macho->lcmds;
+    int c = 0;
     for (int i = 0; i < (int) g_slist_length (commands); i++) {
         mach_load_command_t *cmd = (mach_load_command_t *) g_slist_nth_data (commands, i);
         if (cmd->cmd == LC_SOURCE_VERSION) {
@@ -40,10 +41,37 @@ int main (int argc, char* argv[])
             g_print ("Command:\tLC_SOURCE_VERSION\n");
             g_print ("Size:\t\t%d\n", sv->cmdsize);
 
-            char *ver = malloc(sv->cmdsize);
-            memcpy(ver, sv[sizeof(uint32_t) * 2], sv->cmdsize);
+            off_t offset = sizeof(mach_header_t) + (sizeof(mach_load_command_t) * c) + (sizeof(uint32_t) * 2);
+            char *ver = file_load_bytes (macho->file, sizeof(uint64_t), offset);
 
             g_print ("Version:\t%s\n\n", (char *) ver);
+
+            g_print ("Reading from 0x%llx\n", offset);
+
+            void *mem = sv;
+            int len = sizeof(mach_source_version_command_t);
+            int cols = 16;
+
+            unsigned int i, j;
+            for (int i = 0; i < len + ((len % cols) ? (cols - len % cols) : 0); i++) {
+                if (i % cols == 0) g_print ("0x%06x: ", offset + i);
+                if (i < len) g_print ("%02x ", 0xFF & ((char*)mem)[i]);
+                else g_print (" ");
+
+                if (i % cols == (cols - 1)) {
+                    for (j = i - (cols - 1); j <= 1; j++) {
+                        if (j <= len) putchar(' ');
+                        else if (isprint(((char*)mem)[j])) putchar(0xFF & ((char*)mem)[j]);
+                        else putchar('.');
+                    }
+                    putchar('\n');
+                }
+            }
+            g_print ("\n");
+
+
+        } else {
+            c++;
         }
     }
 

@@ -96,7 +96,7 @@ static void dump_segment_commands(FILE *obj_file, off_t offset, bool is_swap, ui
         swap_segment_command_64(segment, 0);
       }
 
-      printf("segname: %s\n", segment->segname);
+      printf("segname: %.16s\n", segment->segname);
       printf("nsects: %d\n", segment->nsects);
 
       free(segment);

@@ -63,8 +63,8 @@ void mach_section_dump (mach_section_64_t *section)
     g_print ("Address:\t0x%llx\n", section->addr);
     g_print ("Size:\t\t%llu\n", section->size);
     g_print ("Offset:\t\t0x%x\n", section->offset);
-    g_print ("Align:\t\t%d\n", section->align);
+    g_print ("Align:\t\t%u\n", section->align);
     g_print ("Reloff:\t\t0x%x\n", section->reloff);
-    g_print ("Nreloc:\t\t%d\n", section->nreloc);
-    g_print ("Flags:\t\t%d\n\n", section->flags);
+    g_print ("Nreloc:\t\t%u\n", section->nreloc);
+    g_print ("Flags:\t\t%u\n\n", section->flags);
 }

@@ -51,45 +51,38 @@ mach_segment_info_t *mach_segment_info_create ()
 mach_segment_info_t *mach_segment_info_load (file_t *file, off_t offset)
 {
     mach_segment_info_t *si = mach_segment_info_create ();
-    si->segcmd = (mach_segment_command_64_t *) file_load_bytes (file, sizeof(mach_segment_command_64_t), offset);
+    mach_segment_command_64_t *segment = (mach_segment_command_64_t *) file_load_bytes (file, sizeof(mach_segment_command_64_t), offset);
 
-    if (!si->segcmd) {
+    if (!segment) {
         g_print ("[*] Error: Could not load Segment at offset 0x%llx\n", offset);
     }
 
-    offset = si->segcmd->vmaddr;
-    for (int i = 0; i < (int) si->segcmd->nsects; i++) {
-        mach_section_64_t *sect = mach_section_create ();
-        sect = (mach_section_64_t *) file_load_bytes (file, sizeof(mach_section_64_t), offset);
+    if (segment->vmaddr < 0xffffff0000000000) {
+        uint64_t vmaddr = 0xffffff0000000010 + segment->vmaddr;
+        segment->vmaddr = vmaddr;
+    }
+    g_print ("vmaddr: 0x%llx\n", segment->vmaddr);
 
-        g_print ("Reading from 0x%llx\n", offset);
+    offset = segment->vmaddr;
+    //offset = segment->fileoff + sizeof(mach_header_t) + (sizeof (mach_section_64_t) * 2) - 16;
+    for (int i = 0; i < (int) segment->nsects; i++) {
+        mach_section_64_t *sect = mach_section_load (file, offset);
 
-        void *mem = sect;
-        int len = sizeof(mach_section_64_t);
-        int cols = 16;
+        /*mach_section_64_t *sect = mach_section_create ();
 
-        unsigned int i, j;
-        for (int i = 0; i < len + ((len % cols) ? (cols - len % cols) : 0); i++) {
-            if (i % cols == 0) g_print ("0x%06x: ", offset + i);
-            if (i < len) g_print ("%02x ", 0xFF & ((char*)mem)[i]);
-            else g_print (" ");
+        size_t sze = sizeof(mach_section_64_t);
+        void *buf = malloc (sze);
 
-            if (i % cols == (cols - 1)) {
-                for (j = i - (cols - 1); j <= 1; j++) {
-                    if (j <= len) putchar(' ');
-                    else if (isprint(((char*)mem)[j])) putchar(0xFF & ((char*)mem)[j]);
-                    else putchar('.');
-                }
-                putchar('\n');
-            }
-        }
-        g_print ("\n");
+        fseek (file->desc, offset, SEEK_SET);
+        fread (buf, sze, 1, file->desc);
 
+        sect = (mach_section_64_t *)buf;*/
 
         si->sections = g_slist_append (si->sections, sect);
 
         offset += sizeof(mach_section_64_t);
     }
+    si->segcmd = segment;
 
     return si;
 } 
