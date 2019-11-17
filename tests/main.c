@@ -80,6 +80,12 @@ int main (int argc, char* argv[])
     mach_uuid_command_t *lc_uuid = mach_lc_find_uuid_cmd (macho);
     g_print ("LC_UUID: %s\n\n", mach_lc_uuid_string (lc_uuid));
 
+    /**
+     *  TODO: ALL OTHER LC'S, DO IN THIS ORDER:
+     *      -  symtab_command   (LC_SYMTAB)
+     *      -  dysymtab_command (LC_DYSMTAB)
+     */
+
 
     /**
      *  Segment
