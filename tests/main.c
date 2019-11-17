@@ -30,7 +30,7 @@ int main (int argc, char* argv[])
     g_print ("\n\n");*/
 
 
-    g_print ("\n");
+    /*g_print ("\n");
     GSList *commands = macho->lcmds;
     int c = 0;
     for (int i = 0; i < (int) g_slist_length (commands); i++) {
@@ -72,7 +72,10 @@ int main (int argc, char* argv[])
         } else {
             c++;
         }
-    }
+    }*/
+
+    mach_source_version_command_t *test = mach_lc_find_source_version_cmd (macho);
+    g_print ("\nLC_SOURCE_VERSION: %s\n\n", mach_lc_source_version_string (test));
 
 
     /**

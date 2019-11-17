@@ -344,8 +344,7 @@ typedef struct mach_source_version_command_t {
 
 
 /**
- * 	Mach-O Load Commands - defined in command.c
- * 
+ * 	Mach-O Load Commands - declared in command.c
  * 	
  */
 mach_load_command_t *mach_load_command_create ();
@@ -355,5 +354,13 @@ mach_command_info_t *mach_command_info_load (file_t *file, off_t offset);
 void mach_load_command_info_print (mach_command_info_t *cmd);
 void mach_load_command_print (void *cmd, int flag);
 char *mach_load_command_get_string (mach_load_command_t *lc);
+
+
+/**
+ * 	LC_SOURCE_VERSION functions
+ * 
+ */
+mach_source_version_command_t *mach_lc_find_source_version_cmd (macho_t *macho);
+char *mach_lc_source_version_string (mach_source_version_command_t *svc);
 
 #endif /* mach_o_h */

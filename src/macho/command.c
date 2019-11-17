@@ -467,3 +467,61 @@ char *mach_load_command_get_string (mach_load_command_t *lc)
 //                     Specific Load Commands                           //
 //////////////////////////////////////////////////////////////////////////
 
+
+/**
+ * 
+ */
+mach_source_version_command_t *mach_lc_find_source_version_cmd (macho_t *macho)
+{
+    size_t size = sizeof (mach_source_version_command_t);
+    mach_source_version_command_t *ret = malloc (size);
+
+    GSList *cmds = macho->lcmds;
+    for (int i = 0; i < g_slist_length (cmds); i++) {
+        mach_command_info_t *tmp = (mach_command_info_t *) g_slist_nth_data (cmds, i);
+        if (tmp->type == LC_SOURCE_VERSION) {
+            ret = (mach_source_version_command_t *) file_load_bytes (macho->file, size, tmp->off);
+            
+            if (!ret) {
+                g_print ("[*] Error: Failed to load LC_SOURCE_VERSION command from offset: 0x%llx\n");
+                return NULL;
+            } else {
+                return ret;
+            }
+        }
+    }
+
+    return NULL;
+}
+
+
+/**
+ * 
+ */
+char *mach_lc_source_version_string (mach_source_version_command_t *svc)
+{
+    char *ret = malloc(20);
+    uint64_t a, b, c, d, e;
+
+    if (svc->cmdsize != sizeof(mach_source_version_command_t)) {
+        g_print ("Incorrect size\n");
+    }
+
+    a = (svc->version >> 40) & 0xffffff;
+    b = (svc->version >> 30) & 0x3ff;
+    c = (svc->version >> 20) & 0x3ff;
+    d = (svc->version >> 10) & 0x3ff;
+    e = svc->version & 0x3ff;
+
+    if (e != 0) {
+        snprintf (ret, 20, "%llu.%llu.%llu.%llu.%llu", a, b, c, d, e);
+    } else if (d != 0) {
+        snprintf (ret, 16, "%llu.%llu.%llu.%llu", a, b, c, d);
+    } else if (c != 0) {
+        snprintf (ret, 12, "%llu.%llu.%llu", a, b, c);
+    } else {
+        snprintf (ret, 8, "%llu.%llu", a, b);
+    }
+
+    return ret;
+}
