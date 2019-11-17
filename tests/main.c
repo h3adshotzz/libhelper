@@ -74,8 +74,11 @@ int main (int argc, char* argv[])
         }
     }*/
 
-    mach_source_version_command_t *test = mach_lc_find_source_version_cmd (macho);
-    g_print ("\nLC_SOURCE_VERSION: %s\n\n", mach_lc_source_version_string (test));
+    mach_source_version_command_t *lc_source_version = mach_lc_find_source_version_cmd (macho);
+    g_print ("\nLC_SOURCE_VERSION: %s\n\n", mach_lc_source_version_string (lc_source_version));
+
+    mach_uuid_command_t *lc_uuid = mach_lc_find_uuid_cmd (macho);
+    g_print ("LC_UUID: %s\n\n", mach_lc_uuid_string (lc_uuid));
 
 
     /**

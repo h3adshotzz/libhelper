@@ -337,10 +337,20 @@ typedef struct mach_command_info_t {
  * the version of the sources used to build the binary.
  */
 typedef struct mach_source_version_command_t {
-    uint32_t  cmd;						/* LC_SOURCE_VERSION */
-    uint32_t  cmdsize;					/* 16 */
-    uint64_t  version;					/* A.B.C.D.E packed as a24.b10.c10.d10.e10 */
+    uint32_t  	cmd;			/* LC_SOURCE_VERSION */
+    uint32_t  	cmdsize;		/* 16 */
+    uint64_t  	version;		/* A.B.C.D.E packed as a24.b10.c10.d10.e10 */
 } mach_source_version_command_t;
+
+
+/**
+ * 
+ */
+typedef struct mach_uuid_command_t {
+	uint32_t	cmd;			/* LC_UUID */
+	uint32_t	cmdsize;		/* sizeof(mach_uuid_command_t) */
+	uint8_t		uuid[16];		/* 128-bit UUID */
+} mach_uuid_command_t;
 
 
 /**
@@ -358,9 +368,15 @@ char *mach_load_command_get_string (mach_load_command_t *lc);
 
 /**
  * 	LC_SOURCE_VERSION functions
- * 
  */
 mach_source_version_command_t *mach_lc_find_source_version_cmd (macho_t *macho);
 char *mach_lc_source_version_string (mach_source_version_command_t *svc);
+
+
+/**
+ * 	LC_UUID functions
+ */
+mach_uuid_command_t *mach_lc_find_uuid_cmd (macho_t *macho);
+char *mach_lc_uuid_string (mach_uuid_command_t *cmd);
 
 #endif /* mach_o_h */
