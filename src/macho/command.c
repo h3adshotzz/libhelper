@@ -152,13 +152,6 @@ mach_load_command_t *mach_load_command_create ()
 
 
 /**
- *  mach_command_info_create ()
- * 
- *  Create a new Mach-O Load Command Info structure and assign enough memory 
- *  for it.
- */
-
-/**
  *  Function:   mach_command_info_create
  *  ------------------------------------
  * 
@@ -469,6 +462,17 @@ char *mach_load_command_get_string (mach_load_command_t *lc)
 
 
 /**
+ *  Function:   mach_lc_find_source_version_cmd
+ *  ------------------------------------
+ * 
+ *  Finds and creates a mach_source_version_command_t struct from a given macho
+ *  by looping through each of the load commands in the macho->lcmds GSList. Load
+ *  Command like LC_SOURCE_VERSION only occur once in each Mach-O file, so there
+ *  is relatively no danger of loading the wrong one.
+ * 
+ *  macho:      The Mach-O file containing an LC_SOURCE_VERSION command.
+ * 
+ *  returns:    A mach_source_version_command_t structure with sufficient allocated memory.
  * 
  */
 mach_source_version_command_t *mach_lc_find_source_version_cmd (macho_t *macho)
@@ -496,7 +500,15 @@ mach_source_version_command_t *mach_lc_find_source_version_cmd (macho_t *macho)
 
 
 /**
+ *  Function:   mach_lc_source_version_string
  * 
+ *  Takes a LC_SOURCE_VERSION command and unpacks the version string from the
+ *  uint64_t into a readable string.
+ * 
+ *  svc:        The LC_SOURCE_VERSION Command.
+ * 
+ *  returns:    The unpacked version string.
+ *      
  */
 char *mach_lc_source_version_string (mach_source_version_command_t *svc)
 {
@@ -526,11 +538,23 @@ char *mach_lc_source_version_string (mach_source_version_command_t *svc)
     return ret;
 }
 
-/////////////////////////////
+///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
 
 
 /**
+ *  Function:   mach_lc_find_uuid_cmd
+ *  ---------------------------------
  * 
+ *  Finds and creates a mach_uuid_command_t struct from a given macho
+ *  by looping through each of the load commands in the macho->lcmds GSList. Load
+ *  Commands like LC_UUID only occur once in each Mach-O file, so there is relatively 
+ *  no danger of loading the wrong one.
+ * 
+ *  macho:      The Mach-O file containing an LC_UUID command.
+ * 
+ *  returns:    A mach_uuid_command_t structure with sufficient allocated memory.
+ *      
  */
 mach_uuid_command_t *mach_lc_find_uuid_cmd (macho_t *macho)
 {
@@ -558,7 +582,15 @@ mach_uuid_command_t *mach_lc_find_uuid_cmd (macho_t *macho)
 
 
 /**
+ *  Function:   mach_lc_uuid_string
  * 
+ *  Takes a LC_UUID command and unpacks the uuid string from the uint8_t into a 
+ *  readable string.
+ * 
+ *  svc:        The LC_UUID Command.
+ * 
+ *  returns:    The unpacked UUID string.
+ *      
  */
 char *mach_lc_uuid_string (mach_uuid_command_t *uuid)
 {

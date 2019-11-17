@@ -272,7 +272,7 @@ typedef struct mach_section_64_t {
 mach_section_64_t *mach_section_create ();
 mach_section_64_t *mach_section_load (file_t *file, off_t offset);
 GSList *mach_sections_load_from_segment (macho_t *macho, mach_segment_command_64_t *seg);
-void mach_section_dump (mach_section_64_t *section);
+void mach_section_print (mach_section_64_t *section);
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -351,6 +351,11 @@ typedef struct mach_uuid_command_t {
 	uint32_t	cmdsize;		/* sizeof(mach_uuid_command_t) */
 	uint8_t		uuid[16];		/* 128-bit UUID */
 } mach_uuid_command_t;
+
+
+/**
+ * 
+ */
 
 
 /**

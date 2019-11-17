@@ -105,7 +105,7 @@ int main (int argc, char* argv[])
     g_print ("len: %d\n", g_slist_length (segment->sections));
     for (int i = 0; i < (int) g_slist_length(segment->sections); i++) {
         mach_section_64_t *sect = g_slist_nth_data (segment->sections, i);
-        mach_section_dump (sect);
+        mach_section_print (sect);
     }
 
     // test decompilation

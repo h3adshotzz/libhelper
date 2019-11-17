@@ -56,7 +56,7 @@ GSList *mach_sections_load_from_segment (macho_t *macho, mach_segment_command_64
     return ret;
 }
 
-void mach_section_dump (mach_section_64_t *section)
+void mach_section_print (mach_section_64_t *section)
 {
     g_print ("Section:\t%s\n", section->sectname);
     g_print ("Segment:\t%s\n", section->segname);
