@@ -2,6 +2,8 @@
  * 
  *     libhelper
  *     Copyright (C) 2019, @h3adsh0tzz
+ * 
+ *     Portions Copyright (c) 1999-2003 Apple Computer, Inc. All Rights Reserved.
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -276,6 +278,39 @@ void mach_section_print (mach_section_64_t *section);
 
 
 //////////////////////////////////////////////////////////////////////////
+//                       Mach-O Symbol tables                           //
+//////////////////////////////////////////////////////////////////////////
+
+
+/**
+ * 	
+ */
+typedef struct mach_symtab_command_t {
+	uint32_t	cmd;			/* LC_SYMTAB */
+	uint32_t	cmdsize;		/* sizeof(mach_symtab_command_t) */
+	uint32_t	symoff;			/* offset of the symbol table */
+	uint32_t	nsyms;			/* number of symbols */
+	uint32_t	stroff;			/* offset of the string table */
+	uint32_t	strsize;		/* size of the string table in bytes */
+} mach_symtab_command_t;
+
+typedef struct nlist {
+	uint32_t	n_strx;		/* index into the string table */
+
+	uint8_t		n_type;		/* type flag */
+	uint8_t 	n_sect;		/* section number, or NO_SECT */
+	uint16_t	n_desc;		/* see stab.h */
+	uint64_t	n_value;	/* value of this symbol (or stab offset) */
+} nlist;
+
+
+#define	N_UNDF	0x0
+#define N_ABS	0x1
+#define N_TEXT	0x4
+
+
+
+//////////////////////////////////////////////////////////////////////////
 //                    	 Mach-O Load Commands                           //
 //////////////////////////////////////////////////////////////////////////
 
@@ -333,8 +368,8 @@ typedef struct mach_command_info_t {
 
 
 /*
- * The source_version_command is an optional load command containing
- * the version of the sources used to build the binary.
+ * 	The source_version_command is an optional load command containing
+ * 	the version of the sources used to build the binary.
  */
 typedef struct mach_source_version_command_t {
     uint32_t  	cmd;			/* LC_SOURCE_VERSION */
@@ -344,18 +379,14 @@ typedef struct mach_source_version_command_t {
 
 
 /**
- * 
+ * 	The mach_uuid_command_t is an optional load command containing
+ * 	the UUID of the binary.
  */
 typedef struct mach_uuid_command_t {
 	uint32_t	cmd;			/* LC_UUID */
 	uint32_t	cmdsize;		/* sizeof(mach_uuid_command_t) */
 	uint8_t		uuid[16];		/* 128-bit UUID */
 } mach_uuid_command_t;
-
-
-/**
- * 
- */
 
 
 /**
@@ -383,5 +414,13 @@ char *mach_lc_source_version_string (mach_source_version_command_t *svc);
  */
 mach_uuid_command_t *mach_lc_find_uuid_cmd (macho_t *macho);
 char *mach_lc_uuid_string (mach_uuid_command_t *cmd);
+
+
+/**
+ * 	LC_SYMTAB functions
+ */
+mach_symtab_command_t *mach_symtab_command_create ();
+mach_symtab_command_t *mach_symtab_command_load (file_t *file, off_t offset);
+mach_symtab_command_t *mach_lc_find_symtab_cmd (macho_t *macho);
 
 #endif /* mach_o_h */

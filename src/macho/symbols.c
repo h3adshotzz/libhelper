@@ -20,3 +20,23 @@
 
 #include "macho.h"
 
+
+mach_symtab_command_t *mach_symtab_command_create ()
+{
+    mach_symtab_command_t *symt = malloc(sizeof(mach_symtab_command_t));
+    memset (symt, '\0', sizeof(mach_symtab_command_t));
+    return symt;
+}
+
+mach_symtab_command_t *mach_symtab_command_load (file_t *file, off_t offset)
+{
+    mach_symtab_command_t *symt = mach_symtab_command_create ();
+    symt = (mach_symtab_command_t *) file_load_bytes (file, sizeof(mach_symtab_command_t), offset);
+
+    if (!symt) {
+        g_print ("[*] Error: Problem loading Mach Symbol Table at offset: 0x%llx\n", offset);
+        return NULL;
+    }
+
+    return symt;
+}

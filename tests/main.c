@@ -80,6 +80,59 @@ int main (int argc, char* argv[])
     mach_uuid_command_t *lc_uuid = mach_lc_find_uuid_cmd (macho);
     g_print ("LC_UUID: %s\n\n", mach_lc_uuid_string (lc_uuid));
 
+    mach_symtab_command_t *symbol_table = mach_lc_find_symtab_cmd (macho);
+    g_print ("== Symbol Table ==\n");
+    g_print ("    cmd: 0x%x\n", symbol_table->cmd);
+    g_print ("cmdsize: 0x%x\n", symbol_table->cmdsize);
+    g_print (" symoff: 0x%x\n", symbol_table->symoff);
+    g_print ("  nsyms: %d\n", symbol_table->nsyms);
+    g_print (" stroff: 0x%x\n", symbol_table->stroff);
+    g_print ("strsize: 0x%x\n", symbol_table->strsize);
+
+    size_t str_size = symbol_table->strsize;
+    off_t str_off = symbol_table->stroff;
+    char *tmp = file_load_bytes (macho->file, str_size, str_off);
+    GSList *str_table = NULL;
+
+    GSList *curr = NULL;
+    for (int i = 0; i < str_size; i++) {
+        uint8_t byte = tmp[i];
+        if (byte != 0x0) {
+            curr = g_slist_append (curr, tmp[i]);
+            //g_print ("%c", tmp[i]);
+        } else {
+            char str[g_slist_length(curr)];
+            for (int k = 0; k < g_slist_length(curr); k++) {
+                str[k] = g_slist_nth_data(curr, k);
+            }
+            g_print ("tmp: %s\n\n", str);
+            curr = NULL;
+        }
+    }
+
+    for (int i = 0; i < g_slist_length (str_table); i++) {
+        g_print ("str_table[%d]: %s\n", i, (char *) g_slist_nth_data (str_table, i));
+    }
+
+
+    /*off_t offset = symbol_table->symoff;
+    for (int i = 0; i < symbol_table->nsyms; i++) {
+        nlist *tmp = (nlist *) file_load_bytes (macho->file, 16, offset);
+
+
+        g_print ("sym type: 0x%x\n", tmp->n_type);
+
+        offset += sizeof(nlist);
+    }*/
+
+    /*
+    g_print ("sym name: %s\n", (char *) tmp->name);
+    g_print ("sym type: %d\n", tmp->type);
+    g_print ("sym other: %s\n", tmp->other);
+    g_print ("sym desc: %d\n", tmp->desc);
+    g_print ("sym val: %lu\n", tmp->value);
+*/
+
     /**
      *  TODO: ALL OTHER LC'S, DO IN THIS ORDER:
      *      -  symtab_command   (LC_SYMTAB)

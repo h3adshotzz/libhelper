@@ -613,3 +613,42 @@ char *mach_lc_uuid_string (mach_uuid_command_t *uuid)
 
     return ret;
 }
+
+
+///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
+
+
+/**
+ *  The Symtab command can stay here, but handling symbols
+ *  should be in symbols.c
+ */
+
+mach_command_info_t *mach_lc_find_given_cmd (macho_t *macho, int cmd)
+{
+    GSList *cmds = macho->lcmds;
+    for (int i = 0; i < g_slist_length (cmds); i++) {
+        mach_command_info_t *tmp = (mach_load_command_t *) g_slist_nth_data (cmds, i);
+        if (tmp->type == cmd) {
+            return tmp;
+        }
+    }
+    return NULL;
+}
+
+/**
+ * 
+ */
+mach_symtab_command_t *mach_lc_find_symtab_cmd (macho_t *macho)
+{
+    size_t size = sizeof (mach_symtab_command_t);
+    mach_symtab_command_t *ret = malloc (size);
+    
+    mach_command_info_t *cmdinfo = mach_lc_find_given_cmd (macho, LC_SYMTAB);
+    ret = (mach_symtab_command_t *) file_load_bytes (macho->file, size, cmdinfo->off);
+
+    g_print ("LC_SYMTAB: %d\n", LC_SYMTAB);
+    g_print ("test symtab: 0x%llx\n", ret->nsyms);
+
+    return ret;
+}
