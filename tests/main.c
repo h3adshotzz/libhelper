@@ -94,7 +94,18 @@ int main (int argc, char* argv[])
     char *tmp = file_load_bytes (macho->file, str_size, str_off);
     GSList *str_table = NULL;
 
-    GSList *curr = NULL;
+    uint64_t curr = NULL;
+    for (int i = 0; i < str_size; i++) {
+        uint8_t byte = tmp[i];
+        if (byte != 0x0) {
+            curr += byte;
+        } else {
+            g_print ("test: %s\n", (char *)curr);
+            curr = NULL;
+        }
+    }
+
+    /*GSList *curr = NULL;
     for (int i = 0; i < str_size; i++) {
         uint8_t byte = tmp[i];
         if (byte != 0x0) {
@@ -105,14 +116,14 @@ int main (int argc, char* argv[])
             for (int k = 0; k < g_slist_length(curr); k++) {
                 str[k] = g_slist_nth_data(curr, k);
             }
-            g_print ("tmp: %s\n\n", str);
+            g_print ("tmp: %s | %d\n", str, strlen(str));
             curr = NULL;
         }
     }
 
     for (int i = 0; i < g_slist_length (str_table); i++) {
         g_print ("str_table[%d]: %s\n", i, (char *) g_slist_nth_data (str_table, i));
-    }
+    }*/
 
 
     /*off_t offset = symbol_table->symoff;
