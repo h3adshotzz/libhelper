@@ -40,3 +40,13 @@ mach_symtab_command_t *mach_symtab_command_load (file_t *file, off_t offset)
 
     return symt;
 }
+
+
+//////////////////////////////////////////////////////////////////////////
+//                        Mach-O String Table                           //
+//////////////////////////////////////////////////////////////////////////
+
+GSList *mach_load_string_table (macho_t *macho)
+{
+    return NULL;
+}

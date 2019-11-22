@@ -87,25 +87,70 @@ int main (int argc, char* argv[])
     g_print (" symoff: 0x%x\n", symbol_table->symoff);
     g_print ("  nsyms: %d\n", symbol_table->nsyms);
     g_print (" stroff: 0x%x\n", symbol_table->stroff);
-    g_print ("strsize: 0x%x\n", symbol_table->strsize);
+    g_print ("strsize: %d\n", symbol_table->strsize);
 
-    off_t offset = symbol_table->symoff;
-    int count = 0;
 
-    g_print ("---------------------------------------\n");
-    g_print ("| Index | Type | Section | Desc | Val |\n");
-    g_print ("---------------------------------------\n");
 
-    for (int i = 0; i < symbol_table->nsyms; i++) {
-        nlist *tmp = (nlist *) file_load_bytes (macho->file, sizeof(nlist), offset);
 
-        g_print ("|  0x%x\t|  %d\t|  %d\t|  %d\t|  %d\t|\n", tmp->n_strx, tmp->n_type, tmp->n_sect, tmp->n_desc, tmp->n_value);
+    size_t str_table_size = symbol_table->strsize;
+    off_t str_table_offset = symbol_table->stroff;
 
-        offset += sizeof(nlist);
-        count++;
+    char *tmp = file_load_bytes (macho->file, str_table_size, str_table_offset);
+    GSList *str_table = NULL;
+    GString *curr = g_string_new ("");
+
+    for (int i = 0; i < str_table_size; i++) {
+        if (tmp[i] != 0x0) {
+            curr = g_string_append_c(curr, tmp[i]);
+        } else {
+            if (curr->len > 0 && curr->str) str_table = g_slist_append (str_table, curr);
+            curr = g_string_new ("");
+        }
     }
 
-    /*size_t str_size = symbol_table->strsize;
+    for (int i = 0; i < g_slist_length (str_table); i++) {
+        GString *t = (GString *) g_slist_nth_data(str_table, i);
+        g_print ("table[%d]: %s\n", i, t->str);
+    }
+
+/*
+
+    GSList *curr = NULL;
+    for (int i = 0; i < str_table_size; i++) {
+        char byte = tmp[i];
+        if (byte != 0x0) {
+            curr = g_slist_append (curr, tmp[i]);
+            //g_print ("%c", tmp[i]);
+        } else {
+            char str[g_slist_length(curr)];
+            for (int k = 0; k < g_slist_length(curr); k++) {
+                str[k] = g_slist_nth_data(curr, k);
+            }
+            g_print ("tmp: %s | %d\n", str, strlen(str));
+            curr = NULL;
+        }
+    }
+
+    size_t len = 0;
+
+    for (int pos = 0; pos < str_table_size; pos += len) {
+
+        for (int i = 0; i < str_table_size; i++) {
+            uint8_t byte = tmp[i];
+            if (!byte) {
+                len = i;
+                break;
+            }
+        }
+
+        char *curr = file_load_bytes (macho->file, len, str_table_offset + pos);
+        g_print ("table pos: %d, entry: %s\n", len, curr);
+    }
+*/
+
+/*
+
+    size_t str_size = symbol_table->strsize;
     off_t str_off = symbol_table->stroff;
     char *tmp = file_load_bytes (macho->file, str_size, str_off);
     GSList *str_table = NULL;
