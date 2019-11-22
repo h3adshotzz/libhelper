@@ -89,7 +89,23 @@ int main (int argc, char* argv[])
     g_print (" stroff: 0x%x\n", symbol_table->stroff);
     g_print ("strsize: 0x%x\n", symbol_table->strsize);
 
-    size_t str_size = symbol_table->strsize;
+    off_t offset = symbol_table->symoff;
+    int count = 0;
+
+    g_print ("---------------------------------------\n");
+    g_print ("| Index | Type | Section | Desc | Val |\n");
+    g_print ("---------------------------------------\n");
+
+    for (int i = 0; i < symbol_table->nsyms; i++) {
+        nlist *tmp = (nlist *) file_load_bytes (macho->file, sizeof(nlist), offset);
+
+        g_print ("|  0x%x\t|  %d\t|  %d\t|  %d\t|  %d\t|\n", tmp->n_strx, tmp->n_type, tmp->n_sect, tmp->n_desc, tmp->n_value);
+
+        offset += sizeof(nlist);
+        count++;
+    }
+
+    /*size_t str_size = symbol_table->strsize;
     off_t str_off = symbol_table->stroff;
     char *tmp = file_load_bytes (macho->file, str_size, str_off);
     GSList *str_table = NULL;
@@ -103,7 +119,7 @@ int main (int argc, char* argv[])
             g_print ("test: %s\n", (char *)curr);
             curr = NULL;
         }
-    }
+    }*/
 
     /*GSList *curr = NULL;
     for (int i = 0; i < str_size; i++) {
