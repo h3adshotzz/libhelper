@@ -171,8 +171,10 @@ typedef struct mach_header_t {
 typedef struct macho_t {
 	file_t 			*file;
 	mach_header_t 	*header;
-	GSList			*lcmds;
-	GSList			*scmds;
+	GSList			*lcmds;				/* mach_command_info_t */
+	GSList			*scmds;				/* mach_segment_info_t */
+	GSList			*symbols;			/* mach_symbol_info_t */
+	GSList			*strings;			/* list of strings, in order. */
 } macho_t;
 
 
@@ -294,6 +296,18 @@ typedef struct mach_symtab_command_t {
 	uint32_t	strsize;		/* size of the string table in bytes */
 } mach_symtab_command_t;
 
+
+/**
+ * 	nlist with string name;
+ */
+typedef struct mach_symbol_info_t {
+	char		*name;
+	uint8_t		type;		/* type flag */
+	uint8_t 	sect;		/* section number, or NO_SECT */
+	uint16_t	desc;		/* see stab.h */
+	uint64_t	value;		/* value of this symbol (or stab offset) */
+} mach_symbol_info_t;
+
 typedef struct nlist {
 	uint32_t	n_strx;		/* index into the string table */
 
@@ -307,6 +321,8 @@ typedef struct nlist {
 #define	N_UNDF	0x0
 #define N_ABS	0x1
 #define N_TEXT	0x4
+
+GSList *mach_load_string_table (file_t *file, mach_symtab_command_t *symbol_table);
 
 
 

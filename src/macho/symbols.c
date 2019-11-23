@@ -46,7 +46,28 @@ mach_symtab_command_t *mach_symtab_command_load (file_t *file, off_t offset)
 //                        Mach-O String Table                           //
 //////////////////////////////////////////////////////////////////////////
 
-GSList *mach_load_string_table (macho_t *macho)
+GSList *mach_load_string_table (file_t *file, mach_symtab_command_t *symbol_table)
 {
-    return NULL;
+    size_t s = symbol_table->strsize;
+    off_t off = symbol_table->stroff;
+
+    char *tmp = file_load_bytes (file, s, off);
+    GSList *ret = NULL;
+    GString *curr = g_string_new ("");
+
+    for (int i = 0; i < s; i++) {
+        if (tmp[i] != 0x0) {
+            curr = g_string_append_c (curr, tmp[i]);
+        } else {
+            if (curr->len > 0 && curr->str) ret = g_slist_append (ret, curr->str);
+            curr = g_string_new ("");
+        }
+    }
+
+    for (int i = 0; i < g_slist_length (ret); i++) {
+        char *t = (char *) g_slist_nth_data (ret, i);
+        g_print ("table[%d]: %s\n", i, t);
+    }
+
+    return ret;
 }
