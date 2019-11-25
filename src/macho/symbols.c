@@ -71,3 +71,41 @@ GSList *mach_load_string_table (file_t *file, mach_symtab_command_t *symbol_tabl
 
     return ret;
 }
+
+char *mach_load_string_from_table (macho_t *macho, int pos)
+{
+    size_t s = g_slist_length (macho->strings);
+    if (!s || pos > s) {
+        g_print ("[*] Error: String table is empty\n");
+        return "[empty]";
+    }
+    return g_slist_nth_data (macho->strings, pos);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//                        Mach-O String Table                           //
+//////////////////////////////////////////////////////////////////////////
+
+GSList *mach_load_symbol_table_info (file_t *file, mach_symtab_command_t *symbol_table)
+{
+    size_t s = symbol_table->nsyms;
+    off_t off = symbol_table->symoff;
+
+    // test
+    GSList *strtest = mach_load_string_table (file, symbol_table);
+
+    for (int i = 0; i < s; i++) {
+        nlist *tmp = (nlist *) file_load_bytes (file, 16, off);
+
+        g_print ("sym name: %d\n", tmp->n_strx);
+        g_print ("sym type: %d\n", tmp->n_type);
+        g_print ("sym section: %d\n\r", tmp->n_sect);
+        //g_print ("sym desc: %d\n", tmp->n_desc);
+        //g_print ("sym val: %lu\n", tmp->n_value);
+
+        off += sizeof(nlist);
+    }
+
+    return NULL;
+}

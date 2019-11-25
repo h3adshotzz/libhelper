@@ -109,6 +109,25 @@
 
 
 /**
+ * 	Universal binary magic.
+ * 
+ * 	I noticed this when trying to run a tool from @Morpheus______, that
+ * 	running `$ file procexp.universal` resulted in the following output:
+ * 
+ * 		procexp.universal: Mach-O universal binary with 3 architectures: [x86_64:Mach-O 64-bit executable x86_64] [arm64:Mach-O 64-bit executable arm64] [arm64e]
+ *		procexp.universal (for architecture x86_64):	Mach-O 64-bit executable x86_64
+ *		procexp.universal (for architecture arm64):	Mach-O 64-bit executable arm64
+ *		procexp.universal (for architecture arm64e):	Mach-O 64-bit executable arm64e
+ * 
+ * 	I'd like to be able to parse these too. The magic of these Universal Binaries
+ * 	is 0xcafebabe, so I'll add simple detection to these, but I won't handle them.
+ * 
+ */
+#define MACH_UNIVERSAL_MAGIC	0xcafebabe
+#define MACH_UNIVERSAL_CIGAM	0xbebefeca
+
+
+/**
  * 	Size of a Mach-O and Mach-O Header
  * 
  */
@@ -323,7 +342,8 @@ typedef struct nlist {
 #define N_TEXT	0x4
 
 GSList *mach_load_string_table (file_t *file, mach_symtab_command_t *symbol_table);
-
+char *mach_load_string_from_table (macho_t *macho, int pos);
+GSList *mach_load_symbol_table_info (file_t *file, mach_symtab_command_t *symbol_table);
 
 
 //////////////////////////////////////////////////////////////////////////

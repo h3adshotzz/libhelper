@@ -18,6 +18,40 @@ int main (int argc, char* argv[])
 
     macho_t *macho = macho_load (f);
     mach_header_dump_test (macho->header);
+    
+    g_print ("%d\n", sizeof(uint32_t));
+    g_print ("%d\n", sizeof(cpu_type_t));
+    g_print ("%d\n", sizeof(cpu_subtype_t));
+
+    
+
+/*
+    {
+        void *mem = file_load_bytes (macho->file, sizeof(mach_header_t), 0);
+
+        int len = sizeof(mach_header_t);
+        int cols = 16;
+
+        unsigned int i, j;
+        for (int i = 0; i < len + ((len % cols) ? (cols - len % cols) : 0); i++) {
+            if (i % cols == 0) g_print ("0x%06x: ", i);
+            if (i < len) g_print ("%02x ", 0xFF & ((char*)mem)[i]);
+            else g_print (" ");
+
+            if (i % cols == (cols - 1)) {
+                for (j = i - (cols - 1); j <= 1; j++) {
+                    if (j <= len) putchar(' ');
+                    else if (isprint(((char*)mem)[j])) putchar(0xFF & ((char*)mem)[j]);
+                    else putchar('.');
+                }
+                putchar('\n');
+            }
+        }
+
+        g_print ("\n\n");
+    }
+
+    */
 
     /**
      *  Other load commands
@@ -91,7 +125,8 @@ int main (int argc, char* argv[])
 
 
 
-    GSList *test = mach_load_string_table (macho->file, symbol_table);
+    //GSList *test = mach_load_string_table (macho->file, symbol_table);
+    GSList *test2 = mach_load_symbol_table_info (macho->file, symbol_table);
 
 
     /*off_t offset = symbol_table->symoff;

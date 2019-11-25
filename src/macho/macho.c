@@ -42,7 +42,10 @@ mach_header_t *mach_header_load (file_t *file)
     } 
 
     // Check that it was allocated correctly
-    if (header->magic != MACH_MAGIC_64) {
+    if (header->magic == MACH_UNIVERSAL_CIGAM) {
+        g_print ("[*] Error: Cannot handle Universal Binaries yet!\n");
+        exit (0);
+    } else if (header->magic != MACH_MAGIC_64) {
         g_print ("[*] Error: File not 64bit Mach-O. 0x%x\n", header->magic);
         exit (0);
     }
