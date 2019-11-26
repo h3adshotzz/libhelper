@@ -42,65 +42,104 @@ mach_symtab_command_t *mach_symtab_command_load (file_t *file, off_t offset)
 }
 
 
-//////////////////////////////////////////////////////////////////////////
-//                        Mach-O String Table                           //
-//////////////////////////////////////////////////////////////////////////
-
-GSList *mach_load_string_table (file_t *file, mach_symtab_command_t *symbol_table)
+char *mach_symtab_find_symbol_name (file_t *file, nlist *sym, mach_symtab_command_t *cmd)
 {
-    size_t s = symbol_table->strsize;
-    off_t off = symbol_table->stroff;
+    /**
+     *  The offset of the symbol name is symbol->off + nlist->n_strx
+     */
+    size_t s = cmd->strsize - sym->n_strx;
+    off_t off = cmd->stroff + sym->n_strx;
 
     char *tmp = file_load_bytes (file, s, off);
-    GSList *ret = NULL;
     GString *curr = g_string_new ("");
 
-    for (int i = 0; i < s; i++) {
+    int found = 0, i = 0;
+    while (!found) {
+        if (i >= s) break;
         if (tmp[i] != 0x0) {
             curr = g_string_append_c (curr, tmp[i]);
+            i++;
         } else {
-            if (curr->len > 0 && curr->str) ret = g_slist_append (ret, curr->str);
-            curr = g_string_new ("");
+            if (curr->str && curr->len > 0) {
+                found = 1;
+                return curr->str;
+            }
+            break;
         }
     }
 
-    for (int i = 0; i < g_slist_length (ret); i++) {
-        char *t = (char *) g_slist_nth_data (ret, i);
-        g_print ("table[%d]: %s\n", i, t);
-    }
+    return "(no name)";
+}   
 
-    return ret;
-}
-
-char *mach_load_string_from_table (macho_t *macho, int pos)
+mach_symbol_table_t *mach_symtab_load_symbols (file_t *file, mach_symtab_command_t *symbol_table)
 {
-    size_t s = g_slist_length (macho->strings);
-    if (!s || pos > s) {
-        g_print ("[*] Error: String table is empty\n");
-        return "[empty]";
-    }
-    return g_slist_nth_data (macho->strings, pos);
-}
+
+    /*
+    
+        sym name: __mh_execute_header
+        sym index: 0x2
+        sym type: 15
+        sym section: 0x1
+
+        000001Eb    String table index:     __mh_execute_header
+        0F          Type
+                    0E                      N_SECT
+                    01                      N_EXT
+        01          Section Index           1 (__TEXT,__text)
+        0010        Description
+                    0010                    REFERENCE_DYNAMICALLY
+        0           Value                   (IGNORE)
 
 
-//////////////////////////////////////////////////////////////////////////
-//                        Mach-O String Table                           //
-//////////////////////////////////////////////////////////////////////////
+        TODO:
+            - Functions to unpack type, sect, desc and value
+            - Function to print the symbol in a formatted way.
 
-GSList *mach_load_symbol_table_info (file_t *file, mach_symtab_command_t *symbol_table)
-{
+        00000000    Symbol Name:    __main
+        00000000    Type:
+                    0E              N_SECT
+                    01              N_EXT
+        00000001    Section         1 (__TEXT,__text)
+        00000010    Description
+                    0010            REFERENCE_DYNAMICALLY
+
+    */
+
+
+    g_print ("\n[*] Trying to load symbol table:\n\n");
+
     size_t s = symbol_table->nsyms;
     off_t off = symbol_table->symoff;
 
-    // test
-    GSList *strtest = mach_load_string_table (file, symbol_table);
-
     for (int i = 0; i < s; i++) {
-        nlist *tmp = (nlist *) file_load_bytes (file, 16, off);
+        nlist *tmp = (nlist *) file_load_bytes (file, sizeof(nlist), off);
 
-        g_print ("sym name: %d\n", tmp->n_strx);
-        g_print ("sym type: %d\n", tmp->n_type);
-        g_print ("sym section: %d\n\r", tmp->n_sect);
+        char *name = mach_symtab_find_symbol_name (file, tmp, symbol_table);
+
+        // THIS WILL MOVE TO A SEPERATE FUNCTION
+        g_print ("0x%08x \tSymbol Name:\t%s\n", tmp->n_strx, name);
+        g_print ("0x%08x \tType:\n", tmp->n_type);
+
+        if ((tmp->n_type & N_EXT) == N_EXT) {
+            g_print ("\t\t0x%02x\tN_EXT\n", N_EXT);
+        } 
+        
+        // DOES NOT WORK YET. CANNOT DETERMINE N_TYPE
+        if ((tmp->n_type & N_TYPE) == N_TYPE) {
+            if ((tmp->n_type & N_UNDF) == N_UNDF) {
+                g_print ("\t\t0x%02x\tN_UNDF\n", N_UNDF);
+            } else if ((tmp->n_type & N_SECT) == N_SECT) {
+                g_print ("\t\t0x%02x\tN_SECT\n", N_SECT);
+            }
+            g_print ("\t\t0x%02x\t?\n", tmp->n_type);
+        }
+
+        g_print ("\n");
+
+        //g_print ("sym name: %s\n", name);
+        //g_print ("sym index: 0x%x\n", tmp->n_strx);
+        //g_print ("sym type: %d\n", tmp->n_type);
+        //g_print ("sym section: 0x%x\n\n", tmp->n_sect);
         //g_print ("sym desc: %d\n", tmp->n_desc);
         //g_print ("sym val: %lu\n", tmp->n_value);
 

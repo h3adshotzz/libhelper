@@ -23,8 +23,6 @@ int main (int argc, char* argv[])
     g_print ("%d\n", sizeof(cpu_type_t));
     g_print ("%d\n", sizeof(cpu_subtype_t));
 
-    
-
 /*
     {
         void *mem = file_load_bytes (macho->file, sizeof(mach_header_t), 0);
@@ -126,8 +124,8 @@ int main (int argc, char* argv[])
 
 
     //GSList *test = mach_load_string_table (macho->file, symbol_table);
-    GSList *test2 = mach_load_symbol_table_info (macho->file, symbol_table);
-
+    //GSList *test2 = mach_load_symbol_table_info (macho->file, symbol_table);
+    mach_symbol_table_t *symtab_test = mach_symtab_load_symbols (macho->file, symbol_table);
 
     /*off_t offset = symbol_table->symoff;
     for (int i = 0; i < symbol_table->nsyms; i++) {

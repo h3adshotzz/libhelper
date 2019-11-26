@@ -315,35 +315,54 @@ typedef struct mach_symtab_command_t {
 	uint32_t	strsize;		/* size of the string table in bytes */
 } mach_symtab_command_t;
 
-
 /**
- * 	nlist with string name;
+ * 
  */
-typedef struct mach_symbol_info_t {
-	char		*name;
-	uint8_t		type;		/* type flag */
-	uint8_t 	sect;		/* section number, or NO_SECT */
-	uint16_t	desc;		/* see stab.h */
-	uint64_t	value;		/* value of this symbol (or stab offset) */
-} mach_symbol_info_t;
-
 typedef struct nlist {
-	uint32_t	n_strx;		/* index into the string table */
+	uint32_t	n_strx;			/* index into the string table */
 
-	uint8_t		n_type;		/* type flag */
-	uint8_t 	n_sect;		/* section number, or NO_SECT */
-	uint16_t	n_desc;		/* see stab.h */
-	uint64_t	n_value;	/* value of this symbol (or stab offset) */
+	uint8_t		n_type;			/* type flag */
+	uint8_t 	n_sect;			/* section number, or NO_SECT */
+	uint16_t	n_desc;			/* see stab.h */
+	uint64_t	n_value;		/* value of this symbol (or stab offset) */
 } nlist;
 
 
-#define	N_UNDF	0x0
-#define N_ABS	0x1
-#define N_TEXT	0x4
+/*
+ * The n_type field really contains four fields:
+ *	unsigned char N_STAB:3,
+ *		      N_PEXT:1,
+ *		      N_TYPE:3,
+ *		      N_EXT:1;
+ * which are used via the following masks.
+ */
+#define	N_STAB	0xe0  /* if any of these bits set, a symbolic debugging entry */
+#define	N_PEXT	0x10  /* private external symbol bit */
+#define	N_TYPE	0x0e  /* mask for the type bits */
+#define	N_EXT	0x01  /* external symbol bit, set for external symbols */
 
-GSList *mach_load_string_table (file_t *file, mach_symtab_command_t *symbol_table);
-char *mach_load_string_from_table (macho_t *macho, int pos);
-GSList *mach_load_symbol_table_info (file_t *file, mach_symtab_command_t *symbol_table);
+/*
+ * Values for N_TYPE bits of the n_type field.
+ */
+#define	N_UNDF	0x0		/* undefined, n_sect == NO_SECT */
+#define	N_ABS	0x2		/* absolute, n_sect == NO_SECT */
+#define	N_SECT	0xe		/* defined in section number n_sect */
+#define	N_PBUD	0xc		/* prebound undefined (defined in a dylib) */
+#define N_INDR	0xa		/* indirect */
+
+/**
+ * 
+ */
+typedef struct mach_symbol_table_t {
+	mach_symtab_command_t	cmd;		/* LC_SYMTAB */
+	GSList					symbols;	/* GList of symbols */
+} mach_symbol_table_t;
+
+mach_symtab_command_t *mach_symtab_command_create ();
+mach_symtab_command_t *mach_symtab_command_load (file_t *file, off_t offset);
+char *mach_symtab_find_symbol_name (file_t *file, nlist *sym, mach_symtab_command_t *cmd);
+mach_symbol_table_t *mach_symtab_load_symbols (file_t *file, mach_symtab_command_t *symbol_table);
+
 
 
 //////////////////////////////////////////////////////////////////////////
