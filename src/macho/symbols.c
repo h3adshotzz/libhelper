@@ -120,9 +120,10 @@ mach_symbol_table_t *mach_symtab_load_symbols (file_t *file, mach_symtab_command
         g_print ("0x%08x \tSymbol Name:\t%s\n", tmp->n_strx, name);
         g_print ("0x%08x \tType:\n", tmp->n_type);
 
-        if ((tmp->n_type & N_EXT) == N_EXT) {
-            g_print ("\t\t0x%02x\tN_EXT\n", N_EXT);
-        } 
+
+        if ((tmp->n_type & N_STAB) == N_STAB) g_print ("\t\t0x%02x\tN_STAB\n", N_STAB);
+
+        if ((tmp->n_type & N_EXT) == N_EXT) g_print ("\t\t0x%02x\tN_EXT\n", N_EXT); 
         
         // DOES NOT WORK YET. CANNOT DETERMINE N_TYPE
         if ((tmp->n_type & N_TYPE) == N_TYPE) {

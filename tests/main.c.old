@@ -1,0 +1,230 @@
+    macho_t *macho = macho_load (f);
+    mach_header_dump_test (macho->header);
+    
+    g_print ("%d\n", sizeof(uint32_t));
+    g_print ("%d\n", sizeof(cpu_type_t));
+    g_print ("%d\n", sizeof(cpu_subtype_t));
+
+/*
+    {
+        void *mem = file_load_bytes (macho->file, sizeof(mach_header_t), 0);
+
+        int len = sizeof(mach_header_t);
+        int cols = 16;
+
+        unsigned int i, j;
+        for (int i = 0; i < len + ((len % cols) ? (cols - len % cols) : 0); i++) {
+            if (i % cols == 0) g_print ("0x%06x: ", i);
+            if (i < len) g_print ("%02x ", 0xFF & ((char*)mem)[i]);
+            else g_print (" ");
+
+            if (i % cols == (cols - 1)) {
+                for (j = i - (cols - 1); j <= 1; j++) {
+                    if (j <= len) putchar(' ');
+                    else if (isprint(((char*)mem)[j])) putchar(0xFF & ((char*)mem)[j]);
+                    else putchar('.');
+                }
+                putchar('\n');
+            }
+        }
+
+        g_print ("\n\n");
+    }
+
+    */
+
+    /**
+     *  Other load commands
+     *
+    GSList *lc_names = mach_load_command_get_list (macho);
+    for (int i = 0; i < g_slist_length (lc_names); i++) {
+        mach_load_command_t *lc = g_slist_nth_data (lc_names, i);
+        g_print("%s, ", mach_load_command_get_string (lc));
+    }
+    g_print ("\n\n");*/
+
+
+    /*g_print ("\n");
+    GSList *commands = macho->lcmds;
+    int c = 0;
+    for (int i = 0; i < (int) g_slist_length (commands); i++) {
+        mach_command_info_t *cmd = (mach_command_info_t *) g_slist_nth_data (commands, i);
+        mach_load_command_t *lc = cmd->lc;
+
+
+        if (lc->cmd == LC_SOURCE_VERSION) {
+
+            mach_source_version_command_t *sv = malloc(sizeof(mach_source_version_command_t));
+            sv = (mach_source_version_command_t *) file_load_bytes (macho->file, sizeof(mach_source_version_command_t), cmd->off);
+            
+            g_print ("Command:\tLC_SOURCE_VERSION\n");
+            g_print ("Size:\t\t%d\n", sv->cmdsize);
+
+            uint64_t a, b, c, d, e;
+
+            if (sv->cmdsize != sizeof(mach_source_version_command_t)) {
+                g_print ("Incorrect size\n");
+            }
+
+            a = (sv->version >> 40) & 0xffffff;
+            b = (sv->version >> 30) & 0x3ff;
+            c = (sv->version >> 20) & 0x3ff;
+            d = (sv->version >> 10) & 0x3ff;
+            e = sv->version & 0x3ff;
+
+            if (e != 0) {
+                g_print ("Version:\t%llu.%llu.%llu.%llu.%llu\n", a, b, c, d, e);
+            } else if (d != 0) {
+                g_print ("Version:\t%llu.%llu.%llu.%llu\n", a, b, c, d);
+            } else if (c != 0) {
+                g_print ("Version:\t%llu.%llu.%llu\n", a, b, c);
+            } else {
+                g_print ("Version:\t%llu.%llu\n", a, b);
+            }
+
+
+        } else {
+            c++;
+        }
+    }*/
+
+    mach_source_version_command_t *lc_source_version = mach_lc_find_source_version_cmd (macho);
+    g_print ("\nLC_SOURCE_VERSION: %s\n\n", mach_lc_source_version_string (lc_source_version));
+
+    mach_uuid_command_t *lc_uuid = mach_lc_find_uuid_cmd (macho);
+    g_print ("LC_UUID: %s\n\n", mach_lc_uuid_string (lc_uuid));
+
+    mach_symtab_command_t *symbol_table = mach_lc_find_symtab_cmd (macho);
+    g_print ("== Symbol Table ==\n");
+    g_print ("    cmd: 0x%x\n", symbol_table->cmd);
+    g_print ("cmdsize: 0x%x\n", symbol_table->cmdsize);
+    g_print (" symoff: 0x%x\n", symbol_table->symoff);
+    g_print ("  nsyms: %d\n", symbol_table->nsyms);
+    g_print (" stroff: 0x%x\n", symbol_table->stroff);
+    g_print ("strsize: %d\n", symbol_table->strsize);
+
+
+
+    //GSList *test = mach_load_string_table (macho->file, symbol_table);
+    //GSList *test2 = mach_load_symbol_table_info (macho->file, symbol_table);
+    mach_symbol_table_t *symtab_test = mach_symtab_load_symbols (macho->file, symbol_table);
+
+    /*off_t offset = symbol_table->symoff;
+    for (int i = 0; i < symbol_table->nsyms; i++) {
+        nlist *tmp = (nlist *) file_load_bytes (macho->file, 16, offset);
+
+
+        g_print ("sym type: 0x%x\n", tmp->n_type);
+
+        offset += sizeof(nlist);
+    }*/
+
+    /*
+    g_print ("sym name: %s\n", (char *) tmp->name);
+    g_print ("sym type: %d\n", tmp->type);
+    g_print ("sym other: %s\n", tmp->other);
+    g_print ("sym desc: %d\n", tmp->desc);
+    g_print ("sym val: %lu\n", tmp->value);
+*/
+
+    /**
+     *  TODO: ALL OTHER LC'S, DO IN THIS ORDER:
+     *      -  symtab_command   (LC_SYMTAB)
+     *      -  dysymtab_command (LC_DYSMTAB)
+     */
+
+
+    /**
+     *  Segment
+     */
+    GSList *segment_names = mach_segment_get_list (macho);
+    for (int i = 0; i < (int) g_slist_length (segment_names); i++) {
+        g_print ("%s, ", g_slist_nth_data (segment_names, i));
+    }
+    g_print ("\n\n");
+
+    /**
+     *  Segment sections
+     */
+    mach_segment_info_t *segment = mach_segment_command_search(macho, argv[2]);
+    mach_segment_command_dump (segment);
+
+    g_print ("len: %d\n", g_slist_length (segment->sections));
+    for (int i = 0; i < (int) g_slist_length(segment->sections); i++) {
+        mach_section_64_t *sect = g_slist_nth_data (segment->sections, i);
+        mach_section_print (sect);
+    }
+
+    // test decompilation
+    /*mach_section_64_t *sect = g_slist_nth_data (segment->sections, 0);
+    
+    void *mem = file_load_bytes (macho->file, sizeof(mach_section_64_t), segment->segcmd->vmaddr);
+
+    int len = sizeof(mach_section_64_t);
+    int cols = 16;
+
+    unsigned int i, j;
+    for (int i = 0; i < len + ((len % cols) ? (cols - len % cols) : 0); i++) {
+        if (i % cols == 0) g_print ("0x%06x: ", i);
+        if (i < len) g_print ("%02x ", 0xFF & ((char*)mem)[i]);
+        else g_print (" ");
+
+        if (i % cols == (cols - 1)) {
+            for (j = i - (cols - 1); j <= 1; j++) {
+                if (j <= len) putchar(' ');
+                else if (isprint(((char*)mem)[j])) putchar(0xFF & ((char*)mem)[j]);
+                else putchar('.');
+            }
+            putchar('\n');
+        }
+    }*/
+
+
+    /**
+    GSList *sections = mach_sections_load_from_segment (macho, segment);
+    for (int i = 0; i < segment->nsects; i++) {
+        mach_section_64_t *sect = g_slist_nth_data (sections, i);
+        g_print ("section: %s, offset: 0x%s\n", sect->sectname, sect->offset);
+
+    }*/
+
+    /*uint32_t offset = segment->vmaddr;
+    for (int i = 0; i < segment->nsects; i++) {
+        g_print ("Loading %d bytes from 0x%x\n", sizeof(mach_section_64_t), offset);
+        mach_section_64_t *section = (mach_section_64_t *) file_load_bytes (macho->file, sizeof(mach_section_64_t), offset);
+        g_print ("section: %s, size: %d bytes, offset: 0x%x\n", section->sectname, section->size, section->offset);
+        offset += sizeof(mach_section_64_t);
+        free(section);
+    }*/
+
+    /*uint32_t offset = segment->vmaddr;
+    for (int i = 0; i < segment->nsects; i++) {
+
+        g_print ("Loading %d bytes from 0x%x\n", sizeof(mach_section_64_t), offset);
+        mach_section_64_t *sect = mach_section_create ();
+        sect = (mach_section_64_t *) file_load_bytes (f, sizeof(mach_section_64_t), offset);
+
+        g_print ("section: %s, size: %d bytes, offset: 0x%x\n", sect->sectname, sect->size, sect->offset);
+        offset += sizeof(mach_section_64_t);
+
+        g_print ("\n\n");
+    }*/
+
+    file_close (f);
+
+    /* 
+    
+            g_print ("Section headers:\n");
+            off_t segoffset = segcmd->vmaddr;
+            for (int k = 0; k < segcmd->nsects; k++) {
+                section_64_t *sect = (section_64_t *) file_load_bytes (macho, sizeof(section_64_t), segoffset);
+
+                g_print ("\tSection64 Header (%s, 0x%x)\n", sect->sectname, sect->offset);
+
+                segoffset += sizeof (section_64_t);
+            }
+            if (segoffset == segcmd->vmaddr) {
+                g_print ("\tNo section header data\n");
+            }
+
+*/
