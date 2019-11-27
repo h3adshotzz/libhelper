@@ -1,5 +1,6 @@
 #include <libhelper.h>
 #include <macho/macho-header.h>
+#include <macho/macho-command.h>
 
 int main (int argc, char* argv[])
 {
@@ -21,6 +22,16 @@ int main (int argc, char* argv[])
         g_print ("MH_PIE\n");
     } else {
         g_print ("mh_dunno\n");
+    }
+
+
+    // LOAD COMMAND TESTING
+    off_t offset = MACH_HEADER_SIZE;
+    for (int i = 0; i < (int) header->ncmds; i++) {
+        mach_command_info_t *lc = mach_command_info_load (f, offset);
+        mach_load_command_info_print (lc);
+
+        offset += lc->lc->cmdsize;
     }
 
     return 0;

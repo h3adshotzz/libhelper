@@ -66,6 +66,7 @@
 /**
  *  [Development Notes & TODOs]
  * 
+ *      (LOW PRIORITY)
  *      - Add types and handle cpu_subtype
  *      - Handle the header->flags property
  *      
@@ -77,7 +78,7 @@
  */
 
 #include <stdint.h>
-#include "macho-header-const.h"
+#include "consts/macho-header-const.h"
 #include "file.h"
 
 /**

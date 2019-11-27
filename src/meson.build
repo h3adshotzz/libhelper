@@ -9,7 +9,7 @@
 #   Sources
 #
 #mach_parser_sources = ['macho/macho.c', 'macho/command.c', 'macho/segment.c', 'macho/section.c', 'macho/symbols.c']
-mach_parser_sources = ['macho/macho-header.c']
+mach_parser_sources = ['macho/macho-header.c', 'macho/macho-command.c']
 sources = ['libhelper.c', 'file.c', mach_parser_sources]
 incdir = include_directories('../include')
 
