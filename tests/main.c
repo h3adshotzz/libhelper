@@ -1,4 +1,5 @@
 #include <libhelper.h>
+#include <macho/macho.h>
 #include <macho/macho-header.h>
 #include <macho/macho-command.h>
 
@@ -13,12 +14,14 @@ int main (int argc, char* argv[])
 
     file_t *f = file_load (argv[1]);
 
-    mach_header_t *header = mach_header_create ();
-    header = mach_header_load (f);
+    
+    /**
+     *  Test's the macho_t functionality
+     */
+    macho_t *macho = macho_load (f);
+    mach_header_print_summary (macho->header);
 
-    mach_header_print_summary (header);
-
-    if ((header->flags & MH_PIE) == MH_PIE) {
+    if ((macho->header->flags & MH_PIE) == MH_PIE) {
         g_print ("MH_PIE\n");
     } else {
         g_print ("mh_dunno\n");
@@ -26,13 +29,13 @@ int main (int argc, char* argv[])
 
 
     // LOAD COMMAND TESTING
-    off_t offset = MACH_HEADER_SIZE;
-    for (int i = 0; i < (int) header->ncmds; i++) {
-        mach_command_info_t *lc = mach_command_info_load (f, offset);
-        mach_load_command_info_print (lc);
-
-        offset += lc->lc->cmdsize;
+    for (int i = 0; i < g_slist_length (macho->lcmds); i++) {
+        mach_load_command_info_print ((mach_command_info_t *) g_slist_nth_data (macho->lcmds, i));
     }
+
+    // Testing printing data from lc_source_version and lc_uuid
+    g_print ("\nLC_SOURCE_VERSION: %s\n", mach_lc_source_version_string (mach_lc_find_source_version_cmd (macho)));
+    g_print ("\nLC_UUID: %s\n", mach_lc_uuid_string (mach_lc_find_uuid_cmd (macho)));
 
     return 0;
 }

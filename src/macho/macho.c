@@ -1,5 +1,4 @@
 /**
- * 
  *     libhelper
  *     Copyright (C) 2019, @h3adsh0tzz
  *
@@ -18,116 +17,17 @@
  *
 */
 
-#include "macho.h"
-
-
-mach_header_t *mach_header_create ()
-{
-    mach_header_t *header = malloc(sizeof(mach_header_t));
-    memset (header, '\0', sizeof (mach_header_t));
-    return header;
-}
-
-mach_header_t *mach_header_load (file_t *file)
-{
-    char *buf = file_load_bytes (file, 32, 0);
-
-    // Create a mach_header_t, and cast buf.
-    mach_header_t *header = (mach_header_t *) buf;
-
-    // Check that the header has a val
-    if (!header->magic) {
-        g_print ("[*] Error: Header was not loaded correctly.\n");
-        exit (0);
-    } 
-
-    // Check that it was allocated correctly
-    if (header->magic == MACH_UNIVERSAL_CIGAM) {
-        g_print ("[*] Error: Cannot handle Universal Binaries yet!\n");
-        exit (0);
-    } else if (header->magic != MACH_MAGIC_64) {
-        g_print ("[*] Error: File not 64bit Mach-O. 0x%x\n", header->magic);
-        exit (0);
-    }
-
-    // Return the header
-    return header;
-}
-
-uint32_t macho_read_magic (unsigned char *buf, int offset)
-{
-    // invalidate offset
-    offset = 0;
-
-    uint32_t magic = 0;
-    memcpy (&magic, buf, sizeof(uint32_t));
-    if (!magic) {
-        g_print ("[*] Error: Could not read magic from Mach-O.\n");
-        exit (0);
-    }
-    return magic;
-}
-
-char *mach_header_read_cpu_type_string (cpu_type_t type)
-{
-    char *cpu_type = "";
-    switch (type) {
-        case CPU_TYPE_X86:
-            cpu_type = "x86";
-            break;
-        case CPU_TYPE_X86_64:
-            cpu_type = "x86_64";
-            break;
-        case CPU_TYPE_ARM:
-            cpu_type = "arm";
-            break;
-        case CPU_TYPE_ARM64:
-            cpu_type = "arm64";
-            break;
-        case CPU_TYPE_ARM64_32:
-            cpu_type = "arm64_32";
-            break;
-        default:
-            cpu_type = "unknown";
-            break;
-    }
-    return cpu_type;
-}
-
-char *mach_header_read_type_string (uint32_t type)
-{
-    char *ret = "";
-    switch (type) {
-        case MACH_TYPE_OBJECT:
-            ret = "Mach Object (MH_OBJECT)";
-            break;
-        case MACH_TYPE_EXECUTE:
-            ret = "Mach Executable (MH_EXECUTE)";
-            break;
-        case MACH_TYPE_DYLIB:
-            ret = "Mach Dynamic Library (MH_DYLIB)";
-            break;
-        default:
-            ret = "Unknown";
-            break;
-    }
-    return ret;
-}
-
-void mach_header_dump_test (mach_header_t *header)
-{
-    g_print ("==================\nMach-O Header Dump\n==================\n\n");
-
-    g_print ("Magic: \t\t0x%x\n", header->magic);
-    g_print ("CPU Type: \t%s\n", mach_header_read_cpu_type_string(header->cputype));
-    g_print ("CPU Sub-Type: \t0x%x\n", header->cpusubtype);
-    g_print ("File Type: \t%s\n", mach_header_read_type_string (header->filetype));
-    g_print ("Load Commands: \t%d\n", header->ncmds);
-    g_print ("LC Size: \t%d\n", header->sizeofcmds);
-}
-
+#include "macho/macho.h"
+#include "macho/macho-command.h"
 
 /**
+ *  Function:   macho_create
+ *  ------------------------------------
+ * 
+ *  Creates a new Mach-O  structure and assigns sufficient memory. Should be 
+ *  called to safely create a new Mach-o structure.
+ * 
+ *  returns:    A macho_t structure with sufficient allocated memory.
  * 
  */
 macho_t *macho_create ()
@@ -137,44 +37,76 @@ macho_t *macho_create ()
     return macho;
 }
 
+
+/**
+ *  Function:   macho_load
+ *  ------------------------------------
+ * 
+ *  Creates a new Mach-O  structure and assigns sufficient memory. Should be 
+ *  called to safely create a new Mach-o structure.
+ * 
+ *  returns:    A macho_t structure with sufficient allocated memory.
+ * 
+ */
 macho_t *macho_load (file_t *file)
 {
+    // Create and allocate memory for a new macho_t struct.
     macho_t *mach = macho_create ();
 
+    // Set the file for which we will pull our data from.
     mach->file = file;
 
+    // Set the header, pulled from mach->file.
     mach->header = mach_header_load (mach->file);
     
-    GSList *seglist = NULL;
-    GSList *cmdlist = NULL;
-    off_t offset = sizeof(mach_header_t);
+    /**
+     *  The first major chunk of data we will pull from mach->file is the
+     *  Load Commands. They will be be split into two GSLists, cmdlist
+     *  for the wide range of Load Commands, and seglist, which contains
+     *  LC_SEGMENT_XX commands, of which there are many in a single file.
+     * 
+     *  My method is simply using a for loop to go through each base Load
+     *  Command, which contains a command type and size field only, and
+     *  check the lc->cmd property. 
+     *  
+     *  If the lc->cmd property equals LC_SEGMENT_64, we will load a segment
+     *  command from the offset of that command, otherwise it is added to
+     *  the cmdlist.
+     * 
+     *  You may notice I use mach_command_info_t instead of mach_load_command_t.
+     *  I do this because the info struct contains the offset of where the
+     *  Load Command is in the file.
+     * 
+     */
+
+    off_t offset = MACH_HEADER_SIZE;
 
     for (int i = 0; i < (int) mach->header->ncmds; i++) {
 
-        //
+        // Create the Command Info struct
         mach_command_info_t *lc = mach_command_info_load (mach->file, offset);
 
-        //
+        // Check if the Load Command is a LC_SEGMENT_64
         if (lc->type == LC_SEGMENT_64) {
 
-            /**
-             *  Migrate to using mach_segment_info_t instead of
-             *  mach_segment_command_64_t
-             */
-            mach_segment_info_t *seginfo = mach_segment_info_load (mach->file, offset);
+            // Create a mach_segment_info_t struct for the Segment.
+            //mach_segment_info_t *seginfo = mach_segment_info_load (mach->file, offset);
 
-            seglist = g_slist_append (seglist, seginfo);
+            // Append the seginfo to the mach->segcmds GSList.
+            // mach->scmds = g_slist_append (mach->scmds, seginfo);
+
         } else {
 
+            // Set the offset so we can find the command again in the file later
             lc->off = offset;
-            cmdlist = g_slist_append (cmdlist, lc);
+
+            // Append the Load Command to the mach->lcmds GSList.
+            mach->lcmds = g_slist_append (mach->lcmds, lc);
         }
+
+        // Increment the offset by the size of the Load Command
         offset += lc->lc->cmdsize;
     }
-
-    mach->lcmds = cmdlist;
-    mach->scmds = seglist;
-    
 
     return mach;
 }

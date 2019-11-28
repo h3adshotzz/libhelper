@@ -17,12 +17,6 @@
  *
 */
 
-
-/**
- *  [Note]
- *      All documentation is contained within the header file, however comments
- *      will still be made to code within this file.
- */
 #include "macho/macho-command.h"
 
 
@@ -333,4 +327,163 @@ char *mach_load_command_get_string (mach_load_command_t *lc)
             break;
     }
     return cmd_str;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//                     Specific Load Commands                           //
+//////////////////////////////////////////////////////////////////////////
+
+/**
+ *  Function:   mach_lc_find_source_version_cmd
+ *  ------------------------------------
+ * 
+ *  Finds and creates a mach_source_version_command_t struct from a given macho
+ *  by looping through each of the load commands in the macho->lcmds GSList. Load
+ *  Command like LC_SOURCE_VERSION only occur once in each Mach-O file, so there
+ *  is relatively no danger of loading the wrong one.
+ * 
+ *  macho:      The Mach-O file containing an LC_SOURCE_VERSION command.
+ * 
+ *  returns:    A mach_source_version_command_t structure with sufficient allocated memory.
+ * 
+ */
+mach_source_version_command_t *mach_lc_find_source_version_cmd (macho_t *macho)
+{
+    size_t size = sizeof (mach_source_version_command_t);
+    mach_source_version_command_t *ret = malloc (size);
+
+    GSList *cmds = macho->lcmds;
+    for (int i = 0; i < g_slist_length (cmds); i++) {
+        mach_command_info_t *tmp = (mach_command_info_t *) g_slist_nth_data (cmds, i);
+        if (tmp->type == LC_SOURCE_VERSION) {
+            ret = (mach_source_version_command_t *) file_load_bytes (macho->file, size, tmp->off);
+            
+            if (!ret) {
+                g_print ("[*] Error: Failed to load LC_SOURCE_VERSION command from offset: 0x%llx\n");
+                return NULL;
+            } else {
+                return ret;
+            }
+        }
+    }
+
+    return NULL;
+}
+
+
+/**
+ *  Function:   mach_lc_source_version_string
+ * 
+ *  Takes a LC_SOURCE_VERSION command and unpacks the version string from the
+ *  uint64_t into a readable string.
+ * 
+ *  svc:        The LC_SOURCE_VERSION Command.
+ * 
+ *  returns:    The unpacked version string.
+ *      
+ */
+char *mach_lc_source_version_string (mach_source_version_command_t *svc)
+{
+    char *ret = malloc(20);
+    uint64_t a, b, c, d, e;
+
+    if (svc->cmdsize != sizeof(mach_source_version_command_t)) {
+        g_print ("Incorrect size\n");
+    }
+
+    a = (svc->version >> 40) & 0xffffff;
+    b = (svc->version >> 30) & 0x3ff;
+    c = (svc->version >> 20) & 0x3ff;
+    d = (svc->version >> 10) & 0x3ff;
+    e = svc->version & 0x3ff;
+
+    if (e != 0) {
+        snprintf (ret, 20, "%llu.%llu.%llu.%llu.%llu", a, b, c, d, e);
+    } else if (d != 0) {
+        snprintf (ret, 16, "%llu.%llu.%llu.%llu", a, b, c, d);
+    } else if (c != 0) {
+        snprintf (ret, 12, "%llu.%llu.%llu", a, b, c);
+    } else {
+        snprintf (ret, 8, "%llu.%llu", a, b);
+    }
+
+    return ret;
+}
+
+
+///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
+
+
+/**
+ *  Function:   mach_lc_find_uuid_cmd
+ *  ---------------------------------
+ * 
+ *  Finds and creates a mach_uuid_command_t struct from a given macho
+ *  by looping through each of the load commands in the macho->lcmds GSList. Load
+ *  Commands like LC_UUID only occur once in each Mach-O file, so there is relatively 
+ *  no danger of loading the wrong one.
+ * 
+ *  macho:      The Mach-O file containing an LC_UUID command.
+ * 
+ *  returns:    A mach_uuid_command_t structure with sufficient allocated memory.
+ *      
+ */
+mach_uuid_command_t *mach_lc_find_uuid_cmd (macho_t *macho)
+{
+    size_t size = sizeof (mach_uuid_command_t);
+    mach_uuid_command_t *ret = malloc (size);
+
+    GSList *cmds = macho->lcmds;
+    for (int i = 0; i < g_slist_length (cmds); i++) {
+        mach_command_info_t *tmp = (mach_command_info_t *) g_slist_nth_data (cmds, i);
+        if (tmp->type == LC_UUID) {
+            ret = (mach_uuid_command_t *) file_load_bytes (macho->file, size, tmp->off);
+            
+            if (!ret) {
+                g_print ("[*] Error: Failed to load LC_UUID command from offset: 0x%llx\n");
+                return NULL;
+            } else {
+                return ret;
+            }
+        }
+    }
+
+    return NULL;
+}
+
+
+
+/**
+ *  Function:   mach_lc_uuid_string
+ * 
+ *  Takes a LC_UUID command and unpacks the uuid string from the uint8_t into a 
+ *  readable string.
+ * 
+ *  svc:        The LC_UUID Command.
+ * 
+ *  returns:    The unpacked UUID string.
+ *      
+ */
+char *mach_lc_uuid_string (mach_uuid_command_t *uuid)
+{
+    if (uuid->cmdsize != sizeof(mach_uuid_command_t)) {
+        g_print ("Incorrect size\n");
+        return NULL;
+    }
+
+    size_t size = sizeof(uint8_t) * 128;
+    char *ret = malloc (size);
+    snprintf (ret, size, "%02X%02X%02X%02X-%02X%02X-%02X%02X-%02X%02X-%02X%02X%02X%02X%02X%02X",
+                            (unsigned int)uuid->uuid[0], (unsigned int)uuid->uuid[1],
+                            (unsigned int)uuid->uuid[2],  (unsigned int)uuid->uuid[3],
+                            (unsigned int)uuid->uuid[4],  (unsigned int)uuid->uuid[5],
+                            (unsigned int)uuid->uuid[6],  (unsigned int)uuid->uuid[7],
+                            (unsigned int)uuid->uuid[8],  (unsigned int)uuid->uuid[9],
+                            (unsigned int)uuid->uuid[10], (unsigned int)uuid->uuid[11],
+                            (unsigned int)uuid->uuid[12], (unsigned int)uuid->uuid[13],
+                            (unsigned int)uuid->uuid[14], (unsigned int)uuid->uuid[15]);
+
+    return ret;
 }

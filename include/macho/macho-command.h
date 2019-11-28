@@ -54,6 +54,7 @@
 
 #include <stdint.h>
 #include "consts/macho-command-const.h"
+#include "macho.h"
 #include "file.h"
 
 
@@ -152,6 +153,18 @@ void mach_load_command_print (void *cmd, int flag);
 char *mach_load_command_get_string (mach_load_command_t *lc);
 
 
+/**
+ * 	LC_SOURCE_VERSION functions
+ */
+mach_source_version_command_t *mach_lc_find_source_version_cmd (macho_t *macho);
+char *mach_lc_source_version_string (mach_source_version_command_t *svc);
+
+
+/**
+ * 	LC_UUID functions
+ */
+mach_uuid_command_t *mach_lc_find_uuid_cmd (macho_t *macho);
+char *mach_lc_uuid_string (mach_uuid_command_t *cmd);
 
 
 #endif /* libhelper_macho_command_h */
