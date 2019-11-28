@@ -37,5 +37,7 @@ int main (int argc, char* argv[])
     g_print ("\nLC_SOURCE_VERSION: %s\n", mach_lc_source_version_string (mach_lc_find_source_version_cmd (macho)));
     g_print ("\nLC_UUID: %s\n", mach_lc_uuid_string (mach_lc_find_uuid_cmd (macho)));
 
+    mach_lc_build_version_string (mach_lc_find_build_version_cmd(macho));
+
     return 0;
 }

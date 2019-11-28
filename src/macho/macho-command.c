@@ -487,3 +487,53 @@ char *mach_lc_uuid_string (mach_uuid_command_t *uuid)
 
     return ret;
 }
+
+///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
+
+
+/**
+ * 
+ */
+mach_build_version_command_t *mach_lc_find_build_version_cmd (macho_t *macho)
+{
+    size_t size = sizeof (mach_build_version_command_t);
+    mach_build_version_command_t *ret = malloc (size);
+
+    GSList *cmds = macho->lcmds;
+    for (int i = 0; i < g_slist_length (cmds); i++) {
+        mach_command_info_t *tmp = (mach_build_version_command_t *) g_slist_nth_data (cmds, i);
+        if (tmp->type == LC_BUILD_VERSION) {
+            ret = (mach_build_version_command_t *) file_load_bytes (macho->file, size, tmp->off);
+
+            if (!ret) {
+                g_print ("[*] Error: Failed to load LC_BUILD_VERSION command from offset: 0x%llx\n", tmp->off);
+                return NULL;
+            } else {
+                return ret;
+            }
+        }
+    }
+
+    return NULL;
+}
+
+
+/**
+ * 
+ */
+char *mach_lc_build_version_string (mach_build_version_command_t *bvc)
+{
+    if (bvc->cmdsize != sizeof(mach_build_version_command_t)) {
+        g_print ("Incorrect size\n");
+        return NULL;
+    }
+
+    uint32_t x = (bvc->minos >> 4) & 0xffffff;
+    uint32_t y = (bvc->minos >> 2) & 0x3ff;
+    uint32_t z = (bvc->minos >> 2) & 0x3ff;
+
+    g_print ("minos test: %d.%d.%d\n", x, y, z);
+
+    return "test";
+}
