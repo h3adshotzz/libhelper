@@ -2,6 +2,7 @@
 #include <macho/macho.h>
 #include <macho/macho-header.h>
 #include <macho/macho-command.h>
+#include <macho/macho-segment.h>
 
 int main (int argc, char* argv[])
 {
@@ -37,7 +38,18 @@ int main (int argc, char* argv[])
     g_print ("\nLC_SOURCE_VERSION: %s\n", mach_lc_source_version_string (mach_lc_find_source_version_cmd (macho)));
     g_print ("\nLC_UUID: %s\n", mach_lc_uuid_string (mach_lc_find_uuid_cmd (macho)));
 
-    mach_lc_build_version_string (mach_lc_find_build_version_cmd(macho));
+    // Testing Segments
+    for (int i = 0; i < g_slist_length (macho->scmds); i++) {
+        mach_segment_info_t *seginfo = (mach_segment_info_t *) g_slist_nth_data (macho->scmds, i);
+        mach_segment_command_dump (seginfo);
+
+        g_print ("Sections:\n");
+        for (int k = 0; k < g_slist_length (seginfo->sections); k++) {
+            mach_section_64_t *sect = g_slist_nth_data (seginfo->sections, k);
+            mach_section_print (sect);
+        }
+        g_print ("------------------------------\n");
+    }
 
     return 0;
 }

@@ -19,6 +19,7 @@
 
 #include "macho/macho.h"
 #include "macho/macho-command.h"
+#include "macho/macho-segment.h"
 
 /**
  *  Function:   macho_create
@@ -78,8 +79,10 @@ macho_t *macho_load (file_t *file)
      *  Load Command is in the file.
      * 
      */
+    GSList *segcmds = NULL;
+    GSList *lcmds = NULL;
 
-    off_t offset = MACH_HEADER_SIZE;
+    off_t offset = sizeof(mach_header_t);
 
     for (int i = 0; i < (int) mach->header->ncmds; i++) {
 
@@ -90,10 +93,10 @@ macho_t *macho_load (file_t *file)
         if (lc->type == LC_SEGMENT_64) {
 
             // Create a mach_segment_info_t struct for the Segment.
-            //mach_segment_info_t *seginfo = mach_segment_info_load (mach->file, offset);
+            mach_segment_info_t *seginfo = mach_segment_info_load (mach->file, offset);
 
             // Append the seginfo to the mach->segcmds GSList.
-            // mach->scmds = g_slist_append (mach->scmds, seginfo);
+            segcmds = g_slist_append (segcmds, seginfo);
 
         } else {
 
@@ -101,12 +104,15 @@ macho_t *macho_load (file_t *file)
             lc->off = offset;
 
             // Append the Load Command to the mach->lcmds GSList.
-            mach->lcmds = g_slist_append (mach->lcmds, lc);
+            lcmds = g_slist_append (lcmds, lc);
         }
 
         // Increment the offset by the size of the Load Command
         offset += lc->lc->cmdsize;
     }
+
+    mach->lcmds = lcmds;
+    mach->scmds = segcmds;
 
     return mach;
 }

@@ -1,5 +1,4 @@
 /**
- * 
  *     libhelper
  *     Copyright (C) 2019, @h3adsh0tzz
  *
@@ -18,8 +17,12 @@
  *
 */
 
-#include "macho.h"
+#include "macho/macho-section.h"
 
+
+/**
+ * 
+ */
 mach_section_64_t *mach_section_create ()
 {
     mach_section_64_t *s = malloc(sizeof(mach_section_64_t));
@@ -27,6 +30,10 @@ mach_section_64_t *mach_section_create ()
     return s;
 }
 
+
+/**
+ * 
+ */
 mach_section_64_t *mach_section_load (file_t *file, off_t offset)
 {
     mach_section_64_t *s = NULL; //mach_section_create ();
@@ -40,6 +47,10 @@ mach_section_64_t *mach_section_load (file_t *file, off_t offset)
     return s;
 }
 
+
+/**
+ * 
+ */
 GSList *mach_sections_load_from_segment (macho_t *macho, mach_segment_command_64_t *seg)
 {
     GSList *ret = NULL;
@@ -56,6 +67,10 @@ GSList *mach_sections_load_from_segment (macho_t *macho, mach_segment_command_64
     return ret;
 }
 
+
+/**
+ * 
+ */
 void mach_section_print (mach_section_64_t *section)
 {
     g_print ("Section:\t%s\n", section->sectname);
