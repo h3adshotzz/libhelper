@@ -170,6 +170,23 @@ GSList *mach_segment_get_list (macho_t *mach)
 /**
  * 
  */
+mach_segment_info_t *mach_segment_find_with_name (macho_t *macho, char *segname)
+{
+    for (int i = 0; i < g_slist_length (macho->scmds); i++) {
+        mach_segment_info_t *inf = (mach_segment_info_t *) g_slist_nth_data (macho->scmds, i);
+        mach_segment_command_64_t *segment = inf->segcmd;
+
+        if (!strcmp(segment->segname, segname)) {
+            return inf;
+        }
+    }
+    return NULL;
+}
+
+
+/**
+ * 
+ */
 void mach_segment_command_dump (mach_segment_info_t *si)
 {
     mach_segment_command_64_t *sc = si->segcmd;
@@ -242,6 +259,34 @@ GSList *mach_sections_load_from_segment (macho_t *macho, mach_segment_command_64
     }
 
     return ret;
+}
+
+
+/**
+ * 
+ */
+mach_section_64_t *mach_search_section (mach_segment_info_t *info, char *sectname)
+{
+    // Check the sectname given is valid
+    if (!sectname || strlen(sectname) > 16) {
+        g_print ("[*] Section name not valid\n");
+        exit (0);
+    }
+
+    // Check the length of the sections
+    int c = g_slist_length (info->sections);
+    if (!c) {
+        g_print ("[*] Error: No Sections\n");
+        exit (0);
+    }
+
+    // Go through each of them, look for `sectname`
+    for (int i = 0; i < c; i++) {
+        mach_section_64_t *tmp = (mach_section_64_t *) g_slist_nth_data (info->sections, i);
+        if (!strcmp(tmp->sectname, sectname)) return tmp;
+    }
+
+    return NULL;
 }
 
 

@@ -142,17 +142,23 @@ mach_symbol_table_t *mach_symtab_load_symbols (macho_t *macho, mach_symtab_comma
 
         if ((tmp->n_type & N_STAB) == N_STAB) g_print ("\t\t0x%02x\tN_STAB\n", N_STAB);
 
+        if ((tmp->n_type & N_PEXT) == N_PEXT) g_print ("\t\t0x%02x\tN_PEXT\n", N_PEXT);
+
+        // The N_TYPE can also have differnet types, for example
+            // N_UNDF (0x0), N_ABS (0x2), N_SECT (0xe), N_PBUD (0xc)
+            // and N_INDR (0xa)
+            if ((tmp->n_type & N_UNDF) == N_UNDF) g_print ("\t\t0x%02x\tN_UNDF\n", N_UNDF);
+
+            if ((tmp->n_type & N_ABS) == N_ABS) g_print ("\t\t0x%02x\tN_ABS\n", N_ABS);
+
+            if ((tmp->n_type & N_SECT) == N_SECT) g_print ("\t\t0x%02x\tN_SECT\n", N_SECT);
+
+            if ((tmp->n_type & N_PBUD) == N_PBUD) g_print ("\t\t0x%02x\tN_PBUD\n", N_PBUD);
+
+            if ((tmp->n_type & N_INDR) == N_INDR) g_print ("\t\t0x%02x\tN_INDR\n", N_INDR);
+
         if ((tmp->n_type & N_EXT) == N_EXT) g_print ("\t\t0x%02x\tN_EXT\n", N_EXT); 
-        
-        // DOES NOT WORK YET. CANNOT DETERMINE N_TYPE
-        if ((tmp->n_type & N_TYPE) == N_TYPE) {
-            if ((tmp->n_type & N_UNDF) == N_UNDF) {
-                g_print ("\t\t0x%02x\tN_UNDF\n", N_UNDF);
-            } else if ((tmp->n_type & N_SECT) == N_SECT) {
-                g_print ("\t\t0x%02x\tN_SECT\n", N_SECT);
-            }
-            g_print ("\t\t0x%02x\t?\n", tmp->n_type);
-        }
+
 
         if (tmp->n_sect) {
             // CHANGE FUNCTION TO ACCEPT MACHO INSTEAD OF FILE

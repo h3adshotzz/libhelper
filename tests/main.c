@@ -63,7 +63,7 @@ int main (int argc, char* argv[])
     g_print (" stroff: 0x%x\n", symbol_table->stroff);
     g_print ("strsize: %d\n", symbol_table->strsize);
 
-    mach_symbol_table_t *symtab_test = mach_symtab_load_symbols (macho, symbol_table);
+    //mach_symbol_table_t *symtab_test = mach_symtab_load_symbols (macho, symbol_table);
 
 
     return 0;
