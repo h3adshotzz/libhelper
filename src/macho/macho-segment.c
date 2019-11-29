@@ -248,6 +248,26 @@ GSList *mach_sections_load_from_segment (macho_t *macho, mach_segment_command_64
 /**
  * 
  */
+mach_section_64_t *mach_find_section (macho_t *macho, int sect)
+{
+    GSList *segments = macho->scmds;
+    int count = 0;
+    for (int i = 0; i < g_slist_length (segments); i++) {
+        mach_segment_info_t *seg = (mach_segment_info_t *) g_slist_nth_data (segments, i);
+        for (int k = 0; k < seg->segcmd->nsects; k++) {
+            count++;
+            if (count == sect) {
+                return (mach_section_64_t *) g_slist_nth_data (seg->sections, k);
+            }
+        }
+    }
+    return NULL;
+}
+
+
+/**
+ * 
+ */
 void mach_section_print (mach_section_64_t *section)
 {
     g_print ("Section:\t%s\n", section->sectname);

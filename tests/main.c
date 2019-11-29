@@ -3,6 +3,7 @@
 #include <macho/macho-header.h>
 #include <macho/macho-command.h>
 #include <macho/macho-segment.h>
+#include <macho/macho-symbol.h>
 
 int main (int argc, char* argv[])
 {
@@ -50,6 +51,20 @@ int main (int argc, char* argv[])
         }
         g_print ("------------------------------\n");
     }
+
+
+    // Testing symbol tables
+    mach_symtab_command_t *symbol_table = mach_lc_find_symtab_cmd (macho);
+    g_print ("== Symbol Table ==\n");
+    g_print ("    cmd: 0x%x\n", symbol_table->cmd);
+    g_print ("cmdsize: 0x%x\n", symbol_table->cmdsize);
+    g_print (" symoff: 0x%x\n", symbol_table->symoff);
+    g_print ("  nsyms: %d\n", symbol_table->nsyms);
+    g_print (" stroff: 0x%x\n", symbol_table->stroff);
+    g_print ("strsize: %d\n", symbol_table->strsize);
+
+    mach_symbol_table_t *symtab_test = mach_symtab_load_symbols (macho, symbol_table);
+
 
     return 0;
 }

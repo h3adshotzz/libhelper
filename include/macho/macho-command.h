@@ -54,6 +54,7 @@
 
 #include <stdint.h>
 #include "consts/macho-command-const.h"
+#include "macho-symbol.h"
 #include "macho.h"
 #include "file.h"
 
@@ -165,6 +166,13 @@ char *mach_lc_source_version_string (mach_source_version_command_t *svc);
  */
 mach_uuid_command_t *mach_lc_find_uuid_cmd (macho_t *macho);
 char *mach_lc_uuid_string (mach_uuid_command_t *cmd);
+
+
+/**
+ * 	LC_SYMTAB
+ */
+mach_command_info_t *mach_lc_find_given_cmd (macho_t *macho, int cmd);
+mach_symtab_command_t *mach_lc_find_symtab_cmd (macho_t *macho);
 
 
 #endif /* libhelper_macho_command_h */
