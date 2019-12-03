@@ -109,6 +109,16 @@ typedef struct mach_section_64_t {
 /**
  * 
  */
+typedef struct mach_section_info_t {
+    char                *data;
+    size_t               size;
+    mach_section_64_t   *sect;
+} mach_section_info_t;
+
+
+/**
+ * 
+ */
 mach_section_64_t *mach_section_create ();
 mach_section_64_t *mach_section_load (file_t *file, off_t offset);
 GSList *mach_sections_load_from_segment (macho_t *macho, mach_segment_command_64_t *seg);
@@ -116,5 +126,7 @@ void mach_section_print (mach_section_64_t *section);
 
 mach_section_64_t *mach_search_section (mach_segment_info_t *info, char *sectname);
 mach_section_64_t *mach_find_section (macho_t *macho, int sect);
+
+mach_section_info_t *mach_load_section_data (macho_t *macho, char *segment, char *section);
 
 #endif /* libhelper_macho_segment_h */

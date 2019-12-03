@@ -9,7 +9,7 @@ int main (int argc, char *argv[])
     file_t *f = file_load (argv[1]);
     macho_t *macho = macho_load (f);
 
-    char *__rdsk = NULL;
+    /*char *__rdsk = NULL;
     char *__overlay = NULL;
 
     mach_segment_info_t *info = mach_segment_command_search (macho, "__TEXT");
@@ -21,12 +21,22 @@ int main (int argc, char *argv[])
 
     mach_section_64_t *__overlay_sect = mach_search_section (info, "__overlay");
     mach_section_print (__overlay_sect);
-    __overlay = file_load_bytes (f, __overlay_sect->size, __overlay_sect->offset);
+    __overlay = file_load_bytes (f, __overlay_sect->size, __overlay_sect->offset);*/
 
-    FILE *fptr = fopen ("out.dmg", "wb");
-    fwrite (__rdsk, __rdsk_sect->size, 1, fptr);
-    fwrite (&__overlay, __overlay_sect->size, 1, fptr);
-    fclose (fptr);
+    mach_section_info_t *__rdsk = mach_load_section_data (macho, "__TEXT", "__rdsk");
+
+    if (__rdsk) {
+        g_print ("[*] Loaded %d bytes from __TEXT.__rdsk\n", __rdsk->size);
+        g_print ("[*] Writing to file: out.raw...");
+
+        FILE *fptr = fopen ("out.raw", "wb");
+        fwrite (__rdsk->data, __rdsk->size, 1, fptr);
+        fclose (fptr);
+
+        g_print ("done!\n");
+    } else {
+        g_print ("[*] Error: Could not load __TEXT.__rdsk\n");
+    }
 
     return 0;
 }

@@ -32,11 +32,49 @@ int main (int argc, char* argv[])
 
     // LOAD COMMAND TESTING
     for (int i = 0; i < g_slist_length (macho->lcmds); i++) {
-        mach_load_command_info_print ((mach_command_info_t *) g_slist_nth_data (macho->lcmds, i));
+        mach_command_info_t *info = g_slist_nth_data (macho->lcmds, i);
+
+        if ((info->type == LC_DYLD_INFO_ONLY) || (info->type == LC_DYLD_INFO)) {
+            mach_dyld_info_command_t *cmd = (mach_dyld_info_command_t *) file_load_bytes (macho->file, info->lc->cmdsize, info->off);
+
+            if (cmd->cmd == LC_DYLD_INFO_ONLY) g_print ("== Command:\tLC_DYLD_INFO_ONLY\n");
+            if (cmd->cmd == LC_DYLD_INFO) g_print ("== Command:\tLC_DYLD_INFO\n");
+
+            g_print ("  Command Size:\t\t%d\n", cmd->cmdsize);
+            
+            g_print ("  Rebase Offset:\t0x%08x\n", cmd->rebase_off);
+            g_print ("  Rebase Size:\t\t%d\n", cmd->rebase_size);
+
+            g_print ("  Bind Offset:\t\t0x%08x\n", cmd->bind_off);
+            g_print ("  Bind Size:\t\t%d\n", cmd->bind_size);
+
+            g_print ("  Weak Bind Offset:\t0x%08x\n", cmd->weak_bind_off);
+            g_print ("  Weak Bind Size:\t%d\n", cmd->weak_bind_size);
+
+            g_print ("  Lazy Bind Offset:\t0x%08x\n", cmd->lazy_bind_off);
+            g_print ("  Lazy Bind Size:\t%d\n", cmd->lazy_bind_size);
+
+            g_print ("  Export Offset:\t0x%08x\n", cmd->export_off);
+            g_print ("  Export Size:\t\t%d\n", cmd->export_size);
+
+        } else if (info->type == LC_SYMTAB) {
+            mach_symtab_command_t *cmd = (mach_symtab_command_t *) file_load_bytes (macho->file, info->lc->cmdsize, info->off);
+
+            g_print ("== Command:\tLC_SYMTAB\n");
+
+            g_print ("  Symbol Offset:\t0x%08x\n", cmd->symoff);
+            g_print ("  Symbol Count:\t\t%d\n", cmd->nsyms);
+
+            g_print ("  String Offset:\t0x%08x\n", cmd->stroff);
+            g_print ("  String Count:\t\t%d\n", cmd->strsize);
+        
+        }
+
+        g_print ("---------------\n");
     }
 
     // Testing printing data from lc_source_version and lc_uuid
-    g_print ("\nLC_SOURCE_VERSION: %s\n", mach_lc_source_version_string (mach_lc_find_source_version_cmd (macho)));
+    /*g_print ("\nLC_SOURCE_VERSION: %s\n", mach_lc_source_version_string (mach_lc_find_source_version_cmd (macho)));
     g_print ("\nLC_UUID: %s\n", mach_lc_uuid_string (mach_lc_find_uuid_cmd (macho)));
 
     // Testing Segments
@@ -64,7 +102,7 @@ int main (int argc, char* argv[])
     g_print ("strsize: %d\n", symbol_table->strsize);
 
     //mach_symbol_table_t *symtab_test = mach_symtab_load_symbols (macho, symbol_table);
-
+    */
 
     return 0;
 }
