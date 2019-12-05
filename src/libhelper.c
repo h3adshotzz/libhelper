@@ -38,5 +38,5 @@
 char *libhelper_version_string ()
 {
     /* Use better versioning */
-    return "libhelper v1.0 (TODO: Show build args).";
+    return "libhelper v1.0-beta1";
 }
