@@ -17,14 +17,14 @@
  *
 */
 
-#ifndef LIBHELPER_MACHO_DYLD_H
-#define LIBHELPER_MACHO_DYLD_H
+#ifndef LIBHELPER_MACHO_THREADSTATE_H
+#define LIBHELPER_MACHO_THREADSTATE_H
 
 /**
  *                  === The Libhelper Project ===
  *                          Mach-O Parser
  * 
- *  Documentation relating to the macho-dyld.h header file:          |
+ *  Documentation relating to the macho-segment.h header file:          |
  *                                                                      |
  *                                                                      |
  * 
@@ -34,24 +34,16 @@
  * 
  */
 
-/**
- *  The Dynamic Loader Info Load Command is defined in macho-command.h
- * 
- */
-#include "macho-command.h"
-//#include <mach-o/loader.h>
-#include <glib-2.0/glib.h>
+#include <ctype.h>
 
-typedef struct dyld_rebase_info {
-    GSList      *opcodes;       /* List of Opcodes */
-    GSList      *actions;       /* List of Actions */
-} dyld_rebase_info;
+typedef struct arm_thread_state64_t {
+    uint64_t    __x[29];    /* General purpose registers x0-28 */
+    uint64_t    __fp;       /* Frame pointer x29 */
+    uint64_t    __lr;       /* Link register x30 */
+    uint64_t    __sp;       /* Stack pointer x31 */
+    uint64_t    __pc;       /* Program counter */
+    uint64_t    __cpsr;     /* Current program status register */
+} arm_thread_state64_t;
 
 
-/**
- * 
- * 
- */
-
-
-#endif /* libhelper_macho_dyld_h */
+#endif /* libhelper_macho_threadstate_h */

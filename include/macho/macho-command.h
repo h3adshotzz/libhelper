@@ -313,4 +313,10 @@ mach_command_info_t *mach_lc_find_given_cmd (macho_t *macho, int cmd);
 mach_symtab_command_t *mach_lc_find_symtab_cmd (macho_t *macho);
 
 
+/**
+ * 	LC_DYSYMTAB
+ */
+mach_dysymtab_command_t *mach_lc_find_dysymtab_cmd (macho_t *macho);
+
+
 #endif /* libhelper_macho_command_h */

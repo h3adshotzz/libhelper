@@ -4,6 +4,7 @@
 #include <macho/macho-command.h>
 #include <macho/macho-segment.h>
 #include <macho/macho-symbol.h>
+#include <macho/macho-thread_state.h>
 
 int main (int argc, char* argv[])
 {
@@ -31,7 +32,7 @@ int main (int argc, char* argv[])
 
 
     // LOAD COMMAND TESTING
-    for (int i = 0; i < g_slist_length (macho->lcmds); i++) {
+    /*for (int i = 0; i < g_slist_length (macho->lcmds); i++) {
         mach_command_info_t *info = g_slist_nth_data (macho->lcmds, i);
 
         if ((info->type == LC_DYLD_INFO_ONLY) || (info->type == LC_DYLD_INFO)) {
@@ -74,7 +75,7 @@ int main (int argc, char* argv[])
     }
 
     // Testing printing data from lc_source_version and lc_uuid
-    /*g_print ("\nLC_SOURCE_VERSION: %s\n", mach_lc_source_version_string (mach_lc_find_source_version_cmd (macho)));
+    g_print ("\nLC_SOURCE_VERSION: %s\n", mach_lc_source_version_string (mach_lc_find_source_version_cmd (macho)));
     g_print ("\nLC_UUID: %s\n", mach_lc_uuid_string (mach_lc_find_uuid_cmd (macho)));
 
     // Testing Segments
@@ -102,7 +103,64 @@ int main (int argc, char* argv[])
     g_print ("strsize: %d\n", symbol_table->strsize);
 
     //mach_symbol_table_t *symtab_test = mach_symtab_load_symbols (macho, symbol_table);
+
+
+    mach_dysymtab_command_t *dysymtab_table = mach_lc_find_dysymtab_cmd (macho);
+    g_print ("== Dynamic Symbol Table ==\n");
+    g_print ("           cmd: 0x%x\n", dysymtab_table->cmd);
+    g_print ("       cmdsize: 0x%x\n", dysymtab_table->cmdsize);
+    g_print ("     ilocalsym: 0x%x\n", dysymtab_table->ilocalsym);
+    g_print ("     nlocalsym: 0x%x\n", dysymtab_table->nlocalsym);
+    g_print ("    iextdefsym: 0x%x\n", dysymtab_table->iextdefsym);
+    g_print ("    nextdefsym: 0x%x\n", dysymtab_table->nextdefsym);
+    g_print ("     iundefsym: 0x%x\n", dysymtab_table->iundefsym);
+    g_print ("     nundefsym: 0x%x\n", dysymtab_table->nundefsym);
+    g_print ("        tocoff: 0x%x\n", dysymtab_table->tocoff);
+    g_print ("          ntoc: 0x%x\n", dysymtab_table->ntoc);
+    g_print ("     modtaboff: 0x%x\n", dysymtab_table->modtaboff);
+    g_print ("       nmodtab: 0x%x\n", dysymtab_table->nmodtab);
+    g_print ("  extrefsymoff: 0x%x\n", dysymtab_table->extrefsymoff);
+    g_print ("   nextrefsyms: 0x%x\n", dysymtab_table->nextdefsym);
+    g_print ("indirectsymoff: 0x%x\n", dysymtab_table->indirectsymoff);
+    g_print (" nindirectsyms: 0x%x\n", dysymtab_table->nindirectsyms);
+    g_print ("     extreloff: 0x%x\n", dysymtab_table->extrefsymoff);
+    g_print ("       nextrel: 0x%x\n", dysymtab_table->nextrel);
+    g_print ("     locreloff: 0x%x\n", dysymtab_table->locreloff);
+    g_print ("       nlocrel: 0x%x\n", dysymtab_table->nlocrel);
+
+    //mach_dynamic_symbol_table_t *dysymtab_test = mach_dynamic_symtab_load_symbols (macho, dysymtab_table);
     */
+
+    mach_command_info_t *cmd = mach_lc_find_given_cmd (macho, LC_UNIXTHREAD);
+    mach_load_command_info_print (cmd);
+
+    mach_load_command_t *lc = cmd->lc;
+    off_t offset = cmd->off + sizeof(lc);
+    arm_thread_state64_t *cpu = (arm_thread_state64_t *) file_load_bytes (macho->file, lc->cmdsize, offset);
+
+    g_print (
+		       "\t    x0  0x%016llx x1  0x%016llx x2  0x%016llx\n"
+		       "\t    x3  0x%016llx x4  0x%016llx x5  0x%016llx\n"
+		       "\t    x6  0x%016llx x7  0x%016llx x8  0x%016llx\n"
+		       "\t    x9  0x%016llx x10 0x%016llx x11 0x%016llx\n"
+		       "\t    x12 0x%016llx x13 0x%016llx x14 0x%016llx\n"
+		       "\t    x15 0x%016llx x16 0x%016llx x17 0x%016llx\n"
+		       "\t    x18 0x%016llx x19 0x%016llx x20 0x%016llx\n"
+		       "\t    x21 0x%016llx x22 0x%016llx x23 0x%016llx\n"
+		       "\t    x24 0x%016llx x25 0x%016llx x26 0x%016llx\n"
+		       "\t    x27 0x%016llx x28 0x%016llx  fp 0x%016llx\n"
+		       "\t     lr 0x%016llx sp  0x%016llx  pc 0x%016llx\n"
+		       "\t   cpsr 0x%08x\n",
+			cpu->__x[0], cpu->__x[1], cpu->__x[2], cpu->__x[3],
+			cpu->__x[4], cpu->__x[5], cpu->__x[6], cpu->__x[7],
+			cpu->__x[8], cpu->__x[9], cpu->__x[10], cpu->__x[11],
+			cpu->__x[12], cpu->__x[13], cpu->__x[14], cpu->__x[15],
+			cpu->__x[16], cpu->__x[17], cpu->__x[18], cpu->__x[19],
+			cpu->__x[20], cpu->__x[21], cpu->__x[22], cpu->__x[23],
+			cpu->__x[24], cpu->__x[25], cpu->__x[26], cpu->__x[27],
+			cpu->__x[28], cpu->__fp, cpu->__lr, cpu->__sp, cpu->__pc,
+			cpu->__cpsr);
+
 
     return 0;
 }
