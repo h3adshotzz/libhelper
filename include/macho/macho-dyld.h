@@ -39,7 +39,7 @@
  * 
  */
 #include "macho-command.h"
-
+//#include <mach-o/loader.h>
 #include <glib-2.0/glib.h>
 
 typedef struct dyld_rebase_info {

@@ -525,3 +525,25 @@ mach_symtab_command_t *mach_lc_find_symtab_cmd (macho_t *macho)
 
     return ret;
 }
+
+
+///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
+
+
+/**
+ * 
+ */
+mach_dysymtab_command_t *mach_lc_find_dysymtab_cmd (macho_t *macho)
+{
+    size_t size = sizeof (mach_dysymtab_command_t);
+    mach_dysymtab_command_t *ret = malloc (size);
+    
+    mach_command_info_t *cmdinfo = mach_lc_find_given_cmd (macho, LC_SYMTAB);
+    ret = (mach_dysymtab_command_t *) file_load_bytes (macho->file, size, cmdinfo->off);
+
+    g_print ("LC_DYSYMTAB: %d\n", LC_DYSYMTAB);
+    g_print ("test symtab: 0x%llx\n", ret->cmdsize);
+
+    return ret;
+}
