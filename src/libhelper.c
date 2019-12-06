@@ -40,9 +40,9 @@ char *libhelper_version_string ()
     char *ret = NULL;
 
 #ifdef __x86_64__
-    ret = "libhelper Version 1.0-Beta1; " __TIMESTAMP__ "; x86_64";
+    ret = "libhelper Version 1.0-Beta1; " __TIMESTAMP__ "; LIBHELPER_DEVELOPMENT_X86_64; x86_64";
 #elif __arm__
-    ret = "libhelper Version 1.0-Beta1; " __TIMESTAMP__ "; arm64";
+    ret = "libhelper Version 1.0-Beta1; " __TIMESTAMP__ "; LIBHELPER_DEVELOPMENT_ARM64; arm64";
 #else 
     ret = "libhelper Version 1.0-Beta1; " __TIMESTAMP__ "; unknown_arch";
 #endif
