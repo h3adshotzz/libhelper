@@ -37,6 +37,15 @@
 
 char *libhelper_version_string ()
 {
-    /* Use better versioning */
-    return "libhelper v1.0-beta1";
+    char *ret = NULL;
+
+#ifdef __x86_64__
+    ret = "libhelper Version 1.0-Beta1; " __TIMESTAMP__ "; x86_64";
+#elif __arm__
+    ret = "libhelper Version 1.0-Beta1; " __TIMESTAMP__ "; arm64";
+#else 
+    ret = "libhelper Version 1.0-Beta1; " __TIMESTAMP__ "; unknown_arch";
+#endif
+
+    return ret;
 }
