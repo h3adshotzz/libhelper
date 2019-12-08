@@ -47,6 +47,7 @@ typedef struct macho_t {
 	mach_header_t 	*header;
 	GSList			*lcmds;				/* mach_command_info_t */
 	GSList			*scmds;				/* mach_segment_info_t */
+	GSList			*dylibs;			/* mach_dylib_command_info_t */
 	GSList			*symbols;			/* mach_symbol_info_t */
 	GSList			*strings;			/* list of strings, in order. */
 } macho_t;
