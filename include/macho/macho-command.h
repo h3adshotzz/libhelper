@@ -266,6 +266,64 @@ typedef struct mach_dylinker_command_t {
 } mach_dylinker_command_t; 
 
 
+/**
+ * 	Dynamicly linked Shared Library command.
+ * 
+ * 	This identifies any dynamically shared linked libraries that an
+ * 	executable requires.
+ * 
+ * 	The 'dylib' struct contains the lib properties.
+ * 
+ * 	The 'dylib_command' is the load command structure.
+ * 
+ * 	The dylib name string is stored just after the load command structure.
+ * 	The offset prop is from the start of the load command structure, so
+ * 	the size of the string is:
+ * 		s = cmdsize - (sizeof(uint32_t) * 4);
+ * 
+ */
+
+
+/*
+ * A variable length string in a load command is represented by an lc_str
+ * union.  The strings are stored just after the load command structure and
+ * the offset is from the start of the load command structure.  The size
+ * of the string is reflected in the cmdsize field of the load command.
+ * Once again any padded bytes to bring the cmdsize field to a multiple
+ * of 4 bytes must be zero.
+ */
+typedef struct dylib_vers_t {
+	uint32_t			a;			/* XXXX.00.00 */
+	uint32_t			b;			/* 0000.XX.00 */
+	uint32_t			c;			/* 0000.00.XX */
+} dylib_vers_t;
+
+struct dylib {
+	uint32_t		offset;		/* Offset of the library name in the string table */
+#ifndef __LP64__
+	char			*ptr;		/* pointer to the string */
+#endif
+	
+	uint32_t		timestamp;				/* lib build time stamp */
+	uint32_t		current_version;		/* lib current version numbre */
+	uint32_t		compatibility_version;	/* lib compatibility vers numb */
+};
+
+#include "strutils.h"
+
+typedef struct mach_dylib_command_t {
+	uint32_t		cmd;		/* LC_ID_DYLIB, LC_LOAD_DYLIB, LC_LOAD_WEAK_DYLIB, LC_REEXPORT_DYLIB */
+	uint32_t		cmdsize;	/* Includes pathname string */
+	struct dylib	dylib;
+} mach_dylib_command_t;
+
+typedef struct mach_dylib_command_info_t {
+	mach_dylib_command_t	*dylib;
+	uint32_t				 type;
+	char					*name;
+} mach_dylib_command_info_t;
+
+
 
 //////////////////////////////////////////////////////////////////////////
 //                       Function Definitions                           //
@@ -318,5 +376,11 @@ mach_symtab_command_t *mach_lc_find_symtab_cmd (macho_t *macho);
  */
 mach_dysymtab_command_t *mach_lc_find_dysymtab_cmd (macho_t *macho);
 
+
+/**
+ * 	LC_ID_DYLIB, LC_LOAD_DYLIB, LC_LOAD_WEAK_DYLIB, LC_REEXPORT_DYLIB
+ */
+char *mach_lc_load_dylib_format_version (uint32_t vers);
+char *mach_lc_dylib_get_type_string (mach_dylib_command_t *dylib);
 
 #endif /* libhelper_macho_command_h */

@@ -547,3 +547,35 @@ mach_dysymtab_command_t *mach_lc_find_dysymtab_cmd (macho_t *macho)
 
     return ret;
 }
+
+
+///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
+
+char *mach_lc_load_dylib_format_version (uint32_t vers)
+{
+    char *buf = malloc(10);
+    snprintf (buf, 10, "%d.%d.%d", vers >> 16, (vers >> 8) & 0xf, vers & 0xf);
+    return buf;
+}
+
+char *mach_lc_dylib_get_type_string (mach_dylib_command_t *dylib)
+{
+    switch (dylib->cmd) {
+    case LC_ID_DYLIB:
+        return "LC_ID_DYLIB";
+        break;
+    case LC_LOAD_DYLIB:
+        return "LC_LOAD_DYLIB";
+        break;
+    case LC_LOAD_WEAK_DYLIB:
+        return "LC_LOAD_WEAK_DYLIB";
+        break;
+    case LC_REEXPORT_DYLIB:
+        return "LC_REEXPORT_DYLIB";
+        break;
+    default:
+        return "(null)";
+        break;
+    }
+}

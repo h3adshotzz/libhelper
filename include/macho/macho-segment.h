@@ -65,6 +65,7 @@ typedef struct mach_segment_command_64_t {
 
 typedef struct mach_segment_info_t {
     mach_segment_command_64_t   *segcmd;    /* Segment command */
+    uint64_t                    padding;
     GSList                      *sections;  /* List of sections */
 } mach_segment_info_t;
 

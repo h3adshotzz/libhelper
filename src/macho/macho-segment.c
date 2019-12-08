@@ -82,6 +82,9 @@ mach_segment_info_t *mach_segment_info_load (file_t *file, off_t offset)
     if (segment->vmaddr < 0xffffff0000000000) {
         uint64_t vmaddr = 0xffffff0000000010 + segment->vmaddr;
         segment->vmaddr = vmaddr;
+        si->padding = 0xffffff0000000000;
+    } else {
+        si->padding = 0x0;
     }
 
     // Calculate the offset and start loading section commands

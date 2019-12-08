@@ -78,9 +78,14 @@ macho_t *macho_load (file_t *file)
      *  I do this because the info struct contains the offset of where the
      *  Load Command is in the file.
      * 
+     *  Mach-O's can contain dynamically linked libraries, which are referenced
+     *  by the LC_LOAD_DYLIB, ..., Load Commands. As there are typically more
+     *  than one, they are also stored within a list.
+     * 
      */
     GSList *segcmds = NULL;
     GSList *lcmds = NULL;
+    GSList *dylibs = NULL;
 
     off_t offset = sizeof(mach_header_t);
 
@@ -98,7 +103,34 @@ macho_t *macho_load (file_t *file)
             // Append the seginfo to the mach->segcmds GSList.
             segcmds = g_slist_append (segcmds, seginfo);
 
-        } else {
+        } else if (lc->type == LC_ID_DYLIB || lc->type == LC_LOAD_DYLIB ||
+                lc->type == LC_LOAD_WEAK_DYLIB || lc->type == LC_REEXPORT_DYLIB) {
+
+            // Because a Mach-O can have multiple Dynamically linked libraries,
+            // that means there are multiple LC_DYLIB-like commands, so it's
+            // easier that we have a seperate list for them.
+
+            // Create the mach_dylib_command_info_t struct for the dylib command
+            mach_dylib_command_info_t *dylibinfo = malloc (sizeof(mach_dylib_command_info_t));
+
+            // Load the raw dylib command, we need this to load the dylib name
+            mach_dylib_command_t *raw = (mach_dylib_command_t *) file_load_bytes (mach->file, lc->lc->cmdsize, lc->off);
+
+            // Load the name of the dylib. This is located after the Load Command
+            // and is included in the cmdsize property of the Loac Command.
+            char *name = file_load_bytes (mach->file, (raw->cmdsize - sizeof(mach_dylib_command_t)), lc->off + raw->dylib.offset);
+
+            // Set the name, raw cmd struct, and type of the dylib
+            dylibinfo->name = name;
+            dylibinfo->dylib = raw;
+            dylibinfo->type = lc->type;
+
+            // Add it to the list
+            dylibs = g_slist_append (dylibs, dylibinfo);
+            lcmds = g_slist_append (lcmds, lc);
+        }
+        
+        else {
 
             // Set the offset so we can find the command again in the file later
             lc->off = offset;
@@ -113,6 +145,7 @@ macho_t *macho_load (file_t *file)
 
     mach->lcmds = lcmds;
     mach->scmds = segcmds;
+    mach->dylibs = dylibs;
 
     return mach;
 }
