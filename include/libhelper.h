@@ -21,6 +21,8 @@
 #define LIBHELPER_H
 
 #include <stdio.h>
+#include "strutils.h"
+#include "file.h"
 
 char *libhelper_version_string ();
 
