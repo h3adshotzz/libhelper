@@ -77,7 +77,13 @@ int file_read (const char *path, unsigned char **buf, unsigned int *len)
 
 	unsigned char *data = NULL; //= malloc (size);
 
+	// There is an issue here on Linux with MAP_FILE, it cannot find it,
+	// so if the OS is linux, use MAP_FAILED instead.
+#ifdef __APPLE__
 	data = mmap(data, size, PROT_READ | PROT_WRITE, MAP_FILE, f, 0);
+#else
+	data = mmap (data, size, PROT_READ | PROT_WRITE, MAP_FAILED, f, 0);
+#endif
 
 	fclose (f);
 
