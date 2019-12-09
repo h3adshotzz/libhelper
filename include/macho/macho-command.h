@@ -283,15 +283,6 @@ typedef struct mach_dylinker_command_t {
  * 
  */
 
-
-/*
- * A variable length string in a load command is represented by an lc_str
- * union.  The strings are stored just after the load command structure and
- * the offset is from the start of the load command structure.  The size
- * of the string is reflected in the cmdsize field of the load command.
- * Once again any padded bytes to bring the cmdsize field to a multiple
- * of 4 bytes must be zero.
- */
 typedef struct dylib_vers_t {
 	uint32_t			a;			/* XXXX.00.00 */
 	uint32_t			b;			/* 0000.XX.00 */

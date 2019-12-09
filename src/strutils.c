@@ -99,9 +99,9 @@ int __printf(log_type msgType, char *fmt, ...) {
 
     // Append what is needed depending on msg_type
     if (msgType == LOG_ERROR) {
-        fmt = mstrappend("%s%s%s", ANSI_COLOR_RED "!ERROR! ", fmt, " !ERROR!" ANSI_COLOR_RED ANSI_COLOR_RESET);
+        fmt = mstrappend("%s%s%s", ANSI_COLOR_RED "[Error] ", fmt, ANSI_COLOR_RED ANSI_COLOR_RESET);
     } else if (msgType == LOG_WARNING) {
-        fmt = mstrappend("%s%s%s", ANSI_COLOR_YELLOW "!WARNING! ", fmt, " !WARNING!" ANSI_COLOR_YELLOW ANSI_COLOR_RESET);        
+        fmt = mstrappend("%s%s%s", ANSI_COLOR_YELLOW "[Warning] ", fmt, ANSI_COLOR_YELLOW ANSI_COLOR_RESET);        
     } else if (msgType == LOG_DEBUG) {
         fmt = mstrappend("%s%s%s", ANSI_COLOR_CYAN "DEBUG: ", fmt, ANSI_COLOR_CYAN ANSI_COLOR_RESET);        
     }

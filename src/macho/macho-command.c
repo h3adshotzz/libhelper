@@ -263,10 +263,8 @@ char *mach_load_command_get_string (mach_load_command_t *lc)
             cmd_str = "LC_ENCRYPTION_INFO";
             break;
         case LC_DYLD_INFO:
-            cmd_str = "LC_DYLD_INFO";
-            break;
         case LC_DYLD_INFO_ONLY:
-            cmd_str = "LC_DYLD_INFO_ONLY";
+            cmd_str = "LC_DYLD_INFO";
             break;
         case LC_LOAD_UPWARD_DYLIB:
             cmd_str = "LC_LOAD_UPWARD_DYLIB";
