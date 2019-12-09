@@ -519,6 +519,8 @@ mach_build_version_info_t *mach_lc_build_version_info (mach_build_version_comman
         inf->version = btv->version;
 
         ret->tools = g_slist_append (ret->tools, inf);
+
+        next_off += sizeof(mach_build_version_command_t);
     }
 
 
@@ -526,6 +528,16 @@ mach_build_version_info_t *mach_lc_build_version_info (mach_build_version_comman
 }
 
 
+
+///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
+
+char *mach_lc_load_dylinker_string_cmd (macho_t *macho, mach_load_dylinker_command_t *dylinker, off_t offset)
+{
+    char *ret = file_load_bytes (macho->file, dylinker->cmdsize - sizeof(mach_load_dylinker_command_t), offset + dylinker->offset);
+
+    return ret;
+}
 
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////

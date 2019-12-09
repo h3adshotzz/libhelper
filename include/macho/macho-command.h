@@ -369,6 +369,43 @@ typedef struct mach_dylib_command_info_t {
 } mach_dylib_command_info_t;
 
 
+/**
+ * 	LC_LOAD_DYLINKER
+ */
+typedef struct mach_load_dylinker_command_t {
+	uint32_t		cmd;
+	uint32_t		cmdsize;		/* includes str size at offset */
+
+	uint32_t		offset;
+#ifndef __LP64__
+	char			*ptr;
+#endif
+} mach_load_dylinker_command_t;
+
+/**
+ * 	LC_MAIN stuff
+ */
+typedef struct mach_entry_point_command_t {
+	uint32_t		cmd;
+	uint32_t		cmdsize;
+	uint64_t		entryoff;
+	uint64_t		stacksize;
+} mach_entry_point_command_t;
+
+
+/**
+ * 	LC_CODE_SIGNATURE, LC_SEGMENT_SPLIT_INFO, LC_FUNCTION_STARTS, 
+ * 	LC_DATA_IN_CODE, LC_DYLIB_CODE_SIGN_DRS, LC_LINKER_OPTIMIZATION_HINT
+ * 	LC_DYLD_EXPORTS_TIRE, LC_DYLD_CHAINED_FIXUPS
+ */
+typedef struct mach_linkedit_data_command_t {
+	uint32_t		cmd;
+	uint32_t		cmdsize;
+
+	uint32_t		dataoff;
+	uint32_t		datasize;
+} mach_linkedit_data_command_t;
+
 
 //////////////////////////////////////////////////////////////////////////
 //                       Function Definitions                           //
@@ -413,6 +450,12 @@ mach_build_version_info_t *mach_lc_build_version_info (mach_build_version_comman
  */
 mach_uuid_command_t *mach_lc_find_uuid_cmd (macho_t *macho);
 char *mach_lc_uuid_string (mach_uuid_command_t *cmd);
+
+
+/**
+ * 	LC_LOAD_DYLINKER
+ */
+char *mach_lc_load_dylinker_string_cmd (macho_t *macho, mach_load_dylinker_command_t *dylinker, off_t offset);
 
 
 /**
