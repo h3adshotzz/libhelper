@@ -333,6 +333,23 @@ char *mach_load_command_get_string (mach_load_command_t *lc)
 //////////////////////////////////////////////////////////////////////////
 
 /**
+ *  The Symtab command can stay here, but handling symbols
+ *  should be in symbols.c
+ */
+
+mach_command_info_t *mach_lc_find_given_cmd (macho_t *macho, int cmd)
+{
+    GSList *cmds = macho->lcmds;
+    for (int i = 0; i < g_slist_length (cmds); i++) {
+        mach_command_info_t *tmp = (mach_load_command_t *) g_slist_nth_data (cmds, i);
+        if (tmp->type == cmd) {
+            return tmp;
+        }
+    }
+    return NULL;
+}
+
+/**
  *  Function:   mach_lc_find_source_version_cmd
  *  ------------------------------------
  * 
@@ -413,6 +430,105 @@ char *mach_lc_source_version_string (mach_source_version_command_t *svc)
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
 
+mach_build_version_info_t *mach_lc_build_version_info (mach_build_version_command_t *bvc, off_t offset, macho_t *macho)
+{
+    mach_build_version_info_t *ret = malloc (sizeof(mach_build_version_info_t));
+
+    // platform
+    switch (bvc->platform) {
+        case PLATFORM_MACOS:
+            ret->platform = "macOS";
+            break;
+        case PLATFORM_IOS:
+            ret->platform = "iOS";
+            break;
+        case PLATFORM_TVOS:
+            ret->platform = "TvOS";
+            break;
+        case PLATFORM_WATCHOS:
+            ret->platform = "WatchOS";
+            break;
+        case PLATFORM_BRIDGEOS:
+            ret->platform = "BridgeOS";
+            break;
+        case PLATFORM_MACCATALYST:
+            ret->platform = "macOS Catalyst";
+            break;
+        case PLATFORM_IOSSIMULATOR:
+            ret->platform = "iOS Simulator";
+            break;
+        case PLATFORM_TVOSSIMULATOR:
+            ret->platform = "TvOS Simulator";
+            break;
+        case PLATFORM_WATCHOSSIMULATOR:
+            ret->platform = "WatchOS Simulator";
+            break;
+        case PLATFORM_DRIVERKIT:
+            ret->platform = "DriverKit";
+            break;
+        default:
+            ret->platform = "(null)";
+            break;
+    }
+
+    // minos
+    char *minos_tmp = malloc (10);
+    if ((bvc->minos & 0xff) == 0) {
+        snprintf (minos_tmp, 10, "%u.%u", bvc->minos >> 16, (bvc->minos >> 8) & 0xff);
+    } else {
+        snprintf (minos_tmp, 10, "%u.%u", bvc->minos >> 16, (bvc->minos >> 8) & 0xff);
+    }
+    ret->minos = minos_tmp;
+
+    // sdk
+    char *sdk_tmp = malloc (10);
+    if (bvc->sdk == 0) {
+        sdk_tmp = "(null)";
+    } else {
+        if ((bvc->sdk & 0xff) == 0) {
+            snprintf (sdk_tmp, 10, "%u.%u", bvc->sdk >> 16, (bvc->sdk >> 8) & 0xff);
+        } else {
+            snprintf (sdk_tmp, 10, "%u.%u.%u", bvc->sdk >> 16, (bvc->sdk >> 8) & 0xff, bvc->sdk & 0xff);
+        }
+    }
+    ret->sdk = sdk_tmp;
+
+    // tools
+    ret->ntools = bvc->ntools;
+    off_t next_off = offset + sizeof(mach_build_version_command_t);
+    for (int i = 0; i < ret->ntools; i++) {
+
+        struct build_tool_version *btv = (struct build_tool_version *) file_load_bytes (macho->file, sizeof(struct build_tool_version), next_off);
+        build_tool_info_t *inf = malloc (sizeof(build_tool_info_t));
+
+        switch (btv->tool) {
+            case TOOL_CLANG:
+                inf->tool = "Clang";
+                break;
+            case TOOL_LD:
+                inf->tool = "LD";
+                break;
+            case TOOL_SWIFT:
+                inf->tool = "Swift";
+                break;
+            default:
+                inf->tool = "(null)";
+                break;
+        }
+
+        inf->version = btv->version;
+
+        ret->tools = g_slist_append (ret->tools, inf);
+    }
+
+
+    return ret;
+}
+
+
+
+///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
 
 /**
  *  Function:   mach_lc_find_uuid_cmd
@@ -488,24 +604,6 @@ char *mach_lc_uuid_string (mach_uuid_command_t *uuid)
 
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
-
-
-/**
- *  The Symtab command can stay here, but handling symbols
- *  should be in symbols.c
- */
-
-mach_command_info_t *mach_lc_find_given_cmd (macho_t *macho, int cmd)
-{
-    GSList *cmds = macho->lcmds;
-    for (int i = 0; i < g_slist_length (cmds); i++) {
-        mach_command_info_t *tmp = (mach_load_command_t *) g_slist_nth_data (cmds, i);
-        if (tmp->type == cmd) {
-            return tmp;
-        }
-    }
-    return NULL;
-}
 
 /**
  * 

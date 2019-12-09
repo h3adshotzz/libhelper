@@ -119,6 +119,60 @@ typedef struct mach_source_version_command_t {
 
 
 /**
+ * 	The build_version_command contains the min OS version on which this
+ * 	binary was built to run for its platform.
+ */
+typedef struct mach_build_version_command_t {
+    uint32_t	cmd;		/* LC_BUILD_VERSION */
+    uint32_t	cmdsize;	/* sizeof(struct build_version_command) plus */
+                                /* ntools * sizeof(struct build_tool_version) */
+    uint32_t	platform;	/* platform */
+    uint32_t	minos;		/* X.Y.Z is encoded in nibbles xxxx.yy.zz */
+    uint32_t	sdk;		/* X.Y.Z is encoded in nibbles xxxx.yy.zz */
+    uint32_t	ntools;		/* number of tool entries following this */
+} mach_build_version_command_t;
+
+struct build_tool_version
+{
+	uint32_t	tool;		/* enum for the tool */
+    uint32_t	version;	/* version number of the tool */
+};
+
+typedef struct build_tool_info_t {
+	char		*tool;
+	uint32_t	version;
+} build_tool_info_t;
+
+typedef struct mach_build_version_info_t {
+	mach_build_version_command_t *cmd;
+	
+	char 		*platform;
+	char		*minos;
+	char		*sdk;
+
+	uint32_t	 ntools;
+	GSList 		*tools;
+} mach_build_version_info_t;
+
+/* Known values for the platform field above. */
+#define PLATFORM_MACOS 1
+#define PLATFORM_IOS 2
+#define PLATFORM_TVOS 3
+#define PLATFORM_WATCHOS 4
+#define PLATFORM_BRIDGEOS 5
+#define PLATFORM_MACCATALYST 6
+#define PLATFORM_IOSSIMULATOR 7
+#define PLATFORM_TVOSSIMULATOR 8
+#define PLATFORM_WATCHOSSIMULATOR 9
+#define PLATFORM_DRIVERKIT 10
+
+/* Known values for the tool field above. */
+#define TOOL_CLANG 1
+#define TOOL_SWIFT 2
+#define TOOL_LD	3
+
+
+/**
  * 	The mach_uuid_command_t is an optional load command containing
  * 	the UUID of the binary.
  */
@@ -346,6 +400,12 @@ char *mach_load_command_get_string (mach_load_command_t *lc);
  */
 mach_source_version_command_t *mach_lc_find_source_version_cmd (macho_t *macho);
 char *mach_lc_source_version_string (mach_source_version_command_t *svc);
+
+
+/**
+ * 	LC_BUILD_VERSION functions
+ */
+mach_build_version_info_t *mach_lc_build_version_info (mach_build_version_command_t *bvc, off_t offset, macho_t *macho);
 
 
 /**
