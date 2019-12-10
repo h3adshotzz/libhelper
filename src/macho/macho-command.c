@@ -542,6 +542,14 @@ char *mach_lc_load_dylinker_string_cmd (macho_t *macho, mach_load_dylinker_comma
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
 
+char *mach_lc_load_str (macho_t *macho, uint32_t cmdsize, uint32_t struct_size, off_t cmd_offset, off_t str_offset)
+{
+    return file_load_bytes (macho->file, cmdsize - struct_size, cmd_offset + str_offset);
+}
+
+///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
+
 /**
  *  Function:   mach_lc_find_uuid_cmd
  *  ---------------------------------

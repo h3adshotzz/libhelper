@@ -407,6 +407,19 @@ typedef struct mach_linkedit_data_command_t {
 } mach_linkedit_data_command_t;
 
 
+/**
+ * 	LC_RPATH
+ */
+typedef struct mach_rpath_command_t {
+	uint32_t		cmd;
+	uint32_t		cmdsize;
+
+	uint32_t		offset;
+#ifndef __LP64__
+	char			*ptr;
+#endif
+} mach_rpath_command_t;
+
 //////////////////////////////////////////////////////////////////////////
 //                       Function Definitions                           //
 //////////////////////////////////////////////////////////////////////////
@@ -476,5 +489,8 @@ mach_dysymtab_command_t *mach_lc_find_dysymtab_cmd (macho_t *macho);
  */
 char *mach_lc_load_dylib_format_version (uint32_t vers);
 char *mach_lc_dylib_get_type_string (mach_dylib_command_t *dylib);
+
+
+char *mach_lc_load_str (macho_t *macho, uint32_t cmdsize, uint32_t struct_size, off_t cmd_offset, off_t str_offset);
 
 #endif /* libhelper_macho_command_h */
