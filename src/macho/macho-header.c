@@ -62,24 +62,24 @@ mach_header_t *mach_header_load (file_t *file)
 
     // Check that the header has a magic value
     if (!header->magic) {
-        g_print ("[*] Error: Header was not loaded correctly. Aborting!\n");
+        debugf ("[*] Error: Header was not loaded correctly. Aborting!\n");
         exit (0);
     }
 
     // Check the header type.
     if (header->magic == MACH_CIGAM_64 || header->magic == MACH_MAGIC_64) {
-        g_print ("[*] Detected 64-bit Mach-O Binary!\n");
+        debugf ("[*] Detected 64-bit Mach-O Binary!\n");
         return header;
     } else if (header->magic == MACH_CIGAM_32 || header->magic == MACH_MAGIC_32) {
-        g_print ("[*] Detected 32-bit Mach-O Binary!\n");
-        g_print ("[*] Error: Cannot handle 32-bit Binaries yet. Aborting!\n");
+        debugf ("[*] Detected 32-bit Mach-O Binary!\n");
+        debugf ("[*] Error: Cannot handle 32-bit Binaries yet. Aborting!\n");
         exit (0);
     } else if (header->magic == MACH_CIGAM_UNIVERSAL || header->magic == MACH_MAGIC_UNIVERSAL) {
-        g_print ("[*] Detected Universal Mach-O Binary!\n");
-        g_print ("[*] Error: Cannot handle Universal Binaries yet. Aborting!\n");
+        debugf ("[*] Detected Universal Mach-O Binary!\n");
+        debugf ("[*] Error: Cannot handle Universal Binaries yet. Aborting!\n");
         exit (0);
     } else {
-        g_print ("[*] Error: Could not determine Mach-O type with Magic 0x%x. Aborting!\n", header->magic);
+        debugf ("[*] Error: Could not determine Mach-O type with Magic 0x%x. Aborting!\n", header->magic);
         exit (0);
     }
 
@@ -166,14 +166,14 @@ char *mach_header_read_file_type (uint32_t type)
  */
 void mach_header_print_summary (mach_header_t *header)
 {
-    g_print ("==================\nMach-O Header Dump\n==================\n\n");
+    debugf ("==================\nMach-O Header Dump\n==================\n\n");
 
-    g_print ("Magic: \t\t0x%x\n", header->magic);
-    g_print ("CPU Type: \t%s\n", mach_header_read_cpu_type(header->cputype));
-    g_print ("CPU Sub-Type: \t0x%x\n", header->cpusubtype);
-    g_print ("File Type: \t%s\n", mach_header_read_file_type (header->filetype));
-    g_print ("Load Commands: \t%d\n", header->ncmds);
-    g_print ("LC Size: \t%d\n", header->sizeofcmds);
+    debugf ("Magic: \t\t0x%x\n", header->magic);
+    debugf ("CPU Type: \t%s\n", mach_header_read_cpu_type(header->cputype));
+    debugf ("CPU Sub-Type: \t0x%x\n", header->cpusubtype);
+    debugf ("File Type: \t%s\n", mach_header_read_file_type (header->filetype));
+    debugf ("Load Commands: \t%d\n", header->ncmds);
+    debugf ("LC Size: \t%d\n", header->sizeofcmds);
 
-    g_print ("------------------\n\n");
+    debugf ("------------------\n\n");
 }

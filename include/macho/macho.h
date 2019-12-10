@@ -34,6 +34,8 @@
  * 
  */
 
+#include "hslist.h"
+
 #include "file.h"
 #include "macho/macho-header.h"
 
@@ -45,11 +47,11 @@
 typedef struct macho_t {
 	file_t 			*file;
 	mach_header_t 	*header;
-	GSList			*lcmds;				/* mach_command_info_t */
-	GSList			*scmds;				/* mach_segment_info_t */
-	GSList			*dylibs;			/* mach_dylib_command_info_t */
-	GSList			*symbols;			/* mach_symbol_info_t */
-	GSList			*strings;			/* list of strings, in order. */
+	HSList			*lcmds;				/* mach_command_info_t */
+	HSList			*scmds;				/* mach_segment_info_t */
+	HSList			*dylibs;			/* mach_dylib_command_info_t */
+	HSList			*symbols;			/* mach_symbol_info_t */
+	HSList			*strings;			/* list of strings, in order. */
 } macho_t;
 
 

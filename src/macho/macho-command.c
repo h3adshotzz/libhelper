@@ -81,7 +81,7 @@ mach_command_info_t *mach_command_info_load (file_t *file, off_t offset)
 
     lc = (mach_load_command_t *) file_load_bytes (file, sizeof(mach_load_command_t), offset);
     if (!lc) {
-        g_print ("[*] Error: Unable to find Load Command at offset 0x%llx\n", offset);
+        debugf ("[*] Error: Unable to find Load Command at offset 0x%llx\n", offset);
         return NULL;
     }
 
@@ -105,9 +105,9 @@ mach_command_info_t *mach_command_info_load (file_t *file, off_t offset)
 void mach_load_command_info_print (mach_command_info_t *cmd)
 {
     mach_load_command_print (cmd, LC_INFO);
-    g_print ("--- Meta:\n");
-    g_print ("  Type:\t0x%x\n", cmd->type);
-    g_print ("Offset:\t0x%llx\n", cmd->off);
+    debugf ("--- Meta:\n");
+    debugf ("  Type:\t0x%x\n", cmd->type);
+    debugf ("Offset:\t0x%llx\n", cmd->off);
 }
 
 
@@ -134,12 +134,12 @@ void mach_load_command_print (void *cmd, int flag)
         mach_command_info_t *inf = (mach_command_info_t *) cmd;
         lc = (mach_load_command_t *) inf->lc;
     } else {
-        g_print ("[*] Error: Unknown Load Command print flag: 0x%x\n", flag);
+        debugf ("[*] Error: Unknown Load Command print flag: 0x%x\n", flag);
         return;
     }
 
-    g_print ("     Command:\t%s\n", mach_load_command_get_string (lc));
-    g_print ("Command Size:\t%d\n", lc->cmdsize);
+    debugf ("     Command:\t%s\n", mach_load_command_get_string (lc));
+    debugf ("Command Size:\t%d\n", lc->cmdsize);
 }
 
 
@@ -158,7 +158,7 @@ void mach_load_command_print (void *cmd, int flag)
 char *mach_load_command_get_string (mach_load_command_t *lc)
 {
     if (!lc->cmd) {
-        g_print ("[*] Error: lc->cmd not valid\n");
+        debugf ("[*] Error: lc->cmd not valid\n");
         exit (0);
     }
     char *cmd_str = "";
@@ -339,9 +339,9 @@ char *mach_load_command_get_string (mach_load_command_t *lc)
 
 mach_command_info_t *mach_lc_find_given_cmd (macho_t *macho, int cmd)
 {
-    GSList *cmds = macho->lcmds;
-    for (int i = 0; i < g_slist_length (cmds); i++) {
-        mach_command_info_t *tmp = (mach_load_command_t *) g_slist_nth_data (cmds, i);
+    HSList *cmds = macho->lcmds;
+    for (int i = 0; i < h_slist_length (cmds); i++) {
+        mach_command_info_t *tmp = (mach_load_command_t *) h_slist_nth_data (cmds, i);
         if (tmp->type == cmd) {
             return tmp;
         }
@@ -354,7 +354,7 @@ mach_command_info_t *mach_lc_find_given_cmd (macho_t *macho, int cmd)
  *  ------------------------------------
  * 
  *  Finds and creates a mach_source_version_command_t struct from a given macho
- *  by looping through each of the load commands in the macho->lcmds GSList. Load
+ *  by looping through each of the load commands in the macho->lcmds HSList. Load
  *  Command like LC_SOURCE_VERSION only occur once in each Mach-O file, so there
  *  is relatively no danger of loading the wrong one.
  * 
@@ -368,14 +368,14 @@ mach_source_version_command_t *mach_lc_find_source_version_cmd (macho_t *macho)
     size_t size = sizeof (mach_source_version_command_t);
     mach_source_version_command_t *ret = malloc (size);
 
-    GSList *cmds = macho->lcmds;
-    for (int i = 0; i < g_slist_length (cmds); i++) {
-        mach_command_info_t *tmp = (mach_command_info_t *) g_slist_nth_data (cmds, i);
+    HSList *cmds = macho->lcmds;
+    for (int i = 0; i < h_slist_length (cmds); i++) {
+        mach_command_info_t *tmp = (mach_command_info_t *) h_slist_nth_data (cmds, i);
         if (tmp->type == LC_SOURCE_VERSION) {
             ret = (mach_source_version_command_t *) file_load_bytes (macho->file, size, tmp->off);
             
             if (!ret) {
-                g_print ("[*] Error: Failed to load LC_SOURCE_VERSION command from offset: 0x%llx\n");
+                debugf ("[*] Error: Failed to load LC_SOURCE_VERSION command from offset: 0x%llx\n");
                 return NULL;
             } else {
                 return ret;
@@ -404,7 +404,7 @@ char *mach_lc_source_version_string (mach_source_version_command_t *svc)
     uint64_t a, b, c, d, e;
 
     if (svc->cmdsize != sizeof(mach_source_version_command_t)) {
-        g_print ("Incorrect size\n");
+        debugf ("Incorrect size\n");
     }
 
     a = (svc->version >> 40) & 0xffffff;
@@ -518,7 +518,7 @@ mach_build_version_info_t *mach_lc_build_version_info (mach_build_version_comman
 
         inf->version = btv->version;
 
-        ret->tools = g_slist_append (ret->tools, inf);
+        ret->tools = h_slist_append (ret->tools, inf);
 
         next_off += sizeof(mach_build_version_command_t);
     }
@@ -547,7 +547,7 @@ char *mach_lc_load_dylinker_string_cmd (macho_t *macho, mach_load_dylinker_comma
  *  ---------------------------------
  * 
  *  Finds and creates a mach_uuid_command_t struct from a given macho
- *  by looping through each of the load commands in the macho->lcmds GSList. Load
+ *  by looping through each of the load commands in the macho->lcmds HSList. Load
  *  Commands like LC_UUID only occur once in each Mach-O file, so there is relatively 
  *  no danger of loading the wrong one.
  * 
@@ -561,14 +561,14 @@ mach_uuid_command_t *mach_lc_find_uuid_cmd (macho_t *macho)
     size_t size = sizeof (mach_uuid_command_t);
     mach_uuid_command_t *ret = malloc (size);
 
-    GSList *cmds = macho->lcmds;
-    for (int i = 0; i < g_slist_length (cmds); i++) {
-        mach_command_info_t *tmp = (mach_command_info_t *) g_slist_nth_data (cmds, i);
+    HSList *cmds = macho->lcmds;
+    for (int i = 0; i < h_slist_length (cmds); i++) {
+        mach_command_info_t *tmp = (mach_command_info_t *) h_slist_nth_data (cmds, i);
         if (tmp->type == LC_UUID) {
             ret = (mach_uuid_command_t *) file_load_bytes (macho->file, size, tmp->off);
             
             if (!ret) {
-                g_print ("[*] Error: Failed to load LC_UUID command from offset: 0x%llx\n");
+                debugf ("[*] Error: Failed to load LC_UUID command from offset: 0x%llx\n");
                 return NULL;
             } else {
                 return ret;
@@ -595,7 +595,7 @@ mach_uuid_command_t *mach_lc_find_uuid_cmd (macho_t *macho)
 char *mach_lc_uuid_string (mach_uuid_command_t *uuid)
 {
     if (uuid->cmdsize != sizeof(mach_uuid_command_t)) {
-        g_print ("Incorrect size\n");
+        debugf ("Incorrect size\n");
         return NULL;
     }
 
@@ -628,8 +628,8 @@ mach_symtab_command_t *mach_lc_find_symtab_cmd (macho_t *macho)
     mach_command_info_t *cmdinfo = mach_lc_find_given_cmd (macho, LC_SYMTAB);
     ret = (mach_symtab_command_t *) file_load_bytes (macho->file, size, cmdinfo->off);
 
-    g_print ("LC_SYMTAB: %d\n", LC_SYMTAB);
-    g_print ("test symtab: 0x%llx\n", ret->nsyms);
+    debugf ("LC_SYMTAB: %d\n", LC_SYMTAB);
+    debugf ("test symtab: 0x%llx\n", ret->nsyms);
 
     return ret;
 }
@@ -650,8 +650,8 @@ mach_dysymtab_command_t *mach_lc_find_dysymtab_cmd (macho_t *macho)
     mach_command_info_t *cmdinfo = mach_lc_find_given_cmd (macho, LC_SYMTAB);
     ret = (mach_dysymtab_command_t *) file_load_bytes (macho->file, size, cmdinfo->off);
 
-    g_print ("LC_DYSYMTAB: %d\n", LC_DYSYMTAB);
-    g_print ("test symtab: 0x%llx\n", ret->cmdsize);
+    debugf ("LC_DYSYMTAB: %d\n", LC_DYSYMTAB);
+    debugf ("test symtab: 0x%llx\n", ret->cmdsize);
 
     return ret;
 }

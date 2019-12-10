@@ -20,5 +20,5 @@ deps = [glib_dep]
 #
 #   dont quite know what im doing here. ignore for now.
 #
-libhelper_static = static_library('helper', sources, version : '1.0', dependencies: deps, include_directories : incdir)
-libhelper = shared_library('helper', sources, version : '1.0', dependencies: deps, include_directories : incdir)
+libhelper_static    =  static_library('helper', sources, version : '1.0', dependencies: deps, include_directories : incdir)
+libhelper           =  shared_library('helper', sources, version : '1.0', dependencies: deps, include_directories : incdir)

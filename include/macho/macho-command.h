@@ -151,7 +151,7 @@ typedef struct mach_build_version_info_t {
 	char		*sdk;
 
 	uint32_t	 ntools;
-	GSList 		*tools;
+	HSList 		*tools;
 } mach_build_version_info_t;
 
 /* Known values for the platform field above. */

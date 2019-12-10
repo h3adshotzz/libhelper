@@ -28,6 +28,8 @@
 #include <string.h>
 #include <sys/mman.h>
 
+#include "strutils.h"
+
 typedef struct file_t {
     FILE    *desc;      /* Loaded file */
     size_t   size;      /* Size of the file */

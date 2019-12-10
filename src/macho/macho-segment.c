@@ -44,7 +44,7 @@ mach_segment_command_64_t *mach_segment_command_load (file_t *file, off_t offset
     sc = (mach_segment_command_64_t *) file_load_bytes (file, sizeof(mach_segment_command_64_t), offset);
 
     if (!sc) {
-        g_print ("[*] Error: Problem loading Mach Segment Command at offset 0x%llx\n", offset);
+        debugf ("[*] Error: Problem loading Mach Segment Command at offset 0x%llx\n", offset);
         exit (0);
     } 
 
@@ -74,7 +74,7 @@ mach_segment_info_t *mach_segment_info_load (file_t *file, off_t offset)
 
     // Check that a segment was correctly loading from the offset at the file
     if (!segment) {
-        g_print ("[*] Error: Could not load Segment (64) at offset 0x%llx\n", offset);
+        debugf ("[*] Error: Could not load Segment (64) at offset 0x%llx\n", offset);
         exit (0);
     }
 
@@ -95,7 +95,7 @@ mach_segment_info_t *mach_segment_info_load (file_t *file, off_t offset)
         mach_section_64_t *sect = mach_section_load (file, offset);
 
         // Append the section to the sections list of the segment info struct
-        si->sections = g_slist_append (si->sections, sect);
+        si->sections = h_slist_append (si->sections, sect);
 
         // Increment the offset
         offset += sizeof (mach_section_64_t);
@@ -116,14 +116,14 @@ mach_segment_info_t *mach_segment_command_search (macho_t *mach, char *segname)
 {
     // Check the segname given is valid
     if (!segname) {
-        g_print ("[*] Segment name not valid\n");
+        debugf ("[*] Segment name not valid\n");
         exit (0);
     }
 
     // Get the amount of segment commands and check its more than 0
-    int c = g_slist_length (mach->scmds);
+    int c = h_slist_length (mach->scmds);
     if (!c) {
-        g_print ("[*] Error: No Segment Commands\n");
+        debugf ("[*] Error: No Segment Commands\n");
         exit (0);
     }
 
@@ -131,7 +131,7 @@ mach_segment_info_t *mach_segment_command_search (macho_t *mach, char *segname)
     for (int i = 0; i < c; i++) {
         
         // Grab the segment info
-        mach_segment_info_t *si = (mach_segment_info_t *) g_slist_nth_data (mach->scmds, i);
+        mach_segment_info_t *si = (mach_segment_info_t *) h_slist_nth_data (mach->scmds, i);
         mach_segment_command_64_t *s = si->segcmd;
 
         // Check if they match
@@ -141,7 +141,7 @@ mach_segment_info_t *mach_segment_command_search (macho_t *mach, char *segname)
     }
 
     // Output an error
-    g_print ("[*] Could not find Segment %s\n", segname);
+    debugf ("[*] Could not find Segment %s\n", segname);
     return NULL;
 }
 
@@ -149,20 +149,20 @@ mach_segment_info_t *mach_segment_command_search (macho_t *mach, char *segname)
 /**
  * 
  */
-GSList *mach_segment_get_list (macho_t *mach)
+HSList *mach_segment_get_list (macho_t *mach)
 {
     // Create a new list, this'll be returned
-    GSList *r = NULL;
+    HSList *r = NULL;
 
     // Go through all of them, add them to the list
-    for (int i = 0; i < (int) g_slist_length (mach->scmds); i++) {
+    for (int i = 0; i < (int) h_slist_length (mach->scmds); i++) {
         
         // Load the segment from the info struct, and add it to the list
-        mach_segment_info_t *si = (mach_segment_info_t *) g_slist_nth_data (mach->scmds, i);
+        mach_segment_info_t *si = (mach_segment_info_t *) h_slist_nth_data (mach->scmds, i);
         mach_segment_command_64_t *s = (mach_segment_command_64_t *) si->segcmd;
 
         // Add to the list
-        r = g_slist_append (r, s);
+        r = h_slist_append (r, s);
     }
 
     // Return the list
@@ -175,8 +175,8 @@ GSList *mach_segment_get_list (macho_t *mach)
  */
 mach_segment_info_t *mach_segment_find_with_name (macho_t *macho, char *segname)
 {
-    for (int i = 0; i < g_slist_length (macho->scmds); i++) {
-        mach_segment_info_t *inf = (mach_segment_info_t *) g_slist_nth_data (macho->scmds, i);
+    for (int i = 0; i < h_slist_length (macho->scmds); i++) {
+        mach_segment_info_t *inf = (mach_segment_info_t *) h_slist_nth_data (macho->scmds, i);
         mach_segment_command_64_t *segment = inf->segcmd;
 
         if (!strcmp(segment->segname, segname)) {
@@ -195,20 +195,20 @@ void mach_segment_command_dump (mach_segment_info_t *si)
     mach_segment_command_64_t *sc = si->segcmd;
 
     if (!sc) {
-        g_print ("[*] Error: Segment command not loaded properly!\n");
+        debugf ("[*] Error: Segment command not loaded properly!\n");
         exit (0);
     }
 
-    g_print ("Command:\t\t%s\n", mach_load_command_get_string ((mach_load_command_t *) sc));
-    g_print ("Segment Name:\t\t%s\n", sc->segname);
-    g_print ("VM Address:\t\t0x%llx\n", sc->vmaddr);
-    g_print ("VM Size:\t\t%llu\n", sc->vmsize);
-    g_print ("File Offset:\t\t0x%llx\n", sc->fileoff);
-    g_print ("File Size:\t\t%llu\n", sc->filesize);
-    g_print ("Max VM Protection:\t%d\n", sc->maxprot);
-    g_print ("Initial VM Protection:\t%d\n", sc->initprot);
-    g_print ("Number of Sections:\t%d\n", sc->nsects);
-    g_print ("Flags:\t\t\t%d\n\n", sc->flags);
+    debugf ("Command:\t\t%s\n", mach_load_command_get_string ((mach_load_command_t *) sc));
+    debugf ("Segment Name:\t\t%s\n", sc->segname);
+    debugf ("VM Address:\t\t0x%llx\n", sc->vmaddr);
+    debugf ("VM Size:\t\t%llu\n", sc->vmsize);
+    debugf ("File Offset:\t\t0x%llx\n", sc->fileoff);
+    debugf ("File Size:\t\t%llu\n", sc->filesize);
+    debugf ("Max VM Protection:\t%d\n", sc->maxprot);
+    debugf ("Initial VM Protection:\t%d\n", sc->initprot);
+    debugf ("Number of Sections:\t%d\n", sc->nsects);
+    debugf ("Flags:\t\t\t%d\n\n", sc->flags);
 }
 
 
@@ -237,7 +237,7 @@ mach_section_64_t *mach_section_load (file_t *file, off_t offset)
     s = (mach_section_64_t *) file_load_bytes (file, sizeof(mach_section_64_t), offset);
 
     if (!s) {
-        g_print ("[*] Error: Problem loading section at offset 0x%llx\n", offset);
+        debugf ("[*] Error: Problem loading section at offset 0x%llx\n", offset);
         exit (0);
     }
 
@@ -248,15 +248,15 @@ mach_section_64_t *mach_section_load (file_t *file, off_t offset)
 /**
  * 
  */
-GSList *mach_sections_load_from_segment (macho_t *macho, mach_segment_command_64_t *seg)
+HSList *mach_sections_load_from_segment (macho_t *macho, mach_segment_command_64_t *seg)
 {
-    GSList *ret = NULL;
+    HSList *ret = NULL;
     uint64_t offset = seg->vmaddr;
     
     for (int i = 0; i < (int) seg->nsects; i++) {
-        g_print ("Loading %lu bytes from 0x%llx\n", sizeof(mach_section_64_t), offset);
+        debugf ("Loading %lu bytes from 0x%llx\n", sizeof(mach_section_64_t), offset);
         mach_section_64_t *sect = (mach_section_64_t *) file_load_bytes (macho->file, sizeof(mach_section_64_t), offset);
-        ret = g_slist_append (ret, sect);
+        ret = h_slist_append (ret, sect);
 
         offset += sizeof(mach_section_64_t);
     }
@@ -272,20 +272,20 @@ mach_section_64_t *mach_search_section (mach_segment_info_t *info, char *sectnam
 {
     // Check the sectname given is valid
     if (!sectname || strlen(sectname) > 16) {
-        g_print ("[*] Section name not valid\n");
+        debugf ("[*] Section name not valid\n");
         exit (0);
     }
 
     // Check the length of the sections
-    int c = g_slist_length (info->sections);
+    int c = h_slist_length (info->sections);
     if (!c) {
-        g_print ("[*] Error: No Sections\n");
+        debugf ("[*] Error: No Sections\n");
         exit (0);
     }
 
     // Go through each of them, look for `sectname`
     for (int i = 0; i < c; i++) {
-        mach_section_64_t *tmp = (mach_section_64_t *) g_slist_nth_data (info->sections, i);
+        mach_section_64_t *tmp = (mach_section_64_t *) h_slist_nth_data (info->sections, i);
         if (!strcmp(tmp->sectname, sectname)) return tmp;
     }
 
@@ -298,14 +298,14 @@ mach_section_64_t *mach_search_section (mach_segment_info_t *info, char *sectnam
  */
 mach_section_64_t *mach_find_section (macho_t *macho, int sect)
 {
-    GSList *segments = macho->scmds;
+    HSList *segments = macho->scmds;
     int count = 0;
-    for (int i = 0; i < g_slist_length (segments); i++) {
-        mach_segment_info_t *seg = (mach_segment_info_t *) g_slist_nth_data (segments, i);
+    for (int i = 0; i < h_slist_length (segments); i++) {
+        mach_segment_info_t *seg = (mach_segment_info_t *) h_slist_nth_data (segments, i);
         for (int k = 0; k < seg->segcmd->nsects; k++) {
             count++;
             if (count == sect) {
-                return (mach_section_64_t *) g_slist_nth_data (seg->sections, k);
+                return (mach_section_64_t *) h_slist_nth_data (seg->sections, k);
             }
         }
     }
@@ -336,16 +336,16 @@ mach_section_info_t *mach_load_section_data (macho_t *macho, char *segment, char
  */
 void mach_section_print (mach_section_64_t *section)
 {
-    g_print ("Section:\t%s\n", section->sectname);
-    g_print ("Segment:\t%s\n", section->segname);
-    g_print ("Address:\t0x%llx\n", section->addr);
-    g_print ("Size:\t\t%llu\n", section->size);
-    g_print ("Offset:\t\t0x%x\n", section->offset);
-    g_print ("Align:\t\t%u\n", section->align);
-    g_print ("Reloff:\t\t0x%x\n", section->reloff);
-    g_print ("Nreloc:\t\t%u\n", section->nreloc);
-    g_print ("Flags:\t\t%u\n", section->flags);
-    g_print ("Indr Sym Index:\t%d\n", section->reserved1);
-    g_print ("Reserved 2:\t%d\n", section->reserved2);
-    g_print ("Reserved 3:\t%d\n\n", section->reserved3);
+    debugf ("Section:\t%s\n", section->sectname);
+    debugf ("Segment:\t%s\n", section->segname);
+    debugf ("Address:\t0x%llx\n", section->addr);
+    debugf ("Size:\t\t%llu\n", section->size);
+    debugf ("Offset:\t\t0x%x\n", section->offset);
+    debugf ("Align:\t\t%u\n", section->align);
+    debugf ("Reloff:\t\t0x%x\n", section->reloff);
+    debugf ("Nreloc:\t\t%u\n", section->nreloc);
+    debugf ("Flags:\t\t%u\n", section->flags);
+    debugf ("Indr Sym Index:\t%d\n", section->reserved1);
+    debugf ("Reserved 2:\t%d\n", section->reserved2);
+    debugf ("Reserved 3:\t%d\n\n", section->reserved3);
 }

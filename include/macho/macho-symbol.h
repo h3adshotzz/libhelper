@@ -74,7 +74,7 @@ typedef struct nlist {
  */
 typedef struct mach_symbol_table_t {
     mach_symtab_command_t   cmd;        /* LC_SYMTAB */
-    GSList                  *symbols;   /* List of symbols */
+    HSList                  *symbols;   /* List of symbols */
 } mach_symbol_table_t;
 
 

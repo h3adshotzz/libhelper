@@ -66,7 +66,7 @@ typedef struct mach_segment_command_64_t {
 typedef struct mach_segment_info_t {
     mach_segment_command_64_t   *segcmd;    /* Segment command */
     uint64_t                    padding;
-    GSList                      *sections;  /* List of sections */
+    HSList                      *sections;  /* List of sections */
 } mach_segment_info_t;
 
 
@@ -78,7 +78,7 @@ mach_segment_command_64_t *mach_segment_command_load (file_t *file, off_t offset
 mach_segment_info_t *mach_segment_info_create ();
 mach_segment_info_t *mach_segment_info_load (file_t *file, off_t offset);
 mach_segment_info_t *mach_segment_command_search (macho_t *mach, char *segname);
-GSList *mach_segment_get_list (macho_t *mach);
+HSList *mach_segment_get_list (macho_t *mach);
 void mach_segment_command_dump (mach_segment_info_t *si);
 
 
@@ -122,7 +122,7 @@ typedef struct mach_section_info_t {
  */
 mach_section_64_t *mach_section_create ();
 mach_section_64_t *mach_section_load (file_t *file, off_t offset);
-GSList *mach_sections_load_from_segment (macho_t *macho, mach_segment_command_64_t *seg);
+HSList *mach_sections_load_from_segment (macho_t *macho, mach_segment_command_64_t *seg);
 void mach_section_print (mach_section_64_t *section);
 
 mach_section_64_t *mach_search_section (mach_segment_info_t *info, char *sectname);

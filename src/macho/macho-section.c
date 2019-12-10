@@ -40,7 +40,7 @@ mach_section_64_t *mach_section_load (file_t *file, off_t offset)
     s = (mach_section_64_t *) file_load_bytes (file, sizeof(mach_section_64_t), offset);
 
     if (!s) {
-        g_print ("[*] Error: Problem loading section at offset 0x%llx\n", offset);
+        debugf ("[*] Error: Problem loading section at offset 0x%llx\n", offset);
         exit (0);
     }
 
@@ -51,15 +51,15 @@ mach_section_64_t *mach_section_load (file_t *file, off_t offset)
 /**
  * 
  */
-GSList *mach_sections_load_from_segment (macho_t *macho, mach_segment_command_64_t *seg)
+HSList *mach_sections_load_from_segment (macho_t *macho, mach_segment_command_64_t *seg)
 {
-    GSList *ret = NULL;
+    HSList *ret = NULL;
     uint64_t offset = seg->vmaddr;
     
     for (int i = 0; i < (int) seg->nsects; i++) {
-        g_print ("Loading %lu bytes from 0x%llx\n", sizeof(mach_section_64_t), offset);
+        debugf ("Loading %lu bytes from 0x%llx\n", sizeof(mach_section_64_t), offset);
         mach_section_64_t *sect = (mach_section_64_t *) file_load_bytes (macho->file, sizeof(mach_section_64_t), offset);
-        ret = g_slist_append (ret, sect);
+        ret = h_slist_append (ret, sect);
 
         offset += sizeof(mach_section_64_t);
     }
@@ -73,13 +73,13 @@ GSList *mach_sections_load_from_segment (macho_t *macho, mach_segment_command_64
  */
 void mach_section_print (mach_section_64_t *section)
 {
-    g_print ("Section:\t%s\n", section->sectname);
-    g_print ("Segment:\t%s\n", section->segname);
-    g_print ("Address:\t0x%llx\n", section->addr);
-    g_print ("Size:\t\t%llu\n", section->size);
-    g_print ("Offset:\t\t0x%x\n", section->offset);
-    g_print ("Align:\t\t%u\n", section->align);
-    g_print ("Reloff:\t\t0x%x\n", section->reloff);
-    g_print ("Nreloc:\t\t%u\n", section->nreloc);
-    g_print ("Flags:\t\t%u\n\n", section->flags);
+    debugf ("Section:\t%s\n", section->sectname);
+    debugf ("Segment:\t%s\n", section->segname);
+    debugf ("Address:\t0x%llx\n", section->addr);
+    debugf ("Size:\t\t%llu\n", section->size);
+    debugf ("Offset:\t\t0x%x\n", section->offset);
+    debugf ("Align:\t\t%u\n", section->align);
+    debugf ("Reloff:\t\t0x%x\n", section->reloff);
+    debugf ("Nreloc:\t\t%u\n", section->nreloc);
+    debugf ("Flags:\t\t%u\n\n", section->flags);
 }

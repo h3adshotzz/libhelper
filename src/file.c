@@ -28,7 +28,7 @@ file_t *file_load (const char *path)
 
 	/* Set the file path */
 	if (!path) {
-		g_print ("[*] Error: File path no valid.\n");
+		errorf ("[*] Error: File path no valid.\n");
 		exit (0);
 	}
 	ret->path = (char *) path;
@@ -36,7 +36,7 @@ file_t *file_load (const char *path)
 	/* Load the file */
 	ret->desc = fopen (ret->path, "rb");
 	if (!ret->desc) {
-		g_print ("[*] Error: File could not be loaded\n");
+		errorf ("[*] Error: File could not be loaded\n");
 		exit(0);
 	}
 

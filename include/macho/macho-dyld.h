@@ -43,8 +43,8 @@
 #include <glib-2.0/glib.h>
 
 typedef struct dyld_rebase_info {
-    GSList      *opcodes;       /* List of Opcodes */
-    GSList      *actions;       /* List of Actions */
+    HSList      *opcodes;       /* List of Opcodes */
+    HSList      *actions;       /* List of Actions */
 } dyld_rebase_info;
 
 

@@ -83,9 +83,9 @@ macho_t *macho_load (file_t *file)
      *  than one, they are also stored within a list.
      * 
      */
-    GSList *segcmds = NULL;
-    GSList *lcmds = NULL;
-    GSList *dylibs = NULL;
+    HSList *segcmds = NULL;
+    HSList *lcmds = NULL;
+    HSList *dylibs = NULL;
 
     off_t offset = sizeof(mach_header_t);
 
@@ -126,8 +126,8 @@ macho_t *macho_load (file_t *file)
             dylibinfo->type = lc->type;
 
             // Add it to the list
-            dylibs = g_slist_append (dylibs, dylibinfo);
-            lcmds = g_slist_append (lcmds, lc);
+            dylibs = h_slist_append (dylibs, dylibinfo);
+            lcmds = h_slist_append (lcmds, lc);
         }
         
         else {
@@ -136,7 +136,7 @@ macho_t *macho_load (file_t *file)
             lc->off = offset;
 
             // Append the Load Command to the mach->lcmds GSList.
-            lcmds = g_slist_append (lcmds, lc);
+            lcmds = h_slist_append (lcmds, lc);
         }
 
         // Increment the offset by the size of the Load Command
