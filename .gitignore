@@ -55,6 +55,8 @@ dkms.conf
 # Meson build directory and test directory
 build/
 test/
+kernel.*
+kernelcache.*
 
 # Fuck off DS Store
 .DS_Store

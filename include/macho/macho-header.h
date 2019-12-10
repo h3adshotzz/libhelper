@@ -205,6 +205,37 @@ typedef struct mach_header_t {
 } mach_header_t;
 
 
+/**
+ * 	FAT Header (Universal Binary)
+ * 
+ * 	FAT file header for Universal Binaries. This appears at the top of a universal
+ * 	file, with a summary of all the architectures contained within it.
+ * 
+ */
+typedef struct fat_header_t {
+	uint32_t		magic;			/* 0xcafebabe */
+	uint32_t		nfat_arch;		/* number of fat_arch that follow */
+} fat_header_t;
+
+
+/**
+ * 	fat_arch defines an architecture that is part of the universal binary.
+ * 
+ */
+struct fat_arch {
+	cpu_type_t		cputype;		/* cpu type for this arch */
+	cpu_subtype_t	cpusubtype;		/* cpu sub type for this arch */
+	uint32_t		offset;			/* offset for where this arch begins */
+	uint32_t		size;			/* size of this archs macho */
+	uint32_t		align;			/* byte align */
+};
+
+#define OSSwapInt32(x)	_OSSwapInt32(x)
+
+fat_header_t *swap_header_bytes (fat_header_t *header);
+struct fat_arch *swap_fat_arch_bytes (struct fat_arch *a);
+
+
 //////////////////////////////////////////////////////////////////////////
 //                       Function Definitions                           //
 //////////////////////////////////////////////////////////////////////////

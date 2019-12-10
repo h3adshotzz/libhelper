@@ -24,9 +24,82 @@
  *                  === The Libhelper Project ===
  *                          Mach-O Parser
  * 
- *  Documentation relating to the macho-command.h header file:          |
- *                                                                      |
- *                                                                      |
+ * 	This header file implements structures and functions for parsing and
+ * 	handling Mach-O Load Commands. Every load command is defined and has
+ * 	the structures and functions necessary to handle them.
+ * 
+ * 	== Background
+ * 
+ * 		Mach-O Files have what are called Load Commands. They are small
+ * 	peices of data, only a few bytes, aligned after the Mach-O Header
+ * 	and follow the same format.
+ * 
+ * 	Each Load Command has, at the start, a `cmd` property, and a `cmdsize`
+ * 	property. The `cmd` property defines what type of Load Command it is,
+ * 	so for example, LC_SEGMENT_64. So this can determine how we handle the
+ * 	command. The `cmdsize` property then defines how big the command is,
+ * 	so we know how much memory to allocate, and where the next command is.
+ * 
+ * 	
+ * 	== Load Command Info Struct.
+ * 
+ * 		With some Load Commands, we need to remember the offset of the
+ * 	Command within the file, for example the LC_RPATH command, which has
+ * 	a string situtated at:
+ * 
+ * 					stroff = base_offset + sizeof(LC_RPATH).
+ * 	
+ * 	To deal with this, I implemented the mach_command_info_t structure
+ * 	which has the following layout:
+ * 	
+ * 		mach_load_command_t			lc;
+ * 		uint32_t					type;
+ * 		uint32_t					off;
+ * 
+ * 	So Load Commands are stored in a HSList within a macho_t struct. You
+ * 	can then pick any of the commands, either by index in the list or by
+ * 	calling mach_lc_find_given_cmd(). Then if you get a command where data
+ * 	is included in the `cmdsize` property, but placed after the structure
+ * 	and not included, you can access the `off` property and load the data
+ * 	like so:
+ * 
+ * 		// Find the Load Command
+ * 		mach_load_command_info_t *info = 
+ * 								mach_lc_find_given_cmd (macho, LC_RPATH);
+ * 		
+ * 		// Create the raw Load Command
+ * 		// Here we are using the offset of the command, stored in
+ * 		// the info struct, and loading info->lc->cmdsize bytes from
+ * 		// that offset into the correct LC Struct for the type.
+ * 		mach_rpath_command_t *cmd = 
+ * 				(mach_rpath_command_t *) file_load_bytes (macho->file,
+ * 														info->lc->cmdsize,
+ * 														info->off);
+ * 
+ * 		// Calculate the size of the extra data
+ * 		size_t dsize = cmdsize - sizeof(mach_rpath_command_t);
+ * 		
+ * 	A quick note: Commands that have data placed after the commmand, they
+ * 	include an offset, which is the offset of the extra data from the base
+ * 	offset of the Command:
+ * 
+ * 		// Calculate the file offset of the extra data.
+ * 		uint32_t offset = info->off + cmd->offset;
+ * 
+ * 		// We can then, like we did with loading the actual command,
+ * 		// use file_load_bytes, passing the file, the calculated size,
+ * 		// and our calculated offset for the data.
+ * 		char *data = file_load_bytes (macho->file, dsize, offset);
+ * 
+ * 		// Print the data
+ * 		debugf("Loaded data: %s\n", data);
+ * 
+ * 
+ * 	== Summary
+ * 	
+ * 		More documentation is given for particular structs throughout this
+ * 		Header.
+ * 		
  * 
  *  ----------------
  *  Original Author:
@@ -36,11 +109,6 @@
 
 /**
  *  [Development Notes & TODOs]
- * 
- *      (HIGH PRIORITY)
- *      - Move over everything currently done in src/macho/command.c
- *      - Ensure docuemntation is included here as well, not just the .c
- *      - Test extensively to ensure nothing was broken when moving code
  * 
  *      (MEDIUM PRIORITY)
  *      - Add additional Load Commands.
@@ -57,6 +125,7 @@
 #include "macho-symbol.h"
 #include "macho.h"
 #include "file.h"
+#include "strutils.h"
 
 
 /**
@@ -95,16 +164,26 @@ typedef struct mach_load_command_t {
  * 	Mach-O Load Command Info structure.
  * 
  * 	Used to carry the offset of the load command in the file with the load command structure.
- * 	I guess it is architecture specific, because the offset is a uint64_t.
  */
 typedef struct mach_command_info_t {
 	mach_load_command_t		*lc;		/* load command structure */
 	uint32_t				type;		/* load command type */
-	uint64_t				off;		/* offset within the file */
+	uint32_t				off;		/* offset within the file */
 } mach_command_info_t;
 
 #define MACH_LOAD_COMMAND_SIZE		sizeof(mach_load_command_t)
 #define MACH_COMMAND_INFO_SIZE		sizeof(mach_command_info_t)
+
+
+mach_load_command_t 	*mach_load_command_create ();
+mach_command_info_t 	*mach_command_info_create ();
+mach_command_info_t 	*mach_command_info_load (file_t *file, off_t offset);
+void 					 mach_load_command_info_print (mach_command_info_t *cmd);
+void 					 mach_load_command_print (void *cmd, int flag);
+char 					*mach_load_command_get_string (mach_load_command_t *lc);
+
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
 
 
 /*
@@ -116,6 +195,14 @@ typedef struct mach_source_version_command_t {
     uint32_t  	cmdsize;		/* 16 */
     uint64_t  	version;		/* A.B.C.D.E packed as a24.b10.c10.d10.e10 */
 } mach_source_version_command_t;
+
+
+mach_source_version_command_t 	*mach_lc_find_source_version_cmd (macho_t *macho);
+char 							*mach_lc_source_version_string (mach_source_version_command_t *svc);
+
+
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
 
 
 /**
@@ -132,17 +219,39 @@ typedef struct mach_build_version_command_t {
     uint32_t	ntools;		/* number of tool entries following this */
 } mach_build_version_command_t;
 
+
+/**
+ * 	The build_tool_version are found after the mach_build_version_command_t
+ * 	in the Mach-O file. The `ntools` prop defines how many build_tool_version
+ * 	structs are present. 
+ * 
+ * 	It defines a build tool, and it's version. For example:
+ * 		LD 520.0.0
+ */
 struct build_tool_version
 {
 	uint32_t	tool;		/* enum for the tool */
     uint32_t	version;	/* version number of the tool */
 };
 
+
+/**
+ * 	This is a neater version of build_tool_version that has an actual char *
+ * 	for the tool name, and then the build version as is found in build_tool_version.
+ * 
+ */
 typedef struct build_tool_info_t {
 	char		*tool;
 	uint32_t	version;
 } build_tool_info_t;
 
+
+/**
+ * 	This struct brings all the Build version types together. It contains the 
+ * 	original build version Load Command, but also string reps of the platform
+ * 	minos, sdk, the number of build tools, and a HSList of tools.
+ * 
+ */
 typedef struct mach_build_version_info_t {
 	mach_build_version_command_t *cmd;
 	
@@ -172,6 +281,13 @@ typedef struct mach_build_version_info_t {
 #define TOOL_LD	3
 
 
+mach_build_version_info_t 		*mach_lc_build_version_info (mach_build_version_command_t *bvc, off_t offset, macho_t *macho);
+
+
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+
+
 /**
  * 	The mach_uuid_command_t is an optional load command containing
  * 	the UUID of the binary.
@@ -181,6 +297,14 @@ typedef struct mach_uuid_command_t {
 	uint32_t	cmdsize;		/* sizeof(mach_uuid_command_t) */
 	uint8_t		uuid[16];		/* 128-bit UUID */
 } mach_uuid_command_t;
+
+
+mach_uuid_command_t 		*mach_lc_find_uuid_cmd (macho_t *macho);
+char 						*mach_lc_uuid_string (mach_uuid_command_t *cmd);
+
+
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
 
 
 /**
@@ -304,6 +428,10 @@ typedef struct mach_dyld_info_command_t {
 } mach_dyld_info_command_t;
 
 
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+
+
 /*
  * 	A program that uses a dynamic linker contains a dylinker_command to identify
  * 	the name of the dynamic linker (LC_LOAD_DYLINKER).  And a dynamic linker
@@ -314,10 +442,18 @@ typedef struct mach_dyld_info_command_t {
  * 
  */
 typedef struct mach_dylinker_command_t {
-	uint32_t	cmd;
-	uint32_t	cmdsize;
-	
+	uint32_t		cmd;
+	uint32_t		cmdsize;
+
+	uint32_t		offset;
+#ifndef __LP64__
+	char			*ptr;
+#endif
 } mach_dylinker_command_t; 
+
+
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
 
 
 /**
@@ -336,17 +472,23 @@ typedef struct mach_dylinker_command_t {
  * 		s = cmdsize - (sizeof(uint32_t) * 4);
  * 
  */
-
 typedef struct dylib_vers_t {
 	uint32_t			a;			/* XXXX.00.00 */
 	uint32_t			b;			/* 0000.XX.00 */
 	uint32_t			c;			/* 0000.00.XX */
 } dylib_vers_t;
 
+
+/**
+ * 	dylib struct defines a dynamic library. The name of the library is
+ * 	placed after the structure, but is included in the cmdsize of the
+ * 	mach_dylib_command_t.
+ * 
+ */		
 struct dylib {
-	uint32_t		offset;		/* Offset of the library name in the string table */
+	uint32_t		offset;					/* Offset of the library name in the string table */
 #ifndef __LP64__
-	char			*ptr;		/* pointer to the string */
+	char			*ptr;					/* pointer to the string */
 #endif
 	
 	uint32_t		timestamp;				/* lib build time stamp */
@@ -354,19 +496,36 @@ struct dylib {
 	uint32_t		compatibility_version;	/* lib compatibility vers numb */
 };
 
-#include "strutils.h"
 
+/**
+ * 	Base mach_dylib_command_t Load Command that matches that in loader.h
+ * 
+ */	
 typedef struct mach_dylib_command_t {
 	uint32_t		cmd;		/* LC_ID_DYLIB, LC_LOAD_DYLIB, LC_LOAD_WEAK_DYLIB, LC_REEXPORT_DYLIB */
 	uint32_t		cmdsize;	/* Includes pathname string */
 	struct dylib	dylib;
 } mach_dylib_command_t;
 
+
+/**
+ * 	Struct holding the original load command struct, which type of dylib
+ * 	it is, and the pre-calculated name for the library. 
+ * 
+ */
 typedef struct mach_dylib_command_info_t {
 	mach_dylib_command_t	*dylib;
 	uint32_t				 type;
 	char					*name;
 } mach_dylib_command_info_t;
+
+
+char 		*mach_lc_load_dylib_format_version (uint32_t vers);
+char 		*mach_lc_dylib_get_type_string (mach_dylib_command_t *dylib);
+
+
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
 
 
 /**
@@ -383,6 +542,13 @@ typedef struct mach_load_dylinker_command_t {
 } mach_load_dylinker_command_t;
 
 
+char 		*mach_lc_load_dylinker_string_cmd (macho_t *macho, mach_load_dylinker_command_t *dylinker, off_t offset);
+
+
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+
+
 /**
  * 	LC_MAIN stuff
  */
@@ -392,6 +558,10 @@ typedef struct mach_entry_point_command_t {
 	uint64_t		entryoff;
 	uint64_t		stacksize;
 } mach_entry_point_command_t;
+
+
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
 
 
 /**
@@ -408,6 +578,10 @@ typedef struct mach_linkedit_data_command_t {
 } mach_linkedit_data_command_t;
 
 
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+
+
 /**
  * 	LC_RPATH
  */
@@ -421,77 +595,17 @@ typedef struct mach_rpath_command_t {
 #endif
 } mach_rpath_command_t;
 
+
 //////////////////////////////////////////////////////////////////////////
-//                       Function Definitions                           //
+//                 Other Function Definitions                           //
 //////////////////////////////////////////////////////////////////////////
 
-// TODO: Add Docs
 
-/**
- *  Functions for creating and loading mach_load_command_info_t and 
- *  mach_command_info_t structs safely.
- * 
- */
-mach_load_command_t *mach_load_command_create ();
-mach_command_info_t *mach_command_info_create ();
-mach_command_info_t *mach_command_info_load (file_t *file, off_t offset);
+mach_command_info_t 	*mach_lc_find_given_cmd (macho_t *macho, int cmd);
+mach_symtab_command_t 	*mach_lc_find_symtab_cmd (macho_t *macho);
 
-
-/**
- *  Functions for printing Load Command data, and calculating string
- *  representations for particular properties.
- */ 
-void mach_load_command_info_print (mach_command_info_t *cmd);
-void mach_load_command_print (void *cmd, int flag);
-char *mach_load_command_get_string (mach_load_command_t *lc);
-
-
-/**
- * 	LC_SOURCE_VERSION functions
- */
-mach_source_version_command_t *mach_lc_find_source_version_cmd (macho_t *macho);
-char *mach_lc_source_version_string (mach_source_version_command_t *svc);
-
-
-/**
- * 	LC_BUILD_VERSION functions
- */
-mach_build_version_info_t *mach_lc_build_version_info (mach_build_version_command_t *bvc, off_t offset, macho_t *macho);
-
-
-/**
- * 	LC_UUID functions
- */
-mach_uuid_command_t *mach_lc_find_uuid_cmd (macho_t *macho);
-char *mach_lc_uuid_string (mach_uuid_command_t *cmd);
-
-
-/**
- * 	LC_LOAD_DYLINKER
- */
-char *mach_lc_load_dylinker_string_cmd (macho_t *macho, mach_load_dylinker_command_t *dylinker, off_t offset);
-
-
-/**
- * 	LC_SYMTAB
- */
-mach_command_info_t *mach_lc_find_given_cmd (macho_t *macho, int cmd);
-mach_symtab_command_t *mach_lc_find_symtab_cmd (macho_t *macho);
-
-
-/**
- * 	LC_DYSYMTAB
- */
 mach_dysymtab_command_t *mach_lc_find_dysymtab_cmd (macho_t *macho);
 
-
-/**
- * 	LC_ID_DYLIB, LC_LOAD_DYLIB, LC_LOAD_WEAK_DYLIB, LC_REEXPORT_DYLIB
- */
-char *mach_lc_load_dylib_format_version (uint32_t vers);
-char *mach_lc_dylib_get_type_string (mach_dylib_command_t *dylib);
-
-
-char *mach_lc_load_str (macho_t *macho, uint32_t cmdsize, uint32_t struct_size, off_t cmd_offset, off_t str_offset);
+char 					*mach_lc_load_str (macho_t *macho, uint32_t cmdsize, uint32_t struct_size, off_t cmd_offset, off_t str_offset);
 
 #endif /* libhelper_macho_command_h */

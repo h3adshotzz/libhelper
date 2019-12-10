@@ -77,6 +77,29 @@ mach_header_t *mach_header_load (file_t *file)
     } else if (header->magic == MACH_CIGAM_UNIVERSAL || header->magic == MACH_MAGIC_UNIVERSAL) {
         debugf ("[*] Detected Universal Mach-O Binary!\n");
         debugf ("[*] Error: Cannot handle Universal Binaries yet. Aborting!\n");
+        
+        fat_header_t *fat_header = (fat_header_t *) file_load_bytes (file, sizeof(fat_header_t), 0);
+        fat_header = swap_header_bytes (fat_header);
+
+        printf ("magic:\t0x%08x\n", fat_header->magic);
+        printf ("nfat_arch:\t0x%08x\n\n", fat_header->nfat_arch);
+
+        uint32_t offset = sizeof (fat_header_t);
+        for (int i = 0; i < fat_header->nfat_arch; i++) {
+            struct fat_arch *arch = (struct fat_arch *) 
+                        file_load_bytes (file, sizeof(struct fat_arch), offset);
+            arch = swap_fat_arch_bytes (arch);
+
+            printf ("arch %d\n", i);
+            printf ("cputype:\t%s (0x%08x)\n", mach_header_read_cpu_type(arch->cputype), arch->cputype);
+            printf ("cpusubtype:\t0x%08x\n", arch->cpusubtype);
+            printf ("offset:\t\t0x%08x\n", arch->offset);
+            printf ("size:\t\t0x%08x\n", arch->size);
+            printf ("align:\t\t0x%08x\n\n", arch->align);
+
+            offset += sizeof(struct fat_arch);
+        }
+        
         exit (0);
     } else {
         debugf ("[*] Error: Could not determine Mach-O type with Magic 0x%x. Aborting!\n", header->magic);
@@ -176,4 +199,30 @@ void mach_header_print_summary (mach_header_t *header)
     debugf ("LC Size: \t%d\n", header->sizeofcmds);
 
     debugf ("------------------\n\n");
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+
+
+/**
+ * 
+ */
+fat_header_t *swap_header_bytes (fat_header_t *header)
+{
+    header->magic = OSSwapInt32(header->magic);
+    header->nfat_arch = OSSwapInt32(header->nfat_arch);
+    return header;
+}
+
+
+struct fat_arch *swap_fat_arch_bytes (struct fat_arch *a)
+{
+    a->cputype = OSSwapInt32(a->cputype);
+    a->cpusubtype = OSSwapInt32(a->cpusubtype);
+    a->offset = OSSwapInt32(a->offset);
+    a->size = OSSwapInt32(a->size);
+    a->align = OSSwapInt32(a->align);
+    return a;
 }
