@@ -91,3 +91,21 @@ int file_read (const char *path, unsigned char **buf, unsigned int *len)
 	*len = size;
 	return size;
 }
+
+void file_write (char *filename, file_t *file)
+{
+
+}
+
+int file_write_new (char *filename, unsigned char *buf, size_t size)
+{
+	FILE *f = fopen (filename, "wb");
+	if (!f) {
+		return -1;
+	}
+
+	fwrite (buf, sizeof(char), size, f);
+	fclose(f); 
+
+	return size;
+}

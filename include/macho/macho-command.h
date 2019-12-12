@@ -596,6 +596,24 @@ typedef struct mach_rpath_command_t {
 } mach_rpath_command_t;
 
 
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+
+
+/**
+ * 	LC_ENCRYPTION_INFO
+ */	
+typedef struct mach_crypto_command_64_t {
+	uint32_t	cmd;		/* LC_ENCRYPTION_INFO_64 */
+   	uint32_t	cmdsize;	/* sizeof(struct encryption_info_command_64) */
+   	uint32_t	cryptoff;	/* file offset of encrypted range */
+   	uint32_t	cryptsize;	/* file size of encrypted range */
+   	uint32_t	cryptid;	/* which enryption system,
+				   0 means not-encrypted yet */
+   	uint32_t	pad;		/* padding to make this struct's size a multiple
+				   of 8 bytes */
+} mach_crypto_command_64_t;
+
 //////////////////////////////////////////////////////////////////////////
 //                 Other Function Definitions                           //
 //////////////////////////////////////////////////////////////////////////

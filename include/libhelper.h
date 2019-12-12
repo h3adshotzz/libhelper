@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include "strutils.h"
 #include "file.h"
+#include "version.h"
 
 char *libhelper_version_string ();
 

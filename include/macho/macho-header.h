@@ -81,6 +81,8 @@
 #include "consts/macho-header-const.h"
 #include "file.h"
 
+#include "hslist.h"
+
 /**
  * 	Capability bits used in the definition of cpu_type. These are used to
  * 	calculate the value of the 64bit CPU Type's by performing a logical OR
@@ -180,9 +182,27 @@ typedef enum cpu_type_t {
 
 // TODO
 typedef enum cpu_subtype_t {
-	CPU_SUBTYPE_ANY = -1
+	CPU_SUBTYPE_ANY = -1,
+
+	CPU_SUBTYPE_ARM64_ALL = 0,
+	CPU_SUBTYPE_ARM64_V8 = 1,
+	CPU_SUBTYPE_ARM64E = 2
 } cpu_subtype_t;
 
+
+/**
+ * 	Mach-O Header type flag.
+ * 
+ * 	Two flags that determine whether a file is a Mach-O or a FAT file containg
+ * 	multiple Mach-O's for different arhcitectures.
+ * 
+ */
+typedef enum mach_header_type_t {
+	MH_TYPE_UNKNOWN = -1,
+	MH_TYPE_MACHO64 = 1,
+	MH_TYPE_MACHO32,
+	MH_TYPE_FAT
+} mach_header_type_t;
 
 /**
  *  Mach-O Header.
@@ -230,6 +250,17 @@ struct fat_arch {
 	uint32_t		align;			/* byte align */
 };
 
+
+/**
+ * 	Universal Binary header with parsed and verified data about containing
+ * 	architectures.
+ */
+typedef struct fat_header_info_t {
+	fat_header_t	*header;
+	HSList			*archs;
+} fat_header_info_t;
+
+
 #define OSSwapInt32(x)	_OSSwapInt32(x)
 
 fat_header_t *swap_header_bytes (fat_header_t *header);
@@ -251,6 +282,34 @@ struct fat_arch *swap_fat_arch_bytes (struct fat_arch *a);
  *  Returns:    A mach_header_t structure with sufficient allocated memory.
  */
 mach_header_t       *mach_header_create ();
+
+
+/**
+ *  Function:   mach_header_verify
+ *  ----------------------------------
+ * 
+ *  Verifies the magic number of a given file, then returns a flag so the caller
+ *  can proceed to either load a Mach-O or parse a FAT header.
+ *  
+ *  file:       The verified Mach-O file.
+ * 
+ *  Returns:    A header type flag.
+ */
+mach_header_type_t *mach_header_verify (file_t *file);
+
+
+/**
+ *  Function:   mach_universal_load
+ *  ----------------------------------
+ * 
+ *  Loads a raw Universal Mach-O Header from a given offset in a verified file, and
+ *  returns the resulting structure.
+ *  
+ *  file:       The verified file.
+ * 
+ *  Returns:    A verified Universal/FAT Mach Header structure.
+ */
+fat_header_info_t *mach_universal_load (file_t *file);
 
 
 /**
@@ -281,6 +340,19 @@ char *mach_header_read_cpu_type (cpu_type_t type);
 
 
 /**
+ *  Function:   mach_header_read_cpu_sub_type
+ *  -------------------------------------
+ * 
+ *  Returns a decoded string of header->cpusubtype.
+ * 
+ *  type:       The cpu_subtype_t from the Mach-O Header.
+ * 
+ *  Returns:    Decoded CPU sub type String.
+ */
+char *mach_header_read_cpu_sub_type (cpu_subtype_t type);
+
+
+/**
  *  Function:   mach_header_read_file_type
  *  -------------------------------------
  * 
@@ -291,6 +363,19 @@ char *mach_header_read_cpu_type (cpu_type_t type);
  *  Returns:    Decoded header->filetype.
  */
 char *mach_header_read_file_type (uint32_t type);
+
+
+/**
+ *  Function:   mach_header_read_file_type_short
+ *  -------------------------------------
+ * 
+ *  Returns a decoded string of header->filetype.
+ * 
+ *  type:       The header->filetype uint32_t from the Mach-O Header.
+ * 
+ *  Returns:    Decoded header->filetype.
+ */
+char *mach_header_read_file_type_short (uint32_t type);
 
 
 /**

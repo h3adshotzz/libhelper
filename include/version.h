@@ -1,0 +1,1 @@
+#define LIBHELPER_VERSION_LONG  "libhelper-1000.232.13.1"

@@ -44,6 +44,88 @@ mach_header_t *mach_header_create ()
 
 
 /**
+ *  Function:   mach_header_verify
+ *  ----------------------------------
+ * 
+ *  Verifies the magic number of a given file, then returns a flag so the caller
+ *  can proceed to either load a Mach-O or parse a FAT header.
+ *  
+ *  file:       The verified Mach-O file.
+ * 
+ *  Returns:    A header type flag.
+ */
+mach_header_type_t *mach_header_verify (file_t *file)
+{
+    // Assume that it is a fat header as its a smaller structure.
+    fat_header_t *fat = (fat_header_t *) file_load_bytes (file, sizeof (uint32_t), 0);
+    uint32_t magic = OSSwapInt32(fat->magic);
+    if (magic == MACH_CIGAM_64 || magic == MACH_MAGIC_64) {
+        return MH_TYPE_MACHO64;
+    } else if (magic == MACH_CIGAM_32 || magic == MACH_MAGIC_32) {
+        return MH_TYPE_MACHO32;
+    } else if (magic == MACH_MAGIC_UNIVERSAL || magic == MACH_MAGIC_UNIVERSAL) {
+        return MH_TYPE_FAT;
+    } else {
+        return MH_TYPE_UNKNOWN;
+    }
+}
+
+
+/**
+ *  Function:   mach_universal_load
+ *  ----------------------------------
+ * 
+ *  Loads a raw Universal Mach-O Header from a given offset in a verified file, and
+ *  returns the resulting structure.
+ *  
+ *  file:       The verified file.
+ * 
+ *  Returns:    A verified Universal/FAT Mach Header structure.
+ */
+fat_header_info_t *mach_universal_load (file_t *file)
+{
+    // Create the FAT header so we can read some data from
+    // the file. The header starts at 0x0 in the file. It
+    // is also in Little-Endian form, so we have to swap
+    // the byte order.
+    fat_header_t *fat_header = (fat_header_t *) file_load_bytes (file, sizeof (fat_header_t), 0);
+    fat_header = swap_header_bytes (fat_header);
+
+    // Check the number of architectures
+    if (!fat_header->nfat_arch) {
+        errorf ("Empty Mach-O Universal Binary");
+        exit (0);
+    }
+
+    printf ("[*] %s: Mach-O Universal Binary. Found %d architectures.\n", file->path, fat_header->nfat_arch);
+
+    // Arch list
+    HSList *archs = NULL;
+
+    // Create an offset to move through the archs.
+    uint32_t offset = sizeof(fat_header_t);
+    for (int i = 0; i < fat_header->nfat_arch; i++) {
+
+        // Current arch. Also needs to swap the bytes.
+        struct fat_arch *arch = (struct fat_arch *) file_load_bytes (file, sizeof(struct fat_arch), offset);
+        arch = swap_fat_arch_bytes (arch);
+
+        // Add to the list
+        archs = h_slist_append (archs, arch);
+
+        // Increment the offset
+        offset += sizeof(struct fat_arch);
+    }
+
+    fat_header_info_t *ret = malloc (sizeof(fat_header_info_t));
+    ret->header = fat_header;
+    ret->archs = archs;
+
+    return ret;
+}
+
+
+/**
  *  Function:   mach_header_load
  *  ----------------------------------
  * 
@@ -66,43 +148,17 @@ mach_header_t *mach_header_load (file_t *file)
         exit (0);
     }
 
-    // Check the header type.
-    if (header->magic == MACH_CIGAM_64 || header->magic == MACH_MAGIC_64) {
-        debugf ("[*] Detected 64-bit Mach-O Binary!\n");
+    // Verify the magic value as Mach-O 64.
+    mach_header_type_t h_type = mach_header_verify (file);
+    if (h_type == MH_TYPE_MACHO64) {
         return header;
-    } else if (header->magic == MACH_CIGAM_32 || header->magic == MACH_MAGIC_32) {
-        debugf ("[*] Detected 32-bit Mach-O Binary!\n");
-        debugf ("[*] Error: Cannot handle 32-bit Binaries yet. Aborting!\n");
-        exit (0);
-    } else if (header->magic == MACH_CIGAM_UNIVERSAL || header->magic == MACH_MAGIC_UNIVERSAL) {
-        debugf ("[*] Detected Universal Mach-O Binary!\n");
-        debugf ("[*] Error: Cannot handle Universal Binaries yet. Aborting!\n");
-        
-        fat_header_t *fat_header = (fat_header_t *) file_load_bytes (file, sizeof(fat_header_t), 0);
-        fat_header = swap_header_bytes (fat_header);
-
-        printf ("magic:\t0x%08x\n", fat_header->magic);
-        printf ("nfat_arch:\t0x%08x\n\n", fat_header->nfat_arch);
-
-        uint32_t offset = sizeof (fat_header_t);
-        for (int i = 0; i < fat_header->nfat_arch; i++) {
-            struct fat_arch *arch = (struct fat_arch *) 
-                        file_load_bytes (file, sizeof(struct fat_arch), offset);
-            arch = swap_fat_arch_bytes (arch);
-
-            printf ("arch %d\n", i);
-            printf ("cputype:\t%s (0x%08x)\n", mach_header_read_cpu_type(arch->cputype), arch->cputype);
-            printf ("cpusubtype:\t0x%08x\n", arch->cpusubtype);
-            printf ("offset:\t\t0x%08x\n", arch->offset);
-            printf ("size:\t\t0x%08x\n", arch->size);
-            printf ("align:\t\t0x%08x\n\n", arch->align);
-
-            offset += sizeof(struct fat_arch);
-        }
-        
-        exit (0);
+    } else if (h_type == MH_TYPE_MACHO32) {
+        errorf ("Cannot handle Mach-O 32bit files just yet\n");
+        exit(0);
+    } else if (h_type == MH_TYPE_FAT) { 
+        // call Universal Binary shit, then come back.
     } else {
-        debugf ("[*] Error: Could not determine Mach-O type with Magic 0x%x. Aborting!\n", header->magic);
+        debugf ("[*] Could not determine Mach-O type with Magic 0x%x. Aborting!\n", header->magic);
         exit (0);
     }
 
@@ -148,6 +204,37 @@ char *mach_header_read_cpu_type (cpu_type_t type)
 
 
 /**
+ *  Function:   mach_header_read_cpu_sub_type
+ *  -------------------------------------
+ * 
+ *  Returns a decoded string of header->cpusubtype.
+ * 
+ *  type:       The cpu_subtype_t from the Mach-O Header.
+ * 
+ *  Returns:    Decoded CPU sub type String.
+ */
+char *mach_header_read_cpu_sub_type (cpu_subtype_t type)
+{
+    char *cpu_subtype = "";
+    switch (type) {
+        case CPU_SUBTYPE_ARM64_ALL:
+            cpu_subtype = "arm64";
+            break;
+        case CPU_SUBTYPE_ARM64_V8:
+            cpu_subtype = "arm64_v8";
+            break;
+        case CPU_SUBTYPE_ARM64E:
+            cpu_subtype = "arm64e";
+            break;
+        default:
+            cpu_subtype = "unknown";
+            break;
+    }
+    return cpu_subtype;
+}
+
+
+/**
  *  Function:   mach_header_read_file_type
  *  -------------------------------------
  * 
@@ -169,6 +256,37 @@ char *mach_header_read_file_type (uint32_t type)
             break;
         case MACH_TYPE_DYLIB:
             ret = "Mach Dynamic Library (MH_DYLIB)";
+            break;
+        default:
+            ret = "Unknown";
+            break;
+    }
+    return ret;
+}
+
+
+/**
+ *  Function:   mach_header_read_file_type_short
+ *  -------------------------------------
+ * 
+ *  Returns a decoded string of header->filetype.
+ * 
+ *  type:       The header->filetype uint32_t from the Mach-O Header.
+ * 
+ *  Returns:    Decoded header->filetype.
+ */
+char *mach_header_read_file_type_short (uint32_t type)
+{
+    char *ret = "";
+    switch (type) {
+        case MACH_TYPE_OBJECT:
+            ret = "Object";
+            break;
+        case MACH_TYPE_EXECUTE:
+            ret = "Executable";
+            break;
+        case MACH_TYPE_DYLIB:
+            ret = "Dynamic Library";
             break;
         default:
             ret = "Unknown";

@@ -39,7 +39,8 @@ typedef struct file_t {
 file_t *file_load (const char *path);
 void file_close (file_t *file);
 int file_read (const char *path, unsigned char **buf, unsigned int *len);
-int file_write (const char *path, unsigned char *buf, unsigned int len);
+
+int file_write_new (char *filename, unsigned char *buf, size_t size);
 
 char *file_load_bytes (file_t *f, size_t size, off_t offset);
 

@@ -48,11 +48,11 @@ char *libhelper_version_string ()
 
 
 #ifdef __x86_64__
-    vers = " Libhelper Version 1.0.0 Beta 1; " __TIMESTAMP__ "; LIBHELPER_DEVELOPMENT_X86_64; x86_64";
+    vers = " Libhelper; " LIBHELPER_VERSION_LONG "; " __TIMESTAMP__ "; LIBHELPER_DEVELOPMENT_X86_64; x86_64";
 #elif __arm__
-    vers = " Libhelper Version 1.0.0 Beta 1; " __TIMESTAMP__ "; LIBHELPER_DEVELOPMENT_ARM64; arm64";
+    vers = " Libhelper; " LIBHELPER_VERSION_LONG "; " __TIMESTAMP__ "; LIBHELPER_DEVELOPMENT_ARM64; arm64";
 #else 
-    vers = " Libhelper Version 1.0.0 Beta 1; " __TIMESTAMP__ "; LIBHELPER_DEVELOPMENT; unknown_architecture";
+    vers = " Libhelper; " LIBHELPER_VERSION_LONG "; " __TIMESTAMP__ "; LIBHELPER_DEVELOPMENT; unknown_architecture";
 #endif
 
     return strappend (platform, vers);
