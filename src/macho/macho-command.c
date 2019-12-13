@@ -17,7 +17,7 @@
  *
 */
 
-#include "macho/macho-command.h"
+#include "libhelper-macho/macho-command.h"
 
 
 //////////////////////////////////////////////////////////////////////////

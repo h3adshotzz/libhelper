@@ -34,10 +34,9 @@
  * 
  */
 
-#include "hslist.h"
-
-#include "file.h"
-#include "macho/macho-header.h"
+#include "libhelper-macho/macho-header.h"
+#include "libhelper/hslist.h"
+#include "libhelper/file.h"
 
 /**
  *  Full Mach-O file representation containing all the properties of a

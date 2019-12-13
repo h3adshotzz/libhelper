@@ -34,8 +34,8 @@
  * 
  */
 
-#include "macho.h"
-#include "macho-command.h"
+#include "libhelper-macho/macho.h"
+#include "libhelper-macho/macho-command.h"
 
 
 //////////////////////////////////////////////////////////////////////////

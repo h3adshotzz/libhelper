@@ -17,9 +17,9 @@
  *
 */
 
-#include "macho/macho.h"
-#include "macho/macho-command.h"
-#include "macho/macho-segment.h"
+#include "libhelper-macho/macho.h"
+#include "libhelper-macho/macho-command.h"
+#include "libhelper-macho/macho-segment.h"
 
 /**
  *  Function:   macho_create

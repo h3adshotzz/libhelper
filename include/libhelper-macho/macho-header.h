@@ -78,10 +78,12 @@
  */
 
 #include <stdint.h>
-#include "consts/macho-header-const.h"
-#include "file.h"
 
-#include "hslist.h"
+#include "libhelper-macho/macho-header-const.h"
+
+#include "libhelper/file.h"
+#include "libhelper/hslist.h"
+
 
 /**
  * 	Capability bits used in the definition of cpu_type. These are used to

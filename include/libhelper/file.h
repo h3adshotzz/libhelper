@@ -17,14 +17,33 @@
  *
 */
 
-#ifndef LIBHELPER_H
-#define LIBHELPER_H
+#ifndef FILE_H_
+#define FILE_H_
 
+#include <glib.h>
+
+#include <stdint.h>
 #include <stdio.h>
-#include "strutils.h"
-#include "file.h"
-#include "version.h"
+#include <stdlib.h>
+#include <string.h>
+#include <sys/mman.h>
 
-char *libhelper_version_string ();
+#include "libhelper/strutils.h"
 
-#endif /* libhelper_h */
+
+typedef struct file_t {
+    FILE    *desc;      /* Loaded file */
+    size_t   size;      /* Size of the file */
+    char    *path;      /* Original path */
+} file_t;
+
+file_t *file_load (const char *path);
+void file_close (file_t *file);
+int file_read (const char *path, unsigned char **buf, unsigned int *len);
+
+int file_write_new (char *filename, unsigned char *buf, size_t size);
+
+char *file_load_bytes (file_t *f, size_t size, off_t offset);
+
+
+#endif /* FILE_H_ */

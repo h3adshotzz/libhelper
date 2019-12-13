@@ -17,39 +17,40 @@
  *
 */
 
-#ifndef LIBHELPER_MACHO_H
-#define LIBHELPER_MACHO_H
-
 /**
  *                  === The Libhelper Project ===
- *                          Mach-O Parser
+ *                             Image4
+ *
+ *  Part of the Image4 sub-lib. Handles the splitting and analysis of
+ *  Secure Enclave OS (SEPOS) firmware files. The SEP splitting code is
+ *  adapted from @xerub's sepsplit.c to make it usable in a library, and
+ *  I've added my own spin to it.
+ *                                                                      |
+ *                                                                      |
  * 
- *  Libhelper contains a fully-featured (eventually) Mach-O parser.     |
- *                                                                      |
- *                                                                      |
- *                                                                      |
+ *  ----------------
+ *  Original Author:
+ *      Harry Moulton, @h3adsh0tzz  -   me@h3adsh0tzz.com.
  * 
  */
 
+#ifndef _LIBHELPER_IMG4_SEP_H_
+#define _LIBHELPER_IMG4_SEP_H_
 
-/**
- *  MY NOTES FOR SPLITTING MACHO.H
- * 
- *  - macho_t requires everything so needs to be seperated from mach_header_t
- *  
- * 
- */
+#include <fcntl.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/mman.h>
+#include <unistd.h>
 
-#include <glib-2.0/glib.h>
+#include "libhelper-macho/macho-header.h"
+#include "libhelper-macho/macho-command.h"
+#include "libhelper-macho/macho-segment.h"
 
-/**
- *  Header:     macho-header.h
- *  --------------------------
- * 
- *  This header contains definitions, structs and functions relating to the
- *  layout, format, loading and parsing of the Mach-O header. 
- * 
- */
-#include "macho/macho-header.h"
+#include "libhelper/strutils.h"
 
-#endif
+int sep_split_init (const char *filename);
+
+#endif /* _libhelper_img4_sep_h_ */

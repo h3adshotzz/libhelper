@@ -1,10 +1,10 @@
-#include <libhelper.h>
-#include <macho/macho.h>
-#include <macho/macho-header.h>
-#include <macho/macho-command.h>
-#include <macho/macho-segment.h>
-#include <macho/macho-symbol.h>
-#include <macho/macho-thread_state.h>
+#include <libhelper/libhelper.h>
+#include <libhelper-macho/macho.h>
+#include <libhelper-macho/macho-header.h>
+#include <libhelper-macho/macho-command.h>
+#include <libhelper-macho/macho-segment.h>
+#include <libhelper-macho/macho-symbol.h>
+#include <libhelper-macho/macho-thread_state.h>
 
 int main (int argc, char* argv[])
 {

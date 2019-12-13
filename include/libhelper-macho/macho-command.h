@@ -121,12 +121,13 @@
  */
 
 #include <stdint.h>
-#include "consts/macho-command-const.h"
-#include "macho-symbol.h"
-#include "macho.h"
-#include "file.h"
-#include "strutils.h"
 
+#include "libhelper/file.h"
+#include "libhelper/strutils.h"
+
+#include "libhelper-macho/macho-command-const.h"
+#include "libhelper-macho/macho-symbol.h"
+#include "libhelper-macho/macho.h"
 
 /**
  *  Flags for the Load Command print functions.

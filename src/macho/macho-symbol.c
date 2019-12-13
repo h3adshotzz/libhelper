@@ -17,8 +17,8 @@
  *
 */
 
-#include "macho/macho-symbol.h"
-#include "macho/macho-segment.h"
+#include "libhelper-macho/macho-symbol.h"
+#include "libhelper-macho/macho-segment.h"
 
 
 /**

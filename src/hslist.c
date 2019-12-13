@@ -17,7 +17,7 @@
  *
 */
 
-#include "hslist.h"
+#include "libhelper/hslist.h"
 
 
 void *h_slice_alloc0 (size_t size)

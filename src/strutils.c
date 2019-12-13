@@ -17,7 +17,7 @@
  *
 */
 
-#include "strutils.h"
+#include "libhelper/strutils.h"
 
 char *strappend(char *a, char *b) {
     // Get the length of a & b

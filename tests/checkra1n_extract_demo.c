@@ -1,8 +1,8 @@
-#include <libhelper.h>
-#include <macho/macho.h>
-#include <macho/macho-header.h>
-#include <macho/macho-command.h>
-#include <macho/macho-segment.h>
+#include <libhelper/libhelper.h>
+#include <libhelper-macho/macho.h>
+#include <libhelper-macho/macho-header.h>
+#include <libhelper-macho/macho-command.h>
+#include <libhelper-macho/macho-segment.h>
 
 int main (int argc, char *argv[])
 {

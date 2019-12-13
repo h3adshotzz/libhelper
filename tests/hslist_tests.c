@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <hslist.h>
+#include <libhelper/hslist.h>
 
 void print_list (HSList *list)
 {

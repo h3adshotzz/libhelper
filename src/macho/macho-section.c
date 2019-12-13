@@ -17,7 +17,7 @@
  *
 */
 
-#include "macho/macho-section.h"
+#include "libhelper-macho/macho-section.h"
 
 
 /**

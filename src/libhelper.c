@@ -17,7 +17,7 @@
  *
 */
 
-#include "libhelper.h"
+#include "libhelper/libhelper.h"
 
 /**
  *  The point of libhelper is to have some utilities to help with different

@@ -17,7 +17,7 @@
  *
 */
 
-#include "macho/macho-segment.h"
+#include "libhelper-macho/macho-segment.h"
 
 //////////////////////////////////////////////////////////////////////////
 //               Base Mach-O Segment commands                           //

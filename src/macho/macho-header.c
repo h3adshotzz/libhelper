@@ -23,7 +23,7 @@
  *      All documentation is contained within the header file, however comments
  *      will still be made to code within this file.
  */
-#include "macho/macho-header.h"
+#include "libhelper-macho/macho-header.h"
 
 
 /**

@@ -38,9 +38,8 @@
  *  The Dynamic Loader Info Load Command is defined in macho-command.h
  * 
  */
-#include "macho-command.h"
-//#include <mach-o/loader.h>
-#include <glib-2.0/glib.h>
+#include "libhelper-macho/macho-command.h"
+
 
 typedef struct dyld_rebase_info {
     HSList      *opcodes;       /* List of Opcodes */
