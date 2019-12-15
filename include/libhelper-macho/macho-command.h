@@ -155,10 +155,11 @@
  * 	parsing.
  * 
  */
-typedef struct mach_load_command_t {
-	uint32_t cmd;					/* type of load command */
-	uint32_t cmdsize;				/* total size of command in bytes */
-} mach_load_command_t;
+struct load_command {
+	uint32_t cmd;		/* type of load command */
+	uint32_t cmdsize;	/* total size of command in bytes */
+};
+typedef struct load_command mach_load_command_t;
 
 
 /**

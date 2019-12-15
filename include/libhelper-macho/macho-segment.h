@@ -49,7 +49,7 @@
  * 
  */
 typedef int vm_prot_t;
-typedef struct mach_segment_command_64_t {
+struct segment_command_64 {
     uint32_t	cmd;			/* LC_SEGMENT_64 */
     uint32_t	cmdsize;		/* includes sizeof section_64 structs */
     char		segname[16];	/* segment name */
@@ -61,7 +61,23 @@ typedef struct mach_segment_command_64_t {
     vm_prot_t	initprot;		/* initial VM protection */
     uint32_t	nsects;			/* number of sections in segment */
     uint32_t	flags;			/* flags */   
-} mach_segment_command_64_t;
+};
+typedef struct segment_command_64 mach_segment_command_64_t;
+
+struct segment_command {
+	uint32_t	cmd;		/* LC_SEGMENT */
+	uint32_t	cmdsize;	/* includes sizeof section structs */
+	char		segname[16];	/* segment name */
+	uint32_t	vmaddr;		/* memory address of this segment */
+	uint32_t	vmsize;		/* memory size of this segment */
+	uint32_t	fileoff;	/* file offset of this segment */
+	uint32_t	filesize;	/* amount to map from the file */
+	vm_prot_t	maxprot;	/* maximum VM protection */
+	vm_prot_t	initprot;	/* initial VM protection */
+	uint32_t	nsects;		/* number of sections in segment */
+	uint32_t	flags;		/* flags */
+};
+typedef struct segment_command mach_segment_command_32_t;
 
 typedef struct mach_segment_info_t {
     mach_segment_command_64_t   *segcmd;    /* Segment command */
@@ -111,9 +127,11 @@ typedef struct mach_section_64_t {
  * 
  */
 typedef struct mach_section_info_t {
+    char                *segment;
+    char                *section;
     char                *data;
     size_t               size;
-    mach_section_64_t   *sect;
+    uint32_t             addr;
 } mach_section_info_t;
 
 

@@ -44,13 +44,36 @@
 #include <string.h>
 #include <sys/mman.h>
 #include <unistd.h>
+#include <stdint.h>
 
-#include "libhelper-macho/macho-header.h"
-#include "libhelper-macho/macho-command.h"
-#include "libhelper-macho/macho-segment.h"
+#define USE_LIBHELPER_MACHO       0
 
-#include "libhelper/strutils.h"
+#include <libhelper/strutils.h>
 
-int sep_split_init (const char *filename);
+#if USE_LIBHELPER_MACHO
+#   include <libhelper-macho/macho-header.h>
+#   include <libhelper-macho/macho-command.h>
+#   include <libhelper-macho/macho-segment.h>
+#else
+#   include <mach-o/loader.h>
+#endif
+
+#define IS64(image) (*(uint8_t *)(image) & 1)
+
+#define MACHO(p) ((*(unsigned int *)(p) & ~1) == 0xfeedface)
+
+static const struct sepapp_t {
+    uint64_t phys;
+    uint32_t virt;
+    uint32_t size;
+    uint32_t entry;
+    char name[12];
+    /*char hash[16];*/
+} *apps;
+static size_t sizeof_sepapp = sizeof(struct sepapp_t);
+
+#define __UCHAR_MAX 255
+
+void sep_split_init (char *filename);
 
 #endif /* _libhelper_img4_sep_h_ */

@@ -323,9 +323,10 @@ mach_section_info_t *mach_load_section_data (macho_t *macho, char *segment, char
     mach_segment_info_t *seginfo = mach_segment_command_search (macho, segment);
     mach_section_64_t *__sect = mach_search_section (seginfo, section);
 
+    ret->segment = __sect->segname;
+    ret->section = __sect->sectname;
     ret->data = file_load_bytes (macho->file, __sect->size, __sect->offset);
     ret->size = __sect->size;
-    ret->sect = __sect;
 
     return ret;
 }

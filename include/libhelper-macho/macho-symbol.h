@@ -48,14 +48,15 @@
 /**
  * 	
  */
-typedef struct mach_symtab_command_t {
+struct symtab_command {
 	uint32_t	cmd;			/* LC_SYMTAB */
 	uint32_t	cmdsize;		/* sizeof(mach_symtab_command_t) */
 	uint32_t	symoff;			/* offset of the symbol table */
 	uint32_t	nsyms;			/* number of symbols */
 	uint32_t	stroff;			/* offset of the string table */
 	uint32_t	strsize;		/* size of the string table in bytes */
-} mach_symtab_command_t;
+};
+typedef struct symtab_command   mach_symtab_command_t;
 
 /**
  * 

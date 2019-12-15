@@ -97,127 +97,301 @@
 
 #include "libhelper-img4/sep.h"
 
-uint8_t     *kernel         = MAP_FAILED;
-size_t       kernel_size    = 0;
-static int   kernel_fd      = -1;
-
-#define IS64(image) (*(uint8_t *)(image) & 1)
-#define MACHO(p) ((*(unsigned int *)(p) & ~1) == 0xfeedface)
-
-static
-size_t calc_size (const uint8_t *ptr, size_t size)
+static unsigned char *
+boyermoore_horspool_memmem(const unsigned char* haystack, size_t hlen,
+                           const unsigned char* needle,   size_t nlen)
 {
-    //  Create a struct for the mach header, and assume that the mem region
-    //  at `ptr` is a Mach-O header - until we can check it. Also create a 
-    //  pointer to, what should be, the start of the load commands relative
-    //  to the header pointer.
-    //
+    size_t last, scan = 0;
+    size_t bad_char_skip[__UCHAR_MAX + 1]; /* Officially called:
+                                          * bad character shift */
+
+    /* Sanity checks on the parameters */
+    if (nlen <= 0 || !haystack || !needle)
+        return NULL;
+
+    /* ---- Preprocess ---- */
+    /* Initialize the table to default value */
+    /* When a character is encountered that does not occur
+     * in the needle, we can safely skip ahead for the whole
+     * length of the needle.
+     */
+    for (scan = 0; scan <= __UCHAR_MAX; scan = scan + 1)
+        bad_char_skip[scan] = nlen;
+
+    /* C arrays have the first byte at [0], therefore:
+     * [nlen - 1] is the last byte of the array. */
+    last = nlen - 1;
+
+    /* Then populate it with the analysis of the needle */
+    for (scan = 0; scan < last; scan = scan + 1)
+        bad_char_skip[needle[scan]] = last - scan;
+
+    /* ---- Do the matching ---- */
+
+    /* Search the haystack, while the needle can still be within it. */
+    while (hlen >= nlen)
+    {
+        /* scan from the end of the needle */
+        for (scan = last; haystack[scan] == needle[scan]; scan = scan - 1)
+            if (scan == 0) /* If the first byte matches, we've found it. */
+                return (void *)haystack;
+
+        /* otherwise, we need to skip some bytes and start again.
+           Note that here we are getting the skip value based on the last byte
+           of needle, no matter where we didn't match. So if needle is: "abcd"
+           then we are skipping based on 'd' and that value will be 4, and
+           for "abcdd" we again skip on 'd' but the value will be only 1.
+           The alternative of pretending that the mismatched character was
+           the last character is slower in the normal case (E.g. finding
+           "abcd" in "...azcd..." gives 4 by using 'd' but only
+           4-2==2 using 'z'. */
+        hlen     -= bad_char_skip[haystack[last]];
+        haystack += bad_char_skip[haystack[last]];
+    }
+
+    return NULL;
+}
+
+static size_t
+restore_linkedit(uint8_t *p, size_t size)
+{
     unsigned i;
-    const mach_header_t *header = (const mach_header_t *) ptr;
-    const uint8_t *lc_ptr = ptr + sizeof(mach_header_t);
+    struct mach_header *hdr = (struct mach_header *)p;
+    uint64_t min = -1;
+    uint64_t delta = 0;
+    int is64 = 0;
+    uint8_t *q;
+
+    if (size < 1024) {
+        return -1;
+    }
+    if (!MACHO(p)) {
+        return -1;
+    }
+    if (IS64(p)) {
+        is64 = 4;
+    }
+
+    q = p + sizeof(struct mach_header) + is64;
+    for (i = 0; i < hdr->ncmds; i++) {
+        const struct load_command *cmd = (struct load_command *)q;
+        if (cmd->cmd == LC_SEGMENT) {
+            const struct segment_command *seg = (struct segment_command *)q;
+            if (strcmp(seg->segname, "__PAGEZERO") && min > seg->vmaddr) {
+                min = seg->vmaddr;
+            }
+        }
+        if (cmd->cmd == LC_SEGMENT_64) {
+            const struct segment_command_64 *seg = (struct segment_command_64 *)q;
+            if (strcmp(seg->segname, "__PAGEZERO") && min > seg->vmaddr) {
+                min = seg->vmaddr;
+            }
+        }
+        q = q + cmd->cmdsize;
+    }
+
+    q = p + sizeof(struct mach_header) + is64;
+    for (i = 0; i < hdr->ncmds; i++) {
+        const struct load_command *cmd = (struct load_command *)q;
+        if (cmd->cmd == LC_SEGMENT) {
+            struct segment_command *seg = (struct segment_command *)q;
+            if (!strcmp(seg->segname, "__LINKEDIT")) {
+                delta = seg->vmaddr - min - seg->fileoff;
+                seg->fileoff += delta;
+            }
+        }
+        if (cmd->cmd == LC_SEGMENT_64) {
+            struct segment_command_64 *seg = (struct segment_command_64 *)q;
+            if (!strcmp(seg->segname, "__LINKEDIT")) {
+                delta = seg->vmaddr - min - seg->fileoff;
+                seg->fileoff += delta;
+            }
+        }
+        if (cmd->cmd == LC_SYMTAB) {
+            struct symtab_command *sym = (struct symtab_command *)q;
+            if (sym->stroff) sym->stroff += delta;
+            if (sym->symoff) sym->symoff += delta;
+        }
+        q = q + cmd->cmdsize;
+    }
+
+    return 0;
+}
+
+static size_t
+calc_size(const uint8_t *p, size_t size)
+{
+    unsigned i;
+    const struct mach_header *hdr = (struct mach_header *)p;
+    const uint8_t *q = p + sizeof(struct mach_header);
     size_t end, tsize = 0;
 
-
-    //  Check three things: If the size of the data at `ptr` is less thab
-    //  1024 bytes, it's most likely not a Mach-O, so ignore it.
-    //
-    //  Then check if it is actually a Mach-O, and then if its 64bit.
-    //
     if (size < 1024) {
         return 0;
     }
-    if (!MACHO(ptr)) {
+    if (!MACHO(p)) {
         return 0;
     }
-    if (IS64(ptr)) {
-        lc_ptr += 4;
+    if (IS64(p)) {
+        q += 4;
     }
 
-    mach_header_print_summary (header);
-
-    //  We need to work out the full size of the file, so we work out how many
-    //  load commands there are, how big each segment is, then add that to the
-    //  size of the header and we have our file size.
-    //
-    for (i = 0; i < header->ncmds; i++) {
-        debugf("[%d]: 0x%x\n", i, lc_ptr);
-        const mach_load_command_t *cmd = (const mach_load_command_t *) lc_ptr;
-        
-        //  Because SEPOS is 64bit, not 32bit, I'm not including checking for
-        //  32bit segment commands - at least not until I've implemented it in
-        //  libhelper-macho.
-        //
-
-        if (cmd->cmd == LC_SEGMENT_64) {
-            const mach_segment_command_64_t *seg = (const mach_segment_command_64_t *) lc_ptr;
+    for (i = 0; i < hdr->ncmds; i++) {
+        const struct load_command *cmd = (struct load_command *)q;
+        if (cmd->cmd == LC_SEGMENT) {
+            const struct segment_command *seg = (struct segment_command *)q;
             end = seg->fileoff + seg->filesize;
             if (tsize < end) {
                 tsize = end;
             }
         }
-
-
-        // Advance the lc_ptr
-        //
-        lc_ptr += cmd->cmdsize;
+        if (cmd->cmd == LC_SEGMENT_64) {
+            const struct segment_command_64 *seg = (struct segment_command_64 *)q;
+            end = seg->fileoff + seg->filesize;
+            if (tsize < end) {
+                tsize = end;
+            }
+        }
+        q = q + cmd->cmdsize;
     }
-    
+
     return tsize;
 }
 
-int sep_split_init (const char *filename)
+uint8_t *kernel = MAP_FAILED;
+size_t kernel_size = 0;
+static int kernel_fd = -1;
+
+static int
+init_kernel(const char *filename)
 {
-    // Try to open and load the file into 'kernel_fd'
-    kernel_fd = open (filename, O_RDONLY);
+    kernel_fd = open(filename, O_RDONLY);
     if (kernel_fd < 0) {
-        errorf ("There was a problem opening the file: %s\n", filename);
-        exit (0);
+        return -1;
     }
 
-    // get the size of the file
-    kernel_size = lseek (kernel_fd, 0, SEEK_END);
+    kernel_size = lseek(kernel_fd, 0, SEEK_END);
 
-    // mmap the file into the kernel pointer
-    kernel = mmap (NULL, kernel_size, PROT_READ, MAP_PRIVATE, kernel_fd, 0);
+    kernel = mmap(NULL, kernel_size, PROT_READ, MAP_PRIVATE, kernel_fd, 0);
     if (kernel == MAP_FAILED) {
-        close (kernel_fd);
-        errorf ("Could not map the file.\n");
-        exit (0);
+        close(kernel_fd);
+        kernel_fd = -1;
+        return -1;
     }
 
-    debugf ("file loaded okay. attempting to identify macho regions\n");
-    
-    //  Now we start trying to split the sepos firmware. There are 9 areas
-    //  we need to extract, the first being the bootloader, the second being
-    //  the L4 Kernel Mach-O and the other 7 being application Mach-O's for
-    //  SEPOS.
-    //
-    size_t i, last = 0;
-    unsigned j = 0;
-    for (i = 0; i < kernel_size; i += 4) {
+    return 0;
+}
 
-        //  Each loop jumps 4 bytes, the length of a Mach-O magic. We are searching
-        //  for the start of a Mach-O header, which looks like 0xCDFAEDFE. The 'kernel'
-        //  points to the current part of the mapped file that we want to check for
-        //  a Mach-O.
-        //
-        //  Basically, if `kernel + i` points to a valid Mach-O header, then we have
-        //  found one of the SEPOS componenents. If the pointer is valid, calc_size
-        //  will return a valid size of the Mach-O so we can load it from our calculated
-        //  offset.
-        //
-        size_t sz = calc_size (kernel + i, kernel_size - i);
+static void
+term_kernel(void)
+{
+    munmap(kernel, kernel_size);
+    close(kernel_fd);
+}
+
+static int
+write_file(const char *name, const void *buf, size_t size)
+{
+    int fd;
+    size_t sz;
+    fd = open(name, O_CREAT | O_WRONLY | O_TRUNC, 0644);
+    if (fd < 0) {
+        return -1;
+    }
+    sz = write(fd, buf, size);
+    close(fd);
+    return (sz == size) ? 0 : -1;
+}
+
+static int
+restore_file(unsigned index, const unsigned char *buf, size_t size, int restore)
+{
+    int rv;
+    void *tmp;
+    char name[256];
+    char tail[12 + 1];
+
+    if (index == 1 && size > 4096) {
+        unsigned char *toc = boyermoore_horspool_memmem(buf + size - 4096, 4096, (unsigned char *)"SEPOS       ", 12);
+        if (toc) {
+            unsigned char *p = boyermoore_horspool_memmem(toc + 1, 64, (unsigned char *)"SEP", 3);
+            if (p) {
+                sizeof_sepapp = p - toc;
+            }
+            apps = (struct sepapp_t *)(toc - offsetof(struct sepapp_t, name));
+        }
+    }
+
+    if (apps && buf > (unsigned char *)apps) {
+        char *p;
+        memcpy(tail, apps->name, 12);
+        for (p = tail + 12; p > tail && p[-1] == ' '; p--) {
+            continue;
+        }
+        *p = '\0';
+        printf("%-12s phys 0x%lx, virt 0x%x, size 0x%x, entry 0x%x\n", tail, apps->phys, apps->virt, apps->size, apps->entry);
+        apps = (struct sepapp_t *)((char *)apps + sizeof_sepapp);
+    } else {
+        if (index == 0) {
+            strcpy(tail, "boot");
+            printf("%s\n", tail);
+        } else if (index == 1) {
+            strcpy(tail, "kernel");
+            printf("%s\n", tail);
+        } else {
+            *tail = '\0';
+            printf("macho%d\n", index);
+        }
+    }
+    snprintf(name, sizeof(name), "sepdump%02u_%s", index, tail);
+    if (!restore) {
+        return write_file(name, buf, size);
+    }
+    tmp = malloc(size);
+    if (!tmp) {
+        return -1;
+    }
+    memcpy(tmp, buf, size);
+    restore_linkedit(tmp, size);
+    rv = write_file(name, tmp, size);
+    free(tmp);
+    return rv;
+}
+
+static int
+split(int restore)
+{
+    size_t i;
+    unsigned j = 0;
+    size_t last = 0;
+    for (i = 0; i < kernel_size; i += 4) {
+        size_t sz = calc_size(kernel + i, kernel_size - i);
         if (sz) {
-            debugf ("restore_file ()\n");
-            //restore_file(j++, kernel + last, i - last, restore);
-            j++;
+            restore_file(j++, kernel + last, i - last, restore);
             last = i;
             i += sz - 4;
         }
     }
-    debugf ("out of loop restore_file ()\n");
-    //restore_file(j, kernel + last, i - last, restore);
-
-
+    restore_file(j, kernel + last, i - last, restore);
     return 0;
+}
+
+void
+sep_split_init (char *filename)
+{
+    if (USE_LIBHELPER_MACHO) {
+        debugf ("Using Libhelper-Macho\n");
+    } else {
+        debugf ("Using Default AAPL Mach-O Loader\n");
+    }
+
+    int rv = init_kernel (filename);
+    if (rv) {
+        fprintf (stderr, "[e] cannot read kernel\n");
+        exit (0);
+    }
+
+    rv = split (1);
+
+    term_kernel ();
 }
