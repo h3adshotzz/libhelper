@@ -172,7 +172,7 @@
  * 
  */
 typedef enum cpu_type_t {
-    CPU_TYPE_ANY = -1,
+    CPU_TYPE_ANY = 100,
 
 	CPU_TYPE_X86 = 6,
 	CPU_TYPE_X86_64 = 0x01000007,
@@ -184,7 +184,7 @@ typedef enum cpu_type_t {
 
 // TODO
 typedef enum cpu_subtype_t {
-	CPU_SUBTYPE_ANY = -1,
+	CPU_SUBTYPE_ANY = 100,
 
 	CPU_SUBTYPE_ARM64_ALL = 0,
 	CPU_SUBTYPE_ARM64_V8 = 1,
@@ -215,7 +215,7 @@ typedef enum mach_header_type_t {
  * 	We specify the 64 because 32-bit support may be added at some point.
  * 
  */
-struct mach_header {
+struct mach_header_64 {
 	uint32_t			magic;			/* mach magic number identifier */
 	cpu_type_t			cputype;		/* cpu specifier */
 	cpu_subtype_t		cpusubtype;		/* machine specifier */
@@ -225,8 +225,17 @@ struct mach_header {
 	uint32_t			flags;			/* flags */
 	uint32_t			reserved;		/* reserved */
 };
-typedef struct mach_header	mach_header_64;
-typedef mach_header_64		mach_header_t;
+struct mach_header {
+	uint32_t			magic;			/* mach magic number identifier */
+	cpu_type_t			cputype;		/* cpu specifier */
+	cpu_subtype_t		cpusubtype;		/* machine specifier */
+	uint32_t			filetype;		/* type of file */
+	uint32_t			ncmds;			/* number of load commands */
+	uint32_t			sizeofcmds;		/* the size of all the load commands */
+	uint32_t			flags;			/* flags */
+};
+typedef struct mach_header			mach_header_t;
+typedef struct mach_header_64		mach_header_64_t;
 
 
 /**
@@ -283,9 +292,9 @@ struct fat_arch *swap_fat_arch_bytes (struct fat_arch *a);
  *  Creates a new Mach-O Header structure and assigns sufficient memory. 
  *  Should be called to safely create a new Mach-O Header structure.
  * 
- *  Returns:    A mach_header_t structure with sufficient allocated memory.
+ *  Returns:    A mach_header_64_t structure with sufficient allocated memory.
  */
-mach_header_t       *mach_header_create ();
+mach_header_64_t	*mach_header_create ();
 
 
 /**
@@ -327,7 +336,7 @@ fat_header_info_t *mach_universal_load (file_t *file);
  * 
  *  Returns:    A verified Mach Header structure.
  */
-mach_header_t       *mach_header_load (file_t *file);
+mach_header_64_t	*mach_header_load (file_t *file);
 
 
 /**

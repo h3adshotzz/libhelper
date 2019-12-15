@@ -33,6 +33,14 @@
  *      Harry Moulton, @h3adsh0tzz  -   me@h3adsh0tzz.com.
  * 
  */
+/**
+ *  Adapated from original sepsplit.c by xerub. 
+ *  -------------------------------------------
+ * 
+ *  SEP firmware split tool
+ *
+ *  Copyright (c) 2017 xerub
+ */
 
 #ifndef _LIBHELPER_IMG4_SEP_H_
 #define _LIBHELPER_IMG4_SEP_H_
@@ -46,7 +54,7 @@
 #include <unistd.h>
 #include <stdint.h>
 
-#define USE_LIBHELPER_MACHO       0
+#define USE_LIBHELPER_MACHO       1
 
 #include <libhelper/strutils.h>
 

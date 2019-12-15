@@ -25,77 +25,37 @@
  *  Copyright (c) 2017 xerub
  */
 
+#include "libhelper-img4/sep.h"
+
+uint8_t     *kernel         = MAP_FAILED;
+size_t       kernel_size    = 0;
+static int   kernel_fd      = -1;
+
+#define IS64(image) (*(uint8_t *)(image) & 1)
+#define MACHO(p) ((*(unsigned int *)(p) & ~1) == 0xfeedface)
+
+/*****************************************************************
+******************************************************************/
+
 /**
- *  The current issues:
- * 
- *  I'm not sure what's going on here, there is a BAD_ACCESS crash in calc_size
- *  on the `if (cmd->cmd == LC_SEGMENT_64)` line. It seems that although the 
- *  macho header is loaded correctly, the load commands situated just after the
- *  header are being corrupted.
- * 
- *  lldb output:
- * 
- *  (lldb) r /Users/h3adsh0tzz/Research/SEP/sep.decrypted
- *  Process 80696 launched: '/Users/h3adsh0tzz/Sources/htool/build/tests/sep_split_test' (x86_64)
- *  DEBUG: file loaded okay. attempting to identify macho regions
- *  DEBUG: ==================
- *  Mach-O Header Dump
- *  ==================
- *  
- *  DEBUG: Magic: 		0xfeedfacf
- *  DEBUG: CPU Type: 	arm64
- *  DEBUG: CPU Sub-Type: 	0x2
- *  DEBUG: File Type: 	Mach Executable (MH_EXECUTE)
- *  DEBUG: Load Commands: 	9
- *  DEBUG: LC Size: 	1352
- *  DEBUG: ------------------
- *  
- *  DEBUG: [0]: 0x1004024
- *  DEBUG: [1]: 0x46549f83
- *  Process 80696 stopped
- * thread #1, queue = 'com.apple.main-thread', stop reason = EXC_BAD_ACCESS (code=1, address=0x146549f83)
- *    frame #0: 0x00000001000029ae sep_split_test`calc_size(ptr="����
- *                                                                     ", size=143511552) at sep.c:81:22
- *     78  	    //  We need to work out the full size of the file, so we work out how many
- *     79  	    //  load commands there are, how big each segment is, then add that to the
- *     80  	    //  size of the header and we have our file size.
- *  -> 81  	    //
- *     82  	    for (i = 0; i < header->ncmds; i++) {
- *     83  	        debugf("[%d]: 0x%x\n", i, lc_ptr);
- *     84  	        const mach_load_command_t *cmd = (const mach_load_command_t *) lc_ptr;
- *  Target 0: (sep_split_test) stopped.
- *  (lldb) fr v
- *  (const uint8_t *) ptr = 0x0000000101004000 "����
- *                                                  "
- *  (size_t) size = 143511552
- *  (unsigned int) i = 1
- *  (const mach_header_t *) header = 0x0000000101004000
- *  (const uint8_t *) lc_ptr = 0x0000000146549f83 ""
- *  (size_t) end = 326417514496
- *  (size_t) tsize = 0
- *  (const mach_load_command_t *) cmd = 0x0000000146549f83
- *  (lldb) fr v cmd->cmd
- *  (uint32_t) cmd->cmd = <read memory from 0x146549f83 failed (0 of 4 bytes read)>
- *  
- *  (lldb) fr v cmd->cmdsize
- *  (uint32_t) cmd->cmdsize = <read memory from 0x146549f87 failed (0 of 4 bytes read)>
- *  
- *  (lldb)
- * 
- *  --------------------------------------------
- * 
- *  Running that same exact sep.decrypted file through the original sepsplit by xerub
- *  gives the following, expected output:
- * 
- *  23:52 h3adsh0tzz@h3adsh0tzzs-iMac.local ~/Sources/htool/tests% ./sepsplit.o ~/Research/SEP/sep.decrypted                  (git)-[master]
- *  boot
- *  kernel
- *  ...
- *  macho8
+ *  The whole file interaction here needs to be implemented into file_t
+ *  in some way, so the file can still be mmaped into a buffer/pointer
+ *  rather than using file_GeT_bytes () all the time.
  * 
  */
-
-#include "libhelper-img4/sep.h"
+static
+int write_file (const char *name, const void *buf, size_t size)
+{
+    int fd;
+    size_t sz;
+    fd = open (name, O_CREAT | O_WRONLY | O_TRUNC, 0644);
+    if (fd < 0) return -1;
+    sz = write (fd, buf, size);
+    close (fd);
+    return (sz == size) ? 0 : -1;
+}
+/*****************************************************************
+******************************************************************/
 
 static unsigned char *
 boyermoore_horspool_memmem(const unsigned char* haystack, size_t hlen,
@@ -152,246 +112,274 @@ boyermoore_horspool_memmem(const unsigned char* haystack, size_t hlen,
     return NULL;
 }
 
-static size_t
-restore_linkedit(uint8_t *p, size_t size)
+static
+size_t calc_size (const uint8_t *ptr, size_t sz)
 {
+    //  Create a struct for the mach header, and assume that the mem region
+    //  at `ptr` is a Mach-O header - until we can check it. Also create a 
+    //  pointer to, what should be, the start of the load commands relative
+    //  to the header pointer.
+    //
+    //  Because of some strange stuff that Apple does, the Mach-O headers of
+    //  the SEP components are 32bit, despite the magic being 0xfeedface and
+    //  the load/segment commands being 64bit. The only difference between
+    //  the 64bit and 32bit headers are that the 64bit has a reserved uint32_t
+    //  at the end, so the pointer to the Load Commands is thrown off by a 
+    //  few bytes.
+    //
+    //  Basically, libhelper has part-32bit support, in the sense that it
+    //  can recognise 32bit header and you can parse a 32bit header.
+    //
     unsigned i;
-    struct mach_header *hdr = (struct mach_header *)p;
-    uint64_t min = -1;
-    uint64_t delta = 0;
-    int is64 = 0;
-    uint8_t *q;
-
-    if (size < 1024) {
-        return -1;
-    }
-    if (!MACHO(p)) {
-        return -1;
-    }
-    if (IS64(p)) {
-        is64 = 4;
-    }
-
-    q = p + sizeof(struct mach_header) + is64;
-    for (i = 0; i < hdr->ncmds; i++) {
-        const struct load_command *cmd = (struct load_command *)q;
-        if (cmd->cmd == LC_SEGMENT) {
-            const struct segment_command *seg = (struct segment_command *)q;
-            if (strcmp(seg->segname, "__PAGEZERO") && min > seg->vmaddr) {
-                min = seg->vmaddr;
-            }
-        }
-        if (cmd->cmd == LC_SEGMENT_64) {
-            const struct segment_command_64 *seg = (struct segment_command_64 *)q;
-            if (strcmp(seg->segname, "__PAGEZERO") && min > seg->vmaddr) {
-                min = seg->vmaddr;
-            }
-        }
-        q = q + cmd->cmdsize;
-    }
-
-    q = p + sizeof(struct mach_header) + is64;
-    for (i = 0; i < hdr->ncmds; i++) {
-        const struct load_command *cmd = (struct load_command *)q;
-        if (cmd->cmd == LC_SEGMENT) {
-            struct segment_command *seg = (struct segment_command *)q;
-            if (!strcmp(seg->segname, "__LINKEDIT")) {
-                delta = seg->vmaddr - min - seg->fileoff;
-                seg->fileoff += delta;
-            }
-        }
-        if (cmd->cmd == LC_SEGMENT_64) {
-            struct segment_command_64 *seg = (struct segment_command_64 *)q;
-            if (!strcmp(seg->segname, "__LINKEDIT")) {
-                delta = seg->vmaddr - min - seg->fileoff;
-                seg->fileoff += delta;
-            }
-        }
-        if (cmd->cmd == LC_SYMTAB) {
-            struct symtab_command *sym = (struct symtab_command *)q;
-            if (sym->stroff) sym->stroff += delta;
-            if (sym->symoff) sym->symoff += delta;
-        }
-        q = q + cmd->cmdsize;
-    }
-
-    return 0;
-}
-
-static size_t
-calc_size(const uint8_t *p, size_t size)
-{
-    unsigned i;
-    const struct mach_header *hdr = (struct mach_header *)p;
-    const uint8_t *q = p + sizeof(struct mach_header);
+    const mach_header_t *header = (mach_header_t *) ptr;
+    const uint8_t *lc_ptr = ptr + sizeof(mach_header_t);
     size_t end, tsize = 0;
 
-    if (size < 1024) {
-        return 0;
-    }
-    if (!MACHO(p)) {
-        return 0;
-    }
-    if (IS64(p)) {
-        q += 4;
+
+    //  Check three things: If the size of the data at `ptr` is less thab
+    //  1024 bytes, it's most likely not a Mach-O, so ignore it.
+    //
+    //  Then check if it is actually a Mach-O, and then if its 64bit.
+    //
+    if (sz < 1024) return 0;
+
+    if (!MACHO(ptr)) return 0;
+
+    if (IS64(ptr)) {
+        lc_ptr += 4;
+    } else {
+        errorf ("Cannot handle 32bit\n");
+        exit (0);
     }
 
-    for (i = 0; i < hdr->ncmds; i++) {
-        const struct load_command *cmd = (struct load_command *)q;
-        if (cmd->cmd == LC_SEGMENT) {
-            const struct segment_command *seg = (struct segment_command *)q;
-            end = seg->fileoff + seg->filesize;
-            if (tsize < end) {
-                tsize = end;
-            }
-        }
+
+    //  We need to work out the full size of the file, so we work out how many
+    //  load commands there are, how big each segment is, then add that to the
+    //  size of the header and we have our file size.
+    //
+    for (int i = 0; i < header->ncmds; i++) {
+        const mach_load_command_t *cmd = (mach_load_command_t *) lc_ptr;
+
+        //  Because SEPOS is 64bit, not 32bit, I'm not including checking for
+        //  32bit segments, well, atleast not until they're implemented in
+        //  libhelper-macho.
+        //
+        if (cmd->cmd == LC_SEGMENT) warningf ("Cannot handle 32bit Segments");
         if (cmd->cmd == LC_SEGMENT_64) {
-            const struct segment_command_64 *seg = (struct segment_command_64 *)q;
+            const mach_segment_command_64_t *seg = (mach_segment_command_64_t *) lc_ptr;
             end = seg->fileoff + seg->filesize;
             if (tsize < end) {
                 tsize = end;
             }
         }
-        q = q + cmd->cmdsize;
+
+        //  Move the Load Command pointer so we can parse
+        //  the next command.
+        //
+        lc_ptr += cmd->cmdsize;
     }
 
     return tsize;
 }
 
-uint8_t *kernel = MAP_FAILED;
-size_t kernel_size = 0;
-static int kernel_fd = -1;
-
-static int
-init_kernel(const char *filename)
+static
+size_t restore_linkedit (uint8_t *ptr, size_t size)
 {
-    kernel_fd = open(filename, O_RDONLY);
-    if (kernel_fd < 0) {
-        return -1;
+    unsigned i;
+    mach_header_t *hdr = (mach_header_t *) ptr;
+    uint64_t min = -1;
+    uint64_t delta = 0;
+    int is64 = 0;
+    uint8_t *lc_ptr;
+
+    //  Similar checks as in calc_size, check whether the ptr is a Mach-O,
+    //  that the size is less than 4096 bytes, and that it is 64bit
+    //
+    if (size < 4096) return -1;
+    if (!MACHO (ptr)) return -1;
+    if (IS64 (ptr)) is64 = 4;
+
+
+    //  Set lc_ptr to the end of the mach header, plus it's current value and
+    //  is64. Then go through each load command until we find a segment command,
+    //
+    //  Look for the __PAGEZERO segments, then set the min which is used when
+    //  restoring the __LINKEDIT segment.
+    //
+    lc_ptr = ptr + sizeof (mach_header_t) + is64;
+    for (i = 0; i < hdr->ncmds; i++) {
+        const mach_load_command_t *cmd = (mach_load_command_t *) lc_ptr;
+
+        //  If the segment is 32bit, ignore it.
+        //
+        if (cmd->cmd == LC_SEGMENT) warningf ("Cannot handle 32bit");
+
+        if (cmd->cmdsize == LC_SEGMENT_64) {
+            const mach_segment_command_64_t *seg = (mach_segment_command_64_t *) lc_ptr;
+            if (strcmp (seg->segname, "__PAGEZERO") && min > seg->vmaddr) {
+                min = seg->vmaddr;
+            }
+        }
+        lc_ptr += cmd->cmdsize;
     }
 
-    kernel_size = lseek(kernel_fd, 0, SEEK_END);
 
-    kernel = mmap(NULL, kernel_size, PROT_READ, MAP_PRIVATE, kernel_fd, 0);
-    if (kernel == MAP_FAILED) {
-        close(kernel_fd);
-        kernel_fd = -1;
-        return -1;
+    //  Now this is the restoring the __LINKEDIT segment part. 
+    //
+    //  Calculates a delta as the following:
+    //      delta = segment->vmaddr - min - segment->fileoffset.
+    //
+    //  Then, add that to the segment file offset, and the symbol table string
+    //  table offset and symbol table offset.
+    //
+    lc_ptr = ptr + sizeof (mach_header_t) + is64;
+    for (i = 0; i < hdr->ncmds; i++) {
+        const mach_load_command_t *cmd = (mach_load_command_t *) lc_ptr;
+
+        //  If the segment is 32bit, ignore it.
+        //
+        if (cmd->cmd == LC_SEGMENT) warningf ("Cannot handle 32bit");
+
+        if (cmd->cmd == LC_SEGMENT_64) {
+            mach_segment_command_64_t *seg = (mach_segment_command_64_t *) lc_ptr;
+            if (!strcmp (seg->segname, "__LINKEDIT")) {
+                delta = seg->vmaddr - min - seg->fileoff;
+                seg->fileoff += delta;
+            }
+        }
+
+        if (cmd->cmd == LC_SYMTAB) {
+            mach_symtab_command_t *sym = (mach_symtab_command_t *) lc_ptr;
+            if (sym->stroff) sym->stroff += delta;
+            if (sym->symoff) sym->symoff += delta;
+        }
+        lc_ptr += cmd->cmdsize;
     }
 
     return 0;
 }
 
-static void
-term_kernel(void)
+static
+int restore_file (unsigned index, const unsigned char *buf, size_t size, int restore)
 {
-    munmap(kernel, kernel_size);
-    close(kernel_fd);
-}
+    int      rv;
+    void    *tmp;
+    char     name[256];
+    char     tail[12 + 1];
 
-static int
-write_file(const char *name, const void *buf, size_t size)
-{
-    int fd;
-    size_t sz;
-    fd = open(name, O_CREAT | O_WRONLY | O_TRUNC, 0644);
-    if (fd < 0) {
-        return -1;
-    }
-    sz = write(fd, buf, size);
-    close(fd);
-    return (sz == size) ? 0 : -1;
-}
 
-static int
-restore_file(unsigned index, const unsigned char *buf, size_t size, int restore)
-{
-    int rv;
-    void *tmp;
-    char name[256];
-    char tail[12 + 1];
-
+    //
+    //
     if (index == 1 && size > 4096) {
-        unsigned char *toc = boyermoore_horspool_memmem(buf + size - 4096, 4096, (unsigned char *)"SEPOS       ", 12);
+        unsigned char *toc = boyermoore_horspool_memmem (buf + size - 4096, 4096, (unsigned char *) "SEPOS       ", 12);
         if (toc) {
-            unsigned char *p = boyermoore_horspool_memmem(toc + 1, 64, (unsigned char *)"SEP", 3);
-            if (p) {
-                sizeof_sepapp = p - toc;
+            unsigned char *ptr = boyermoore_horspool_memmem (toc + 1, 64, (unsigned char *) "SEP", 3);
+            if (ptr) {
+                sizeof_sepapp = ptr - toc;
             }
-            apps = (struct sepapp_t *)(toc - offsetof(struct sepapp_t, name));
+            apps = (struct sepapp_t *) (toc - offsetof (struct sepapp_t, name));
         }
     }
 
-    if (apps && buf > (unsigned char *)apps) {
-        char *p;
-        memcpy(tail, apps->name, 12);
-        for (p = tail + 12; p > tail && p[-1] == ' '; p--) {
+
+    //
+    //
+    if (apps && buf > (unsigned char *) apps) {
+        char *ptr;
+        memcpy (tail, apps->name, 12);
+        for (ptr = tail + 12; ptr > tail && ptr[-1] == ' '; ptr--) {
             continue;
         }
-        *p = '\0';
-        printf("%-12s phys 0x%lx, virt 0x%x, size 0x%x, entry 0x%x\n", tail, apps->phys, apps->virt, apps->size, apps->entry);
-        apps = (struct sepapp_t *)((char *)apps + sizeof_sepapp);
+
+        *ptr = '\0';
+        printf ("%-12s phys 0x%lx, virt 0x%x, size 0x%x, entry 0x%x\n", tail, apps->phys, apps->virt, apps->size, apps->entry);
+        apps = (struct sepapp_t *) ((char *) apps + sizeof_sepapp);
+
     } else {
+
         if (index == 0) {
-            strcpy(tail, "boot");
-            printf("%s\n", tail);
+            strcpy (tail, "boot");
+            printf ("Parsed: SEP_%s\n", tail);
         } else if (index == 1) {
-            strcpy(tail, "kernel");
-            printf("%s\n", tail);
+            strcpy (tail, "kernel");
+            printf ("Parsed: SEP_%s\n", tail);
         } else {
             *tail = '\0';
-            printf("macho%d\n", index);
+            printf ("Parsed: SEP_MachO_%d\n", index);
         }
     }
-    snprintf(name, sizeof(name), "sepdump%02u_%s", index, tail);
+
+    snprintf (name, sizeof(name), "sepdump%02u_%s", index, tail);
     if (!restore) {
-        return write_file(name, buf, size);
+        return write_file (name, buf, size);
     }
-    tmp = malloc(size);
+
+    tmp = malloc (size);
     if (!tmp) {
         return -1;
     }
-    memcpy(tmp, buf, size);
-    restore_linkedit(tmp, size);
-    rv = write_file(name, tmp, size);
-    free(tmp);
+
+    memcpy (tmp, buf, size);
+    restore_linkedit (tmp, size);
+    rv = write_file (name, tmp, size);
+    free (tmp);
+
     return rv;
+
 }
 
-static int
-split(int restore)
+void sep_split_init (char *filename)
 {
-    size_t i;
+    // Try to open and load the file into 'kernel_fd'
+    kernel_fd = open (filename, O_RDONLY);
+    if (kernel_fd < 0) {
+        errorf ("There was a problem opening the file: %s\n", filename);
+        exit (0);
+    }
+
+    // get the size of the file
+    kernel_size = lseek (kernel_fd, 0, SEEK_END);
+
+    // mmap the file into the kernel pointer
+    kernel = mmap (NULL, kernel_size, PROT_READ, MAP_PRIVATE, kernel_fd, 0);
+    if (kernel == MAP_FAILED) {
+        close (kernel_fd);
+        errorf ("Could not map the file.\n");
+        exit (0);
+    }
+
+    debugf ("file loaded okay. attempting to identify macho regions\n");
+    
+    //  Now we start trying to split the sepos firmware. There are 9 areas
+    //  we need to extract, the first being the bootloader, the second being
+    //  the L4 Kernel Mach-O and the other 7 being application Mach-O's for
+    //  SEPOS.
+    //
+    int restore = 1;
+    size_t i, last = 0;
     unsigned j = 0;
-    size_t last = 0;
     for (i = 0; i < kernel_size; i += 4) {
-        size_t sz = calc_size(kernel + i, kernel_size - i);
+
+        //  Each loop jumps 4 bytes, the length of a Mach-O magic. We are searching
+        //  for the start of a Mach-O header, which looks like 0xCDFAEDFE. The 'kernel'
+        //  points to the current part of the mapped file that we want to check for
+        //  a Mach-O.
+        //
+        //  Basically, if `kernel + i` points to a valid Mach-O header, then we have
+        //  found one of the SEPOS componenents. If the pointer is valid, calc_size
+        //  will return a valid size of the Mach-O so we can load it from our calculated
+        //  offset.
+        //
+        size_t sz = calc_size (kernel + i, kernel_size - i);
         if (sz) {
+            debugf ("restore_file ()\n");
             restore_file(j++, kernel + last, i - last, restore);
+
             last = i;
             i += sz - 4;
         }
     }
+    debugf ("out of loop restore_file ()\n");
     restore_file(j, kernel + last, i - last, restore);
-    return 0;
-}
 
-void
-sep_split_init (char *filename)
-{
-    if (USE_LIBHELPER_MACHO) {
-        debugf ("Using Libhelper-Macho\n");
-    } else {
-        debugf ("Using Default AAPL Mach-O Loader\n");
-    }
-
-    int rv = init_kernel (filename);
-    if (rv) {
-        fprintf (stderr, "[e] cannot read kernel\n");
-        exit (0);
-    }
-
-    rv = split (1);
-
-    term_kernel ();
 }

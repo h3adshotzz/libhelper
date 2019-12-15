@@ -87,7 +87,7 @@ macho_t *macho_load (file_t *file)
     HSList *lcmds = NULL;
     HSList *dylibs = NULL;
 
-    off_t offset = sizeof(mach_header_t);
+    off_t offset = sizeof(mach_header_64_t);
 
     for (int i = 0; i < (int) mach->header->ncmds; i++) {
 

@@ -33,12 +33,12 @@
  *  Creates a new Mach-O Header structure and assigns sufficient memory. 
  *  Should be called to safely create a new Mach-O Header structure.
  * 
- *  Returns:    A mach_header_t structure with sufficient allocated memory.
+ *  Returns:    A mach_header_64_t structure with sufficient allocated memory.
  */
-mach_header_t *mach_header_create ()
+mach_header_64_t *mach_header_create ()
 {
-    mach_header_t *header = malloc(sizeof(mach_header_t));
-    memset (header, '\0', sizeof (mach_header_t));
+    mach_header_64_t *header = malloc(sizeof(mach_header_64_t));
+    memset (header, '\0', sizeof (mach_header_64_t));
     return header;
 }
 
@@ -136,11 +136,11 @@ fat_header_info_t *mach_universal_load (file_t *file)
  * 
  *  Returns:    A verified Mach Header structure.
  */
-mach_header_t *mach_header_load (file_t *file)
+mach_header_64_t *mach_header_load (file_t *file)
 {
     // Load bytes from the file to read the header
-    mach_header_t *header = mach_header_create ();
-    header = (mach_header_t *) file_load_bytes (file, MACH_HEADER_SIZE, 0);
+    mach_header_64_t *header = mach_header_create ();
+    header = (mach_header_64_t *) file_load_bytes (file, MACH_HEADER_SIZE, 0);
 
     // Check that the header has a magic value
     if (!header->magic) {
