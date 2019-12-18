@@ -257,6 +257,9 @@ char *mach_header_read_file_type (uint32_t type)
         case MACH_TYPE_DYLIB:
             ret = "Mach Dynamic Library (MH_DYLIB)";
             break;
+        case MACH_TYPE_KEXT_BUNDLE:
+            ret = "Mach Kernel Extension Bundle (MH_KEXT_BUNDLE)";
+            break;
         default:
             ret = "Unknown";
             break;

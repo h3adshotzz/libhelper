@@ -125,6 +125,8 @@
 
 #define MACH_TYPE_DYLIB			0x6
 
+#define MACH_TYPE_KEXT_BUNDLE	0xb
+
 
 /**
  *  Mach-O Magic's.
