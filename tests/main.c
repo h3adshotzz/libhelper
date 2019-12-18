@@ -8,10 +8,10 @@
 
 int main (int argc, char* argv[])
 {
-    g_print ("libhelper-beta: %s\n", libhelper_version_string());
+    printf ("libhelper-beta: %s\n", libhelper_version_string());
 
     if (argc < 2) {
-        g_print ("[*] Error: libhelper-test requries args\n");
+        printf ("[*] Error: libhelper-test requries args\n");
         exit (0);
     }
 
@@ -25,9 +25,9 @@ int main (int argc, char* argv[])
     mach_header_print_summary (macho->header);
 
     if ((macho->header->flags & MH_PIE) == MH_PIE) {
-        g_print ("MH_PIE\n");
+        printf ("MH_PIE\n");
     } else {
-        g_print ("mh_dunno\n");
+        printf ("mh_dunno\n");
     }
 
 
@@ -138,7 +138,7 @@ int main (int argc, char* argv[])
     off_t offset = cmd->off + sizeof(lc);
     arm_thread_state64_t *cpu = (arm_thread_state64_t *) file_load_bytes (macho->file, lc->cmdsize, offset);
 
-    g_print (
+    printf (
 		       "\t    x0  0x%016llx x1  0x%016llx x2  0x%016llx\n"
 		       "\t    x3  0x%016llx x4  0x%016llx x5  0x%016llx\n"
 		       "\t    x6  0x%016llx x7  0x%016llx x8  0x%016llx\n"

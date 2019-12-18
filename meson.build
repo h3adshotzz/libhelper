@@ -30,19 +30,6 @@ add_project_arguments('-Wno-error=format', language : 'c')
 
 
 #
-#   Configuration header.
-#
-
-#   Ask Z how to sort this out properly
-
-
-#
-#   Dependencies
-#
-glib_dep = dependency ('glib-2.0')
-
-
-#
 #   Sub directories
 #
 subdir('src')

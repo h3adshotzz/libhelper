@@ -34,10 +34,12 @@
  * 
  */
 
-#include <glib-2.0/glib.h>
+//#include <glib-2.0/glib.h>
 #include <ctype.h>
 #include "libhelper-macho/macho.h"
 #include "libhelper/file.h"
+#include "libhelper/hstring.h"
+
 
 
 //////////////////////////////////////////////////////////////////////////

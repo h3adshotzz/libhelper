@@ -64,13 +64,13 @@ char *mach_symtab_find_symbol_name (file_t *file, nlist *sym, mach_symtab_comman
     off_t off = cmd->stroff + sym->n_strx;
 
     char *tmp = file_load_bytes (file, s, off);
-    GString *curr = g_string_new ("");
+    HString *curr = h_string_new ("");
 
     int found = 0, i = 0;
     while (!found) {
         if (i >= s) break;
         if (tmp[i] != 0x0) {
-            curr = g_string_append_c (curr, tmp[i]);
+            curr = h_string_append_c (curr, tmp[i]);
             i++;
         } else {
             if (curr->str && curr->len > 0) {

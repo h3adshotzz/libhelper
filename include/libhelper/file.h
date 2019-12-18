@@ -20,7 +20,7 @@
 #ifndef FILE_H_
 #define FILE_H_
 
-#include <glib.h>
+//#include <glib.h>
 
 #include <stdint.h>
 #include <stdio.h>
@@ -29,7 +29,7 @@
 #include <sys/mman.h>
 
 #include "libhelper/strutils.h"
-
+#include "libhelper/hstring.h"
 
 typedef struct file_t {
     FILE    *desc;      /* Loaded file */

@@ -1,4 +1,6 @@
 #include <libhelper/libhelper.h>
+#include <libhelper/strutils.h>
+
 #include <libhelper-macho/macho.h>
 #include <libhelper-macho/macho-header.h>
 #include <libhelper-macho/macho-command.h>
@@ -26,16 +28,16 @@ int main (int argc, char *argv[])
     mach_section_info_t *__rdsk = mach_load_section_data (macho, "__TEXT", "__rdsk");
 
     if (__rdsk) {
-        g_print ("[*] Loaded %d bytes from __TEXT.__rdsk\n", __rdsk->size);
-        g_print ("[*] Writing to file: out.raw...");
+        printf ("[*] Loaded %d bytes from __TEXT.__rdsk\n", __rdsk->size);
+        printf ("[*] Writing to file: out.raw...");
 
         FILE *fptr = fopen ("out.raw", "wb");
         fwrite (__rdsk->data, __rdsk->size, 1, fptr);
         fclose (fptr);
 
-        g_print ("done!\n");
+        printf ("done!\n");
     } else {
-        g_print ("[*] Error: Could not load __TEXT.__rdsk\n");
+        printf ("[*] Error: Could not load __TEXT.__rdsk\n");
     }
 
     return 0;

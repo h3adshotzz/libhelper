@@ -101,7 +101,7 @@ macho_t *macho_load (file_t *file)
             mach_segment_info_t *seginfo = mach_segment_info_load (mach->file, offset);
 
             // Append the seginfo to the mach->segcmds GSList.
-            segcmds = g_slist_append (segcmds, seginfo);
+            segcmds = h_slist_append (segcmds, seginfo);
 
         } else if (lc->type == LC_ID_DYLIB || lc->type == LC_LOAD_DYLIB ||
                 lc->type == LC_LOAD_WEAK_DYLIB || lc->type == LC_REEXPORT_DYLIB) {
