@@ -49,9 +49,18 @@ typedef enum {
 #define ANSI_COLOR_CYAN    "\x1b[36m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
 
+/* String type */
+typedef struct StringList {
+    char    **ptrs;
+    int     count;
+} StringList;
+
 /* String appending */
 char *strappend (char *a, char *b);
 char *m_strappend (char *fmt, ...);
+
+/* String splits */
+StringList *strsplit (const char *s, const char *delim);
 
 /* Logging */
 int __printf(log_type msgType, char *fmt, ...);

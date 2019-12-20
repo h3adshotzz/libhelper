@@ -19,6 +19,45 @@
 
 #include "libhelper/strutils.h"
 
+StringList *strsplit (const char *s, const char *delim)
+{
+    StringList *rv = malloc (sizeof (StringList));
+
+    void *data;
+    char *_s = (char *) s;
+    const char **ptrs;
+    unsigned int
+        ptrsSize, nbWords = 1,
+        sLen = strlen (s),
+        delimLen = strlen (delim);
+
+    while (( _s = strstr (_s, delim)))
+    {
+        _s += delimLen;
+        ++nbWords;
+    }
+
+    rv->count = nbWords;
+
+    ptrsSize = (nbWords + 1) * sizeof(char*);
+    ptrs = data = malloc (ptrsSize + sLen + 1);
+    if (data) {
+        *ptrs = 
+            _s = strcpy (((char *) data) + ptrsSize, s);
+        if (nbWords > 1) {
+            while ((_s = strstr (_s, delim))) {
+                *_s = '\0';
+                _s += delimLen;
+                *++ptrs = _s;
+            }
+        }
+        *++ptrs = NULL;
+    }
+
+    rv->ptrs = data;
+    return rv;
+}
+
 char *strappend(char *a, char *b) {
     // Get the length of a & b
     size_t a_len = strlen(a), b_len = strlen(b);
