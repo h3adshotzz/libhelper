@@ -37,6 +37,7 @@ typedef struct file_t {
     char    *path;      /* Original path */
 } file_t;
 
+file_t *file_create ();
 file_t *file_load (const char *path);
 void file_close (file_t *file);
 int file_read (const char *path, unsigned char **buf, unsigned int *len);

@@ -19,6 +19,12 @@
 
 #include "libhelper/file.h"
 
+file_t *file_create ()
+{
+	file_t *file = malloc(sizeof(file_t));
+    memset (file, '\0', sizeof(file_t));
+    return file;
+}
 
 file_t *file_load (const char *path)
 {
@@ -28,7 +34,7 @@ file_t *file_load (const char *path)
 
 	/* Set the file path */
 	if (!path) {
-		errorf ("[*] Error: File path no valid.\n");
+		errorf ("File path no valid.\n");
 		exit (0);
 	}
 	ret->path = (char *) path;
@@ -36,7 +42,7 @@ file_t *file_load (const char *path)
 	/* Load the file */
 	ret->desc = fopen (ret->path, "rb");
 	if (!ret->desc) {
-		errorf ("[*] Error: File could not be loaded\n");
+		errorf ("File could not be loaded\n");
 		exit(0);
 	}
 
