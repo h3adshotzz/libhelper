@@ -73,6 +73,7 @@ void *h_slice_alloc0 (size_t size);
 
 HSList *h_slist_last (HSList *list);
 HSList *h_slist_append (HSList *list, void *data);
+HSList *h_slist_remove (HSList *list, void *data);
 int h_slist_length (HSList *list);
 void *h_slist_nth_data (HSList *list, int n);
 

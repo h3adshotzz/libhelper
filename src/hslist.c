@@ -81,3 +81,26 @@ void *h_slist_nth_data (HSList *list, int n)
 
     return list ? list->data : NULL;
 }
+
+static HSList *_h_slist_remove_data (HSList *list, void *data, int all)
+{
+    HSList *tmp = NULL;
+    HSList **previous_ptr = &list;
+
+    while (*previous_ptr) {
+        tmp = *previous_ptr;
+        if (tmp->data == data) {
+            *previous_ptr = tmp->next;
+            free (tmp);
+            if (!all) break;
+        } else {
+            previous_ptr = &tmp->next;
+        }
+    }
+    return list;
+}
+
+HSList *h_slist_remove (HSList *list, void *data)
+{
+    return _h_slist_remove_data (list, data, 0);
+}
