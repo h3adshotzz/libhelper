@@ -16,13 +16,16 @@ mach_parser_sources =  ['macho/macho.c',
 
 img4_sources = ['img4/sep.c']
 
+lzss_sources = ['lzss/lzss.c']
+
 lib_sources = ['libhelper.c',
                 'file.c',
                 'strutils.c', 
                 'hslist.c', 
                 'hstring.c', 
                 mach_parser_sources, 
-                img4_sources]
+                img4_sources,
+                lzss_sources]
 
 #
 #   Include Directories
