@@ -18,6 +18,14 @@ img4_sources = ['img4/sep.c']
 
 lzss_sources = ['lzss/lzss.c']
 
+lzfse_sources = ['lzfse/lzfse_encode_base.c',
+                 'lzfse/lzfse_decode_base.c',
+                 'lzfse/lzfse_decode.c',
+                 'lzfse/lzfse_encode.c',
+                 'lzfse/lzfse_fse.c',
+                 'lzfse/lzvn_encode_base.c',
+                 'lzfse/lzvn_decode_base.c',]
+
 lib_sources = ['libhelper.c',
                 'file.c',
                 'strutils.c', 
@@ -25,7 +33,8 @@ lib_sources = ['libhelper.c',
                 'hstring.c', 
                 mach_parser_sources, 
                 img4_sources,
-                lzss_sources]
+                lzss_sources,
+                lzfse_sources]
 
 #
 #   Include Directories
