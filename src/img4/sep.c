@@ -348,7 +348,7 @@ void sep_split_init (char *filename)
         exit (0);
     }
 
-    debugf ("file loaded okay. attempting to identify macho regions\n");
+    printf ("[*] File loaded okay. Attempting to identify Mach-O regions...\n");
     
     //  Now we start trying to split the sepos firmware. There are 9 areas
     //  we need to extract, the first being the bootloader, the second being
@@ -372,14 +372,12 @@ void sep_split_init (char *filename)
         //
         size_t sz = calc_size (kernel + i, kernel_size - i);
         if (sz) {
-            debugf ("restore_file ()\n");
             restore_file(j++, kernel + last, i - last, restore);
 
             last = i;
             i += sz - 4;
         }
     }
-    debugf ("out of loop restore_file ()\n");
     restore_file(j, kernel + last, i - last, restore);
 
 }

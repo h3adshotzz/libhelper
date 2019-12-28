@@ -20,6 +20,6 @@
 #ifndef LIBHELPER_VERSION_H
 #define LIBHELPER_VERSION_H
 
-#define LIBHELPER_VERSION_LONG  "libhelper-1000.643.46.9"
+#define LIBHELPER_VERSION_LONG  "libhelper-1000.643.51.4"
 
 #endif /* libhelper_version_h */

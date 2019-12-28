@@ -24,6 +24,8 @@
 #ifndef LIBHELPER_STRUTILS_H
 #define LIBHELPER_STRUTILS_H
 
+#include "libhelper/libhelper.h"
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>

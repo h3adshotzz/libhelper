@@ -131,7 +131,6 @@ char *mstrappend(char *toap, ...) {
 }
 
 int __printf(log_type msgType, char *fmt, ...) {
-    
     // Create arg and done vars
     va_list arg;
     int done;
@@ -142,6 +141,7 @@ int __printf(log_type msgType, char *fmt, ...) {
     } else if (msgType == LOG_WARNING) {
         fmt = mstrappend("%s%s%s", ANSI_COLOR_YELLOW "[Warning] ", fmt, ANSI_COLOR_YELLOW ANSI_COLOR_RESET);        
     } else if (msgType == LOG_DEBUG) {
+        if (LIBHELPER_DEBUG) return 0;
         fmt = mstrappend("%s%s%s", ANSI_COLOR_CYAN "DEBUG: ", fmt, ANSI_COLOR_CYAN ANSI_COLOR_RESET);        
     }
 
@@ -156,5 +156,4 @@ int __printf(log_type msgType, char *fmt, ...) {
         
     // Return value of done
     return done;
-        
 }
