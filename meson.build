@@ -33,4 +33,5 @@ add_project_arguments('-Wno-error=format', language : 'c')
 #   Sub directories
 #
 subdir('src')
+subdir('tools')
 subdir('tests')

@@ -1,0 +1,21 @@
+Libhelper Tools 
+===============
+
+This directory contains a small toolset that uses libhelper. It serves both as an example of
+how libhelper can be used, and some useful tools for working with macho files.
+
+
+macho_split
+----------
+
+macho_split can be used to split a Universal Binary file containing multiple Mach-O's of diff
+erent architectures. You can use it like so:
+
+$ macho_split some_binary
+
+It will produce a list of files in the format `macho_split0x.arch`. 
+
+
+macho_sect
+----------
+
