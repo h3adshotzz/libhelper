@@ -1,5 +1,5 @@
-#include <libhelper-macho-ll/macho.h>
-#include "libhelper-macho-ll/macho-command-types.h"
+#include <libhelper-macho/macho.h>
+#include "libhelper-macho/macho-command-types.h"
 
 
 void test1 (const char *path)
@@ -8,15 +8,18 @@ void test1 (const char *path)
 
 	mach_header_print_summary (test->header);
 
+
+	// source version command
 	mach_source_version_command_t *svc = mach_lc_find_source_version_cmd (test);
 	printf ("svc: %s\n\n", mach_lc_source_version_string (svc));
 
 
 
+
+	// build versionc command
 	mach_command_info_t *cmdinfo = mach_lc_find_given_cmd (test, LC_BUILD_VERSION);
 	mach_build_version_command_t *bvc_cmd = (mach_build_version_command_t *) macho_load_bytes (test, cmdinfo->lc->cmdsize,
 																									cmdinfo->offset);
-
 
 	mach_build_version_info_t *bvc_info = mach_lc_build_version_info (bvc_cmd, cmdinfo->offset, test);
 
@@ -25,6 +28,9 @@ void test1 (const char *path)
     	struct build_tool_info_t *b = (struct build_tool_info_t *) h_slist_nth_data (bvc_info->tools, a);
         printf ("\t\t\t\t\t\t\tTool %d:\t %s (v%d.%d.%d)\n", a, b->tool, b->version >> 16, (b->version >> 8) & 0xf, b->version & 0xf);
     }
+
+
+	// 
 
 
 }

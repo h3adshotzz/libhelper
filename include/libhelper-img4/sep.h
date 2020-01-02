@@ -59,9 +59,8 @@
 #include <libhelper/strutils.h>
 
 #if USE_LIBHELPER_MACHO
-#   include <libhelper-macho/macho-header.h>
-#   include <libhelper-macho/macho-command.h>
-#   include <libhelper-macho/macho-segment.h>
+#   include <libhelper-macho/macho.h>
+#   include <libhelper-macho/macho-command-types.h>
 #else
 #   include <mach-o/loader.h>
 #endif

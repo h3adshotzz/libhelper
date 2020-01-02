@@ -23,9 +23,9 @@
 //===-----------------------------------------------------------------------===//
 
 #include <libhelper/libhelper.h>
-#include <libhelper-macho-ll/macho.h>
-#include <libhelper-macho-ll/macho-command.h>
-#include <libhelper-macho-ll/macho-segment.h>
+#include <libhelper-macho/macho.h>
+#include <libhelper-macho/macho-command.h>
+#include <libhelper-macho/macho-segment.h>
 
 #ifdef __APPLE__
 #   define BUILD_TARGET         "darwin"
