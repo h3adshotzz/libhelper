@@ -9,7 +9,6 @@
 #   Sources
 #
 mach_parser_sources =  ['macho/macho.c',
-                        'macho/macho-header.c',
                         'macho/macho-command.c',
                         'macho/macho-segment.c',
                         'macho/macho-symbol.c']
@@ -31,7 +30,7 @@ lib_sources = ['libhelper.c',
                 'strutils.c', 
                 'hslist.c', 
                 'hstring.c', 
-                mach_parser_sources, 
+                mach_parser_sources,
                 img4_sources,
                 lzss_sources,
                 lzfse_sources]

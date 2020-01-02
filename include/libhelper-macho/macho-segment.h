@@ -1,46 +1,36 @@
-/**
- *     libhelper
- *     Copyright (C) 2019, @h3adsh0tzz
- *
- *     This program is free software: you can redistribute it and/or modify
- *     it under the terms of the GNU General Public License as published by
- *     the Free Software Foundation, either version 3 of the License, or
- *     (at your option) any later version.
- *
- *     This program is distributed in the hope that it will be useful,
- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *     GNU General Public License for more details.
- *
- *     You should have received a copy of the GNU General Public License
- *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
-*/
+//===--------------------------- macho_segment ------------------------===//
+//
+//                          Libhelper Mach-O Parser
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//
+//  Copyright (C) 2019, Is This On?, @h3adsh0tzz
+//  me@h3adsh0tzz.com.
+//
+//
+//===------------------------------------------------------------------===//
 
-#ifndef LIBHELPER_MACHO_SEGMENT_H
-#define LIBHELPER_MACHO_SEGMENT_H
+#ifndef LIBHELPER_MACHO_SEGMENT_LL_H
+#define LIBHELPER_MACHO_SEGMENT_LL_H
 
-/**
- *                  === The Libhelper Project ===
- *                          Mach-O Parser
- * 
- *  Documentation relating to the macho-segment.h header file:          |
- *                                                                      |
- *                                                                      |
- * 
- *  ----------------
- *  Original Author:
- *      Harry Moulton, @h3adsh0tzz  -   me@h3adsh0tzz.com.
- * 
- */
+#include "libhelper/hslist.h"
+#include "libhelper/strutils.h"
 
-#include "libhelper-macho/macho.h"
-#include "libhelper-macho/macho-command.h"
-
-
-//////////////////////////////////////////////////////////////////////////
-//                            Mach-O Segments                           //
-//////////////////////////////////////////////////////////////////////////
+//===-----------------------------------------------------------------------===//
+/*-- Mach-O Segments                     									 --*/
+//===-----------------------------------------------------------------------===//
 
 
 /**
@@ -86,21 +76,18 @@ typedef struct mach_segment_info_t {
 } mach_segment_info_t;
 
 
-/**
- *  Function definitions
- */
+// Functions
 mach_segment_command_64_t *mach_segment_command_create ();
-mach_segment_command_64_t *mach_segment_command_load (file_t *file, off_t offset);
+mach_segment_command_64_t *mach_segment_command_load (unsigned char *data, uint32_t offset);
+
 mach_segment_info_t *mach_segment_info_create ();
-mach_segment_info_t *mach_segment_info_load (file_t *file, off_t offset);
-mach_segment_info_t *mach_segment_command_search (macho_t *mach, char *segname);
-HSList *mach_segment_get_list (macho_t *mach);
-void mach_segment_command_dump (mach_segment_info_t *si);
+mach_segment_info_t *mach_segment_info_load (unsigned char *data, uint32_t offset);
+mach_segment_info_t *mach_segment_command_search (HSList *segments, char *segname);
 
 
-//////////////////////////////////////////////////////////////////////////
-//                            Mach-O Sections                           //
-//////////////////////////////////////////////////////////////////////////
+//===-----------------------------------------------------------------------===//
+/*-- Mach-O Sections                     									 --*/
+//===-----------------------------------------------------------------------===//
 
 
 /**
@@ -139,13 +126,15 @@ typedef struct mach_section_info_t {
  * 
  */
 mach_section_64_t *mach_section_create ();
-mach_section_64_t *mach_section_load (file_t *file, off_t offset);
-HSList *mach_sections_load_from_segment (macho_t *macho, mach_segment_command_64_t *seg);
-void mach_section_print (mach_section_64_t *section);
+mach_section_64_t *mach_section_load (unsigned char *data, uint32_t offset);
 
 mach_section_64_t *mach_search_section (mach_segment_info_t *info, char *sectname);
-mach_section_64_t *mach_find_section (macho_t *macho, int sect);
+mach_section_64_t *mach_find_section (HSList *segments, int sect);
 
-mach_section_info_t *mach_load_section_data (macho_t *macho, char *segment, char *section);
+// NOT IMPLEMENTED
+HSList *mach_sections_load_from_segment (unsigned char *data, mach_segment_command_64_t *seg);
+//void mach_section_print (mach_section_64_t *section);
 
-#endif /* libhelper_macho_segment_h */
+
+
+#endif /* libhelper_macho_segment_ll_h */

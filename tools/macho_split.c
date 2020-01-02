@@ -24,7 +24,6 @@
 
 #include <libhelper/libhelper.h>
 #include <libhelper-macho/macho.h>
-#include <libhelper-macho/macho-header.h>
 #include <libhelper-macho/macho-command.h>
 #include <libhelper-macho/macho-segment.h>
 
@@ -42,6 +41,8 @@
 #   define BUILD_ARCH           "arm64"
 #endif
 #define	MACHO_SPLIT_VERSION		"1.0.0"
+
+#define FAT(p) ((*(unsigned int *)(p) & ~1) == 0xbebafeca)
 
 struct archs {
 	size_t 	  size;
@@ -105,11 +106,13 @@ int main (int argc, char *argv[])
 
 	// Create a file struct
 	file_t *file = file_load (filename);
+	unsigned char *fdata = (unsigned char *) file_load_bytes (file, file->size, 0);
+	uint32_t size = file->size;
 
 
 	// Check that the file is a Universal Binary
-	mach_header_type_t type = mach_header_verify (file);
-	if (type == MH_TYPE_FAT) {
+	mach_header_type_t type = mach_header_verify (fdata);
+	if (FAT(fdata)) {
 		// just continue
 	} else {
 		printf ("File is not a Universal Binary. macho_split is designed for Universal Binaries\n");
@@ -139,20 +142,26 @@ int main (int argc, char *argv[])
 		}
 
 		// Print the arch info.
-		mach_header_64_t *hdr = (mach_header_64_t *) file_load_bytes (file, sizeof(mach_header_64_t), arch->offset);
+		mach_header_t *hdr = malloc (sizeof (mach_header_t));
+		memset (hdr, '\0', sizeof (mach_header_t));
+		memcpy (hdr, fdata + arch->offset, sizeof (mach_header_t));
+
 		if (hdr->magic == MACH_MAGIC_64 || hdr->magic == MACH_CIGAM_64) {
        		printf ("\t%s (for architecture %s):\tMach-O 64-bit %s %s\n", file->path, arch_name, mach_header_read_file_type_short (hdr->filetype), arch_name);
        	} else if (hdr->magic == MACH_MAGIC_32 || hdr->magic == MACH_CIGAM_32) {
            	printf ("\t%s (for architecture %s):\tMach-O 32-bit %s %s\n", file->path, arch_name, mach_header_read_file_type_short (hdr->filetype), arch_name);
        	} else {
-           	printf ("\tunknown\n");
+           	printf ("\tunknown: 0x%x\n", hdr->magic);
        	}
 
 		// Add to the archs list
 		struct archs *tmp = malloc (sizeof(struct archs));
 		tmp->size = arch->size;
-		tmp->buf = file_load_bytes (file, arch->size, arch->offset);
 		tmp->name = arch_name;
+
+		tmp->buf = malloc (arch->size);
+		memset (tmp->buf, '\0', arch->size);
+		memcpy (tmp->buf, fdata + arch->offset, arch->size);
 
 		arch_list = h_slist_append (arch_list, tmp);
 		arch_name = NULL;

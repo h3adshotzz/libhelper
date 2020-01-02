@@ -1,51 +1,35 @@
-/**
- *     libhelper
- *     Copyright (C) 2019, @h3adsh0tzz
- *
- *     This program is free software: you can redistribute it and/or modify
- *     it under the terms of the GNU General Public License as published by
- *     the Free Software Foundation, either version 3 of the License, or
- *     (at your option) any later version.
- *
- *     This program is distributed in the hope that it will be useful,
- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *     GNU General Public License for more details.
- *
- *     You should have received a copy of the GNU General Public License
- *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
-*/
+//===--------------------------- macho_command ------------------------===//
+//
+//                          Libhelper Mach-O Parser
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//
+//  Copyright (C) 2019, Is This On?, @h3adsh0tzz
+//  me@h3adsh0tzz.com.
+//
+//
+//===------------------------------------------------------------------===//
 
-#ifndef LIBHELPER_MACHO_SYMBOL_H
-#define LIBHELPER_MACHO_SYMBOL_H
+#ifndef LIBHELPER_MACHO_SYMBOL_LL_H
+#define LIBHELPER_MACHO_SYMBOL_LL_H
 
-/**
- *                  === The Libhelper Project ===
- *                          Mach-O Parser
- * 
- *  Documentation relating to the macho-segment.h header file:          |
- *                                                                      |
- *                                                                      |
- * 
- *  ----------------
- *  Original Author:
- *      Harry Moulton, @h3adsh0tzz  -   me@h3adsh0tzz.com.
- * 
- */
+#include "libhelper-macho/macho-command.h"
 
-//#include <glib-2.0/glib.h>
-#include <ctype.h>
-#include "libhelper-macho/macho.h"
-#include "libhelper/file.h"
-#include "libhelper/hstring.h"
-
-
-
-//////////////////////////////////////////////////////////////////////////
-//                             Static Symbols                           //
-//////////////////////////////////////////////////////////////////////////
-
+//===-----------------------------------------------------------------------===//
+/*-- Static Symbols                       									 --*/
+//===-----------------------------------------------------------------------===//
 
 /**
  * 	
@@ -108,14 +92,14 @@ typedef struct mach_symbol_table_t {
  *  Function definitions
  */
 mach_symtab_command_t *mach_symtab_command_create ();
-mach_symtab_command_t *mach_symtab_command_load (file_t *file, off_t offset);
-char *mach_symtab_find_symbol_name (file_t *file, nlist *sym, mach_symtab_command_t *cmd);
+mach_symtab_command_t *mach_symtab_command_load (unsigned char *data, uint32_t offset);
+char *mach_symtab_find_symbol_name (macho_t *macho, nlist *sym, mach_symtab_command_t *cmd);
 mach_symbol_table_t *mach_symtab_load_symbols (macho_t *macho, mach_symtab_command_t *symbol_table);
 
 
-//////////////////////////////////////////////////////////////////////////
-//                            Dynamic Symbols                           //
-//////////////////////////////////////////////////////////////////////////
+//===-----------------------------------------------------------------------===//
+/*-- Dynamic Symbols                      									 --*/
+//===-----------------------------------------------------------------------===//
 
 
 /**
@@ -238,5 +222,4 @@ typedef struct mach_dysymtab_command_t {
 } mach_dysymtab_command_t;
 
 
-
-#endif /* libhelper_macho_symbol_h */
+#endif /* libhelper_macho_symbol_ll_h */

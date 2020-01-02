@@ -1,24 +1,29 @@
-/**
- *     libhelper
- *     Copyright (C) 2019, @h3adsh0tzz
- *
- *     This program is free software: you can redistribute it and/or modify
- *     it under the terms of the GNU General Public License as published by
- *     the Free Software Foundation, either version 3 of the License, or
- *     (at your option) any later version.
- *
- *     This program is distributed in the hope that it will be useful,
- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *     GNU General Public License for more details.
- *
- *     You should have received a copy of the GNU General Public License
- *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
-*/
+//===--------------------------- macho_command ------------------------===//
+//
+//                          Libhelper Mach-O Parser
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//
+//  Copyright (C) 2019, Is This On?, @h3adsh0tzz
+//  me@h3adsh0tzz.com.
+//
+//
+//===------------------------------------------------------------------===//
 
 #include "libhelper-macho/macho-command.h"
-
+#include "libhelper-macho/macho-command-types.h"
 
 //////////////////////////////////////////////////////////////////////////
 //                  Base Mach-O Load commands                           //
@@ -37,9 +42,9 @@
  */
 mach_load_command_t *mach_load_command_create ()
 {
-    mach_load_command_t *lc = malloc(MACH_LOAD_COMMAND_SIZE);
-    memset (lc, '\0', sizeof(mach_load_command_t));
-    return lc;
+    mach_load_command_t *ret = malloc (sizeof (mach_load_command_t));
+    memset (ret, '\0', sizeof (mach_load_command_t));
+    return ret;
 }
 
 
@@ -55,9 +60,9 @@ mach_load_command_t *mach_load_command_create ()
  */
 mach_command_info_t *mach_command_info_create ()
 {
-    mach_command_info_t *cmd = malloc(MACH_COMMAND_INFO_SIZE);
-    memset (cmd, '\0', sizeof(mach_command_info_t));
-    return cmd;
+    mach_command_info_t *ret = malloc (sizeof (mach_command_info_t));
+    memset (ret, '\0', sizeof (mach_command_info_t));
+    return ret;
 }
 
 
@@ -65,31 +70,33 @@ mach_command_info_t *mach_command_info_create ()
  *  Function:   mach_command_info_load
  *  ----------------------------------
  * 
- *  Loads a raw Mach-O Load Command from a given offset in a verified Mach-O file, and
- *  returns the resulting structure.
+ *  Loads a raw Mach-O Load Command from an offset of a given buffer. The command will
+ *  be verified, loaded into a mach_command_info_t struct and returned. 
  *  
- *  file:       The verified Mach-O file.
- *  offset:     The offset of the Load Command within the file.
+ *  data:       mach-o buffer
+ *  offset:     The offset of the Load Command.
  * 
  *  returns:    A verified Mach Command Info structure.
  * 
  */
-mach_command_info_t *mach_command_info_load (file_t *file, off_t offset)
+mach_command_info_t *mach_command_info_load (unsigned char *data, uint32_t offset)
 {
-    mach_command_info_t *ret = mach_command_info_create ();
     mach_load_command_t *lc = mach_load_command_create ();
+    mach_command_info_t *info = mach_command_info_create ();
 
-    lc = (mach_load_command_t *) file_load_bytes (file, sizeof(mach_load_command_t), offset);
+    // load bytes from data into lc
+    memcpy (lc, data + offset, sizeof (mach_load_command_t));
     if (!lc) {
-        debugf ("[*] Error: Unable to find Load Command at offset 0x%llx\n", offset);
+        errorf ("There was a problem loading command at offset 0x%x\n", offset);
         return NULL;
     }
 
-    ret->lc = lc;
-    ret->off = offset;
-    ret->type = lc->cmd;
+    // Create a load command info struct with the raw LC
+    info->offset = offset;
+    info->type = lc->cmd;
+    info->lc = lc;
 
-    return ret;
+    return info;
 }
 
 
@@ -107,7 +114,7 @@ void mach_load_command_info_print (mach_command_info_t *cmd)
     mach_load_command_print (cmd, LC_INFO);
     debugf ("--- Meta:\n");
     debugf ("  Type:\t0x%x\n", cmd->type);
-    debugf ("Offset:\t0x%llx\n", cmd->off);
+    debugf ("Offset:\t0x%llx\n", cmd->offset);
 }
 
 
@@ -263,8 +270,10 @@ char *mach_load_command_get_string (mach_load_command_t *lc)
             cmd_str = "LC_ENCRYPTION_INFO";
             break;
         case LC_DYLD_INFO:
-        case LC_DYLD_INFO_ONLY:
             cmd_str = "LC_DYLD_INFO";
+            break;
+        case LC_DYLD_INFO_ONLY:
+            cmd_str = "LC_DYLD_INFO_ONLY";
             break;
         case LC_LOAD_UPWARD_DYLIB:
             cmd_str = "LC_LOAD_UPWARD_DYLIB";
@@ -328,9 +337,10 @@ char *mach_load_command_get_string (mach_load_command_t *lc)
 }
 
 
-//////////////////////////////////////////////////////////////////////////
-//                     Specific Load Commands                           //
-//////////////////////////////////////////////////////////////////////////
+//===-----------------------------------------------------------------------===//
+/*-- Specific Load Commands              									 --*/
+//===-----------------------------------------------------------------------===//
+
 
 /**
  *  The Symtab command can stay here, but handling symbols
@@ -341,7 +351,7 @@ mach_command_info_t *mach_lc_find_given_cmd (macho_t *macho, int cmd)
 {
     HSList *cmds = macho->lcmds;
     for (int i = 0; i < h_slist_length (cmds); i++) {
-        mach_command_info_t *tmp = (mach_load_command_t *) h_slist_nth_data (cmds, i);
+        mach_command_info_t *tmp = (mach_command_info_t *) h_slist_nth_data (cmds, i);
         if (tmp->type == cmd) {
             return tmp;
         }
@@ -372,7 +382,7 @@ mach_source_version_command_t *mach_lc_find_source_version_cmd (macho_t *macho)
     for (int i = 0; i < h_slist_length (cmds); i++) {
         mach_command_info_t *tmp = (mach_command_info_t *) h_slist_nth_data (cmds, i);
         if (tmp->type == LC_SOURCE_VERSION) {
-            ret = (mach_source_version_command_t *) file_load_bytes (macho->file, size, tmp->off);
+            ret = (mach_source_version_command_t *) macho_load_bytes (macho, size, tmp->offset);
             
             if (!ret) {
                 debugf ("[*] Error: Failed to load LC_SOURCE_VERSION command from offset: 0x%llx\n");
@@ -385,6 +395,11 @@ mach_source_version_command_t *mach_lc_find_source_version_cmd (macho_t *macho)
 
     return NULL;
 }
+
+
+///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
+
 
 
 /**
@@ -498,7 +513,7 @@ mach_build_version_info_t *mach_lc_build_version_info (mach_build_version_comman
     off_t next_off = offset + sizeof(mach_build_version_command_t);
     for (int i = 0; i < ret->ntools; i++) {
 
-        struct build_tool_version *btv = (struct build_tool_version *) file_load_bytes (macho->file, sizeof(struct build_tool_version), next_off);
+        struct build_tool_version *btv = (struct build_tool_version *) macho_load_bytes (macho, sizeof(struct build_tool_version), next_off);
         build_tool_info_t *inf = malloc (sizeof(build_tool_info_t));
 
         switch (btv->tool) {
@@ -527,14 +542,12 @@ mach_build_version_info_t *mach_lc_build_version_info (mach_build_version_comman
     return ret;
 }
 
-
-
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
 
 char *mach_lc_load_dylinker_string_cmd (macho_t *macho, mach_load_dylinker_command_t *dylinker, off_t offset)
 {
-    char *ret = file_load_bytes (macho->file, dylinker->cmdsize - sizeof(mach_load_dylinker_command_t), offset + dylinker->offset);
+    char *ret = macho_load_bytes (macho, dylinker->cmdsize - sizeof(mach_load_dylinker_command_t), offset + dylinker->offset);
 
     return ret;
 }
@@ -544,7 +557,7 @@ char *mach_lc_load_dylinker_string_cmd (macho_t *macho, mach_load_dylinker_comma
 
 char *mach_lc_load_str (macho_t *macho, uint32_t cmdsize, uint32_t struct_size, off_t cmd_offset, off_t str_offset)
 {
-    return file_load_bytes (macho->file, cmdsize - struct_size, cmd_offset + str_offset);
+    return macho_load_bytes (macho, cmdsize - struct_size, cmd_offset + str_offset);
 }
 
 ///////////////////////////////////////////////////////////////
@@ -573,7 +586,7 @@ mach_uuid_command_t *mach_lc_find_uuid_cmd (macho_t *macho)
     for (int i = 0; i < h_slist_length (cmds); i++) {
         mach_command_info_t *tmp = (mach_command_info_t *) h_slist_nth_data (cmds, i);
         if (tmp->type == LC_UUID) {
-            ret = (mach_uuid_command_t *) file_load_bytes (macho->file, size, tmp->off);
+            ret = (mach_uuid_command_t *) macho_load_bytes (macho, size, tmp->offset);
             
             if (!ret) {
                 debugf ("[*] Error: Failed to load LC_UUID command from offset: 0x%llx\n");
@@ -634,10 +647,7 @@ mach_symtab_command_t *mach_lc_find_symtab_cmd (macho_t *macho)
     mach_symtab_command_t *ret = malloc (size);
     
     mach_command_info_t *cmdinfo = mach_lc_find_given_cmd (macho, LC_SYMTAB);
-    ret = (mach_symtab_command_t *) file_load_bytes (macho->file, size, cmdinfo->off);
-
-    debugf ("LC_SYMTAB: %d\n", LC_SYMTAB);
-    debugf ("test symtab: 0x%llx\n", ret->nsyms);
+    ret = (mach_symtab_command_t *) macho_load_bytes (macho, size, cmdinfo->offset);
 
     return ret;
 }
@@ -656,7 +666,7 @@ mach_dysymtab_command_t *mach_lc_find_dysymtab_cmd (macho_t *macho)
     mach_dysymtab_command_t *ret = malloc (size);
     
     mach_command_info_t *cmdinfo = mach_lc_find_given_cmd (macho, LC_SYMTAB);
-    ret = (mach_dysymtab_command_t *) file_load_bytes (macho->file, size, cmdinfo->off);
+    ret = (mach_dysymtab_command_t *) macho_load_bytes (macho, size, cmdinfo->offset);
 
     debugf ("LC_DYSYMTAB: %d\n", LC_DYSYMTAB);
     debugf ("test symtab: 0x%llx\n", ret->cmdsize);

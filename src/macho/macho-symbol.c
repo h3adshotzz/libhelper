@@ -1,24 +1,28 @@
-/**
- *     libhelper
- *     Copyright (C) 2019, @h3adsh0tzz
- *
- *     This program is free software: you can redistribute it and/or modify
- *     it under the terms of the GNU General Public License as published by
- *     the Free Software Foundation, either version 3 of the License, or
- *     (at your option) any later version.
- *
- *     This program is distributed in the hope that it will be useful,
- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *     GNU General Public License for more details.
- *
- *     You should have received a copy of the GNU General Public License
- *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
-*/
+//===--------------------------- macho_command ------------------------===//
+//
+//                          Libhelper Mach-O Parser
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//
+//  Copyright (C) 2019, Is This On?, @h3adsh0tzz
+//  me@h3adsh0tzz.com.
+//
+//
+//===------------------------------------------------------------------===//
 
 #include "libhelper-macho/macho-symbol.h"
-#include "libhelper-macho/macho-segment.h"
 
 
 /**
@@ -27,9 +31,9 @@
  */
 mach_symtab_command_t *mach_symtab_command_create ()
 {
-    mach_symtab_command_t *symt = malloc(sizeof(mach_symtab_command_t));
-    memset (symt, '\0', sizeof(mach_symtab_command_t));
-    return symt;
+    mach_symtab_command_t *ret = malloc (sizeof (mach_symtab_command_t));
+    memset (ret, '\0', sizeof (mach_symtab_command_t));
+    return ret;
 }
 
 
@@ -37,10 +41,10 @@ mach_symtab_command_t *mach_symtab_command_create ()
  * 
  * 
  */
-mach_symtab_command_t *mach_symtab_command_load (file_t *file, off_t offset)
+mach_symtab_command_t *mach_symtab_command_load (unsigned char *data, uint32_t offset)
 {
     mach_symtab_command_t *symt = mach_symtab_command_create ();
-    symt = (mach_symtab_command_t *) file_load_bytes (file, sizeof(mach_symtab_command_t), offset);
+    symt = (mach_symtab_command_t *) macho_load_bytes (data, sizeof(mach_symtab_command_t), offset);
 
     if (!symt) {
         errorf ("[*] Error: Problem loading Mach Symbol Table at offset: 0x%llx\n", offset);
@@ -55,20 +59,22 @@ mach_symtab_command_t *mach_symtab_command_load (file_t *file, off_t offset)
  * 
  * 
  */
-char *mach_symtab_find_symbol_name (file_t *file, nlist *sym, mach_symtab_command_t *cmd)
+char *mach_symtab_find_symbol_name (macho_t *macho, nlist *sym, mach_symtab_command_t *cmd)
 {
     /**
      *  The offset of the symbol name is symbol->off + nlist->n_strx
      */
-    size_t s = cmd->strsize - sym->n_strx;
-    off_t off = cmd->stroff + sym->n_strx;
+    uint32_t size = cmd->strsize - sym->n_strx;
+    uint32_t offset = cmd->stroff + sym->n_strx;
 
-    char *tmp = file_load_bytes (file, s, off);
+    char *tmp = malloc (size);
+    memcpy (tmp, macho->data + offset, size);
+    
     HString *curr = h_string_new ("");
 
     int found = 0, i = 0;
     while (!found) {
-        if (i >= s) break;
+        if (i >= size) break;
         if (tmp[i] != 0x0) {
             curr = h_string_append_c (curr, tmp[i]);
             i++;
@@ -91,8 +97,6 @@ char *mach_symtab_find_symbol_name (file_t *file, nlist *sym, mach_symtab_comman
  */
 mach_symbol_table_t *mach_symtab_load_symbols (macho_t *macho, mach_symtab_command_t *symbol_table)
 {
-    file_t *file = macho->file;
-
     /*
     
         sym name: __mh_execute_header
@@ -131,9 +135,9 @@ mach_symbol_table_t *mach_symtab_load_symbols (macho_t *macho, mach_symtab_comma
     off_t off = symbol_table->symoff;
 
     for (int i = 0; i < s; i++) {
-        nlist *tmp = (nlist *) file_load_bytes (file, sizeof(nlist), off);
+        nlist *tmp = (nlist *) macho_load_bytes (macho->data, sizeof(nlist), off);
 
-        char *name = mach_symtab_find_symbol_name (file, tmp, symbol_table);
+        char *name = mach_symtab_find_symbol_name (macho, tmp, symbol_table);
 
         // THIS WILL MOVE TO A SEPERATE FUNCTION
         debugf ("0x%08x \tSymbol Name:\t%s\n", tmp->n_strx, name);
