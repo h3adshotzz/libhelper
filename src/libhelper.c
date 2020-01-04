@@ -37,23 +37,5 @@
 
 char *libhelper_version_string ()
 {
-    char *vers = NULL;
-    char *platform = NULL;
-
-#ifdef __APPLE__
-    platform = "Darwin";
-#else
-    platform = "Linux";
-#endif
-
-
-#ifdef __x86_64__
-    vers = " Libhelper; " LIBHELPER_VERSION_LONG "; " __TIMESTAMP__ "; LIBHELPER_DEVELOPMENT_X86_64; x86_64";
-#elif __arm__
-    vers = " Libhelper; " LIBHELPER_VERSION_LONG "; " __TIMESTAMP__ "; LIBHELPER_DEVELOPMENT_ARM64; arm64";
-#else 
-    vers = " Libhelper; " LIBHELPER_VERSION_LONG "; " __TIMESTAMP__ "; LIBHELPER_DEVELOPMENT; unknown_architecture";
-#endif
-
-    return strappend (platform, vers);
+    return LIBHELPER_PLATFORM " Libhelper " LIBHELPER_VERSION_SHORT "; " __TIMESTAMP__ "; " LIBHELPER_VERS_WITH_ARCH;
 }
