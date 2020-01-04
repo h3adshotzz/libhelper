@@ -258,7 +258,7 @@ mach_header_type_t *mach_header_verify (uint32_t magic)
         return MH_TYPE_MACHO64;
     } else if (magic == MACH_CIGAM_32 || magic == MACH_MAGIC_32) {
         return MH_TYPE_MACHO32;
-    } else if (magic == MACH_MAGIC_UNIVERSAL || magic == MACH_MAGIC_UNIVERSAL) {
+    } else if (magic == MACH_CIGAM_UNIVERSAL || magic == MACH_MAGIC_UNIVERSAL) {
         return MH_TYPE_FAT;
     } else {
         return MH_TYPE_UNKNOWN;
