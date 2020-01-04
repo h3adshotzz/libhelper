@@ -181,6 +181,8 @@ macho_t *macho_create_from_file (file_t *file)
         offset += lc->lc->cmdsize;
     }
 
+    macho->offset = offset;
+
     macho->lcmds = lcmds;
     macho->scmds = scmds;
     macho->dylibs = dylibs;
