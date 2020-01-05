@@ -114,6 +114,7 @@ typedef struct mach_section_64_t {
  * 
  */
 typedef struct mach_section_info_t {
+	mach_section_64_t	*_struct;
     char                *segment;
     char                *section;
     char                *data;

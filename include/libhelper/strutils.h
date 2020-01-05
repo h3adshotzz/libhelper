@@ -69,11 +69,17 @@ char *m_strappend (char *fmt, ...);
 /* String splits */
 StringList *strsplit (const char *s, const char *delim);
 
+/* Boyermoore Horspool memmem() */
+//static unsigned char *
+//boyermoore_horspool_memmem(const unsigned char* haystack, size_t hlen,
+//                           const unsigned char* needle,   size_t nlen);
+
 /* Logging */
 int __printf(log_type msgType, char *fmt, ...);
 #define errorf(fmt, ...)  __printf(LOG_ERROR, fmt, ##__VA_ARGS__)
 #define debugf(fmt, ...)  __printf(LOG_DEBUG, fmt, ##__VA_ARGS__)
 #define warningf(fmt, ...)  __printf(LOG_WARNING, fmt, ##__VA_ARGS__)
 
+//#define __UCHAR_MAX 255
 
 #endif /* libhelper_strutils_h */

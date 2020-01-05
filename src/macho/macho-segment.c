@@ -252,9 +252,16 @@ mach_section_info_t *mach_load_section_data (macho_t *macho, char *segment, char
     mach_segment_info_t *seginfo = mach_segment_command_search (macho->scmds, segment);
     mach_section_64_t *__sect = mach_search_section (seginfo, section);
 
+    if (__sect == NULL) {
+        errorf ("Could not find %s.%s\n", segment, section);
+        return NULL;
+    }
+
+    ret->_struct = __sect;
     ret->segment = __sect->segname;
     ret->section = __sect->sectname;
     ret->size = __sect->size;
+    ret->addr = __sect->offset;
 
     ret->data = malloc (__sect->size);
     memset (ret->data, '\0', __sect->size);
