@@ -283,7 +283,8 @@ void macho_free (macho_t *macho);
 
 // has to be here because segment.h includes this header
 HSList *mach_segment_get_list (macho_t *mach);
-mach_section_info_t *mach_load_section_data (macho_t *macho, char *segment, char *section);
+
+mach_section_info_t *mach_section_info_from_name (macho_t *macho, char *segment, char *section);
 
 //===-----------------------------------------------------------------------===//
 /*-- FAT & Mach-O Header functions         									 --*/

@@ -82,7 +82,7 @@ mach_segment_command_64_t *mach_segment_command_load (unsigned char *data, uint3
 
 mach_segment_info_t *mach_segment_info_create ();
 mach_segment_info_t *mach_segment_info_load (unsigned char *data, uint32_t offset);
-mach_segment_info_t *mach_segment_command_search (HSList *segments, char *segname);
+mach_segment_info_t *mach_segment_info_search (HSList *segments, char *segname);
 
 
 //===-----------------------------------------------------------------------===//
@@ -94,7 +94,7 @@ mach_segment_info_t *mach_segment_command_search (HSList *segments, char *segnam
  * 	A segment is made up of zero or more sections. CONT
  * 
  */
-typedef struct mach_section_64_t {
+struct section_64 {
 	char		sectname[16];	/* name of this section */
 	char		segname[16];	/* segment this section goes in */
 	uint64_t	addr;			/* memory address of this section */
@@ -107,7 +107,8 @@ typedef struct mach_section_64_t {
 	uint32_t	reserved1;		/* reserved (for offset or index) */
 	uint32_t	reserved2;		/* reserved (for count or sizeof) */
 	uint32_t	reserved3;		/* reserved */
-} mach_section_64_t;
+};
+typedef struct section_64 mach_section_64_t;
 
 
 /**
@@ -128,12 +129,11 @@ typedef struct mach_section_info_t {
  */
 mach_section_64_t *mach_section_create ();
 mach_section_64_t *mach_section_load (unsigned char *data, uint32_t offset);
-
-mach_section_64_t *mach_search_section (mach_segment_info_t *info, char *sectname);
-mach_section_64_t *mach_find_section (HSList *segments, int sect);
+mach_section_64_t *mach_section_from_segment_info (mach_segment_info_t *info, char *sectname);
 
 // NOT IMPLEMENTED
-HSList *mach_sections_load_from_segment (unsigned char *data, mach_segment_command_64_t *seg);
+//mach_section_64_t *mach_find_section (HSList *segments, int sect);
+//HSList *mach_sections_load_from_segment (unsigned char *data, mach_segment_command_64_t *seg);
 //void mach_section_print (mach_section_64_t *section);
 
 

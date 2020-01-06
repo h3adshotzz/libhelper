@@ -198,7 +198,7 @@ mach_section_64_t *mach_section_load (unsigned char *data, uint32_t offset)
 /**
  * 
  */
-mach_section_64_t *mach_search_section (mach_segment_info_t *info, char *sectname)
+mach_section_64_t *mach_section_from_segment_info (mach_segment_info_t *info, char *sectname)
 {
     // Check the sectname given is valid
     if (!sectname || strlen(sectname) > 16) {
@@ -226,7 +226,7 @@ mach_section_64_t *mach_search_section (mach_segment_info_t *info, char *sectnam
 /**
  * 
  */
-mach_section_64_t *mach_find_section (HSList *segments, int sect)
+/*mach_section_64_t *mach_find_section (HSList *segments, int sect)
 {
     int count = 0;
     for (int i = 0; i < h_slist_length (segments); i++) {
@@ -239,13 +239,13 @@ mach_section_64_t *mach_find_section (HSList *segments, int sect)
         }
     }
     return NULL;
-}
+}*/
 
 
 /**
  * 
  */
-mach_section_info_t *mach_load_section_data (macho_t *macho, char *segment, char *section)
+mach_section_info_t *mach_section_info_from_name (macho_t *macho, char *segment, char *section)
 {
     mach_section_info_t *ret = malloc (sizeof(mach_section_info_t));
 
