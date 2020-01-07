@@ -130,6 +130,7 @@ typedef struct mach_section_info_t {
 mach_section_64_t *mach_section_create ();
 mach_section_64_t *mach_section_load (unsigned char *data, uint32_t offset);
 mach_section_64_t *mach_section_from_segment_info (mach_segment_info_t *info, char *sectname);
+mach_section_64_t *mach_find_section_command_at_index (HSList *segments, int index);
 
 // NOT IMPLEMENTED
 //mach_section_64_t *mach_find_section (HSList *segments, int sect);

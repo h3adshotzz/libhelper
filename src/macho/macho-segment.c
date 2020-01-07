@@ -222,24 +222,23 @@ mach_section_64_t *mach_section_from_segment_info (mach_segment_info_t *info, ch
     return NULL;
 }
 
-
 /**
  * 
  */
-/*mach_section_64_t *mach_find_section (HSList *segments, int sect)
+mach_section_64_t *mach_find_section_command_at_index (HSList *segments, int index)
 {
     int count = 0;
     for (int i = 0; i < h_slist_length (segments); i++) {
         mach_segment_info_t *seg = (mach_segment_info_t *) h_slist_nth_data (segments, i);
         for (int k = 0; k < seg->segcmd->nsects; k++) {
             count++;
-            if (count == sect) {
+            if (count == index) {
                 return (mach_section_64_t *) h_slist_nth_data (seg->sections, k);
             }
         }
     }
     return NULL;
-}*/
+}
 
 
 /**
@@ -250,7 +249,7 @@ mach_section_info_t *mach_section_info_from_name (macho_t *macho, char *segment,
     mach_section_info_t *ret = malloc (sizeof(mach_section_info_t));
 
     mach_segment_info_t *seginfo = mach_segment_command_search (macho->scmds, segment);
-    mach_section_64_t *__sect = mach_search_section (seginfo, section);
+    mach_section_64_t *__sect = mach_section_from_segment_info (seginfo, section);
 
     if (__sect == NULL) {
         errorf ("Could not find %s.%s\n", segment, section);

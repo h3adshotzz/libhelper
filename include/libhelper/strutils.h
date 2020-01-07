@@ -64,7 +64,7 @@ typedef struct StringList {
 
 /* String appending */
 char *strappend (char *a, char *b);
-char *m_strappend (char *fmt, ...);
+char *mstrappend (char *fmt, ...);
 
 /* String splits */
 StringList *strsplit (const char *s, const char *delim);

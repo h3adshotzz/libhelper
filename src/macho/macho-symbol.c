@@ -165,8 +165,7 @@ mach_symbol_table_t *mach_symtab_load_symbols (macho_t *macho, mach_symtab_comma
 
 
         if (tmp->n_sect) {
-            // CHANGE FUNCTION TO ACCEPT MACHO INSTEAD OF FILE
-            mach_section_64_t *section = mach_find_section (macho, tmp->n_sect);
+            mach_section_64_t *section = mach_find_section_command_at_index (macho->scmds, tmp->n_sect);
             debugf ("0x%08x \tSection:\t%d (%s,%s)\n", tmp->n_sect, tmp->n_sect, section->segname, section->sectname);
         } else {
             debugf ("0x%08x \tSection:\tNO_SECT\n");
