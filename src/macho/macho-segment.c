@@ -130,7 +130,7 @@ HSList *mach_segment_get_list (macho_t *mach)
 /**
  * 
  */
-mach_segment_info_t *mach_segment_command_search (HSList *segments, char *segname)
+mach_segment_info_t *mach_segment_info_search (HSList *segments, char *segname)
 {
     // Check the segname given is valid
     if (!segname) {
@@ -161,6 +161,15 @@ mach_segment_info_t *mach_segment_command_search (HSList *segments, char *segnam
     // Output an error
     debugf ("[*] Could not find Segment %s\n", segname);
     return NULL;
+}
+
+
+/**
+ * 
+ */
+mach_segment_command_64_t *mach_segment_command_from_info (mach_segment_info_t *info)
+{
+    return (info->segcmd) ? info->segcmd : NULL;
 }
 
 
@@ -248,7 +257,7 @@ mach_section_info_t *mach_section_info_from_name (macho_t *macho, char *segment,
 {
     mach_section_info_t *ret = malloc (sizeof(mach_section_info_t));
 
-    mach_segment_info_t *seginfo = mach_segment_command_search (macho->scmds, segment);
+    mach_segment_info_t *seginfo = mach_segment_info_search (macho->scmds, segment);
     mach_section_64_t *__sect = mach_section_from_segment_info (seginfo, section);
 
     if (__sect == NULL) {

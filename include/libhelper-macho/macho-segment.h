@@ -79,6 +79,7 @@ typedef struct mach_segment_info_t {
 // Functions
 mach_segment_command_64_t *mach_segment_command_create ();
 mach_segment_command_64_t *mach_segment_command_load (unsigned char *data, uint32_t offset);
+mach_segment_command_64_t *mach_segment_command_from_info (mach_segment_info_t *info);
 
 mach_segment_info_t *mach_segment_info_create ();
 mach_segment_info_t *mach_segment_info_load (unsigned char *data, uint32_t offset);

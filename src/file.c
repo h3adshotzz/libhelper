@@ -115,8 +115,8 @@ int file_write_new (char *filename, unsigned char *buf, size_t size)
 		return -1;
 	}
 
-	fwrite (buf, sizeof(char), size, f);
+	size_t res = fwrite (buf, sizeof(char), size, f);
 	fclose(f); 
 
-	return size;
+	return res;
 }
