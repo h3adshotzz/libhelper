@@ -10,4 +10,4 @@
 #
 macho_split 	= executable ('macho_split', sources: ['macho_split.c'], link_with: libhelper_static, include_directories : incdir)
 macho_dump	= executable ('macho_dump', sources: ['macho_dump.c'], link_with: libhelper_static, include_directories : incdir)
-#macho_sect		= executable ('macho_sect', sources: ['macho_sect.c'], link_with: libhelper_static, include_directories : incdir)
+macho_sect		= executable ('macho_sect', sources: ['macho_sect.c'], link_with: libhelper_static, include_directories : incdir)

@@ -24,7 +24,6 @@
 
 #include <libhelper/libhelper.h>
 #include <libhelper-macho/macho.h>
-#include <libhelper-macho/macho-header.h>
 #include <libhelper-macho/macho-command.h>
 #include <libhelper-macho/macho-segment.h>
 
@@ -101,22 +100,21 @@ int main (int argc, char *argv[])
     char *section = argv[3];
 
     if (!filename || !segment || !section) {
-	printf ("Unable to split %s.%s from %s\n", segment, section, filename);
-	return 0;
+	    printf ("Unable to split %s.%s from %s\n", segment, section, filename);
+	    return 0;
     }
 
     printf ("seperating %s,%s from %s\n", segment, section, filename);
 
-    // Create a file struct
-    file_t *file = file_load (filename);
+    // Load the Mach-O
+    macho_t *macho = macho_load (filename);
 
-    // Check that the file is a macho-64
-    mach_header_type_t type = mach_header_verify (file);
-    if (type == MH_TYPE_MACHO64) {
-	// just continue
-    } else {
-	printf ("Can only operate on 64-bit Mach-O's (0x%x).\n", (uint32_t) file_load_bytes (file, sizeof(uint32_t), 0));
-    }
+    // Find the section
+    mach_section_info_t *info = mach_section_info_from_name (macho, segment, section);
+    
+    unsigned char *sect_data = macho_load_bytes (macho, info->size, info->addr);
 
-    return 0;
+    int fd = file_write_new ("sect.test", sect_data, info->size);
+
+    return fd;
 }

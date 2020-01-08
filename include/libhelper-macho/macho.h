@@ -299,7 +299,7 @@ mach_section_info_t *mach_section_info_from_name (macho_t *macho, char *segment,
 mach_header_t *mach_header_create ();
 mach_header_t *mach_header_load (macho_t *macho);
 
-mach_header_type_t *mach_header_verify (uint32_t magic);
+mach_header_type_t mach_header_verify (uint32_t magic);
 
 char *mach_header_read_cpu_type (cpu_type_t type);
 char *mach_header_read_cpu_sub_type (cpu_subtype_t type);

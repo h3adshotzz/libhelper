@@ -254,7 +254,7 @@ void macho_free (macho_t *macho)
  * 
  *  Returns:    A header type flag.
  */
-mach_header_type_t *mach_header_verify (uint32_t magic)
+mach_header_type_t mach_header_verify (uint32_t magic)
 {
     if (magic == MACH_CIGAM_64 || magic == MACH_MAGIC_64) {
         return MH_TYPE_MACHO64;
