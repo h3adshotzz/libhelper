@@ -3,11 +3,7 @@
 #	other depndencies
 #
 
-
 #
-#	macho_split		-	Splits Mach-O files that contain multiple architectures (Universal Binaries)
-#	macho_sect		-	Extracts a specifies section of a given Mach-O (Given file should be single-arch, not universal)
+#   Add a better way of building all three from ninja
 #
-macho_split 	= executable ('macho_split', sources: ['macho_split.c'], link_with: libhelper_static, include_directories : incdir)
-macho_dump	= executable ('macho_dump', sources: ['macho_dump.c'], link_with: libhelper_static, include_directories : incdir)
-macho_sect		= executable ('macho_sect', sources: ['macho_sect.c'], link_with: libhelper_static, include_directories : incdir)
+macho_helper_toolset = executable ('macho_tool_NAME', sources: ['macho_toolset.c'], link_with : libhelper_static, include_directories : incdir)
