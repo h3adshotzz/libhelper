@@ -25,7 +25,7 @@
 #ifndef LIBHELPER_VERSION_H
 #define LIBHELPER_VERSION_H
 
-#define LIBHELPER_VERSION_LONG              "libhelper-1000.836.27.12"
+#define LIBHELPER_VERSION_LONG              "libhelper-1000.861.67.4"
 #define LIBHELPER_VERSION_SHORT             "1.0.0"
 #define LIBHELPER_VERSION_TAG               "Beta"
 #define LIBHELPER_VERSION_TAG_CAPS          "BETA"
