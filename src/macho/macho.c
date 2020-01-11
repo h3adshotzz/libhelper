@@ -418,7 +418,8 @@ fat_header_info_t *mach_universal_load (file_t *file)
         exit (0);
     }
 
-    printf ("[*] %s: Mach-O Universal Binary. Found %d architectures.\n", file->path, fat_header->nfat_arch);
+    if (fat_header->nfat_arch > 1) 
+        printf ("[*] %s: Mach-O Universal Binary. Found %d architectures.\n", file->path, fat_header->nfat_arch);
 
     // Arch list
     HSList *archs = NULL;
