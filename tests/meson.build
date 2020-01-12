@@ -12,3 +12,5 @@ deps = []
 
 #macholl_test = executable ('macho-ll', sources: ['macho-ll.c'], link_with : libhelper_static, include_directories : incdir)
 macholl_lib_test = executable ('macholl-lib', sources: ['macho-ll-lib.c'], link_with : libhelper_static, include_directories : incdir)
+
+dyld_cache_test = executable ('dyld_cache', sources: ['dyld_cache.c'], link_with : libhelper_static, include_directories : incdir)
