@@ -1,6 +1,6 @@
-//===------------------------------ file -----------------------------===//
+//===---------------------------- file -----------------------------===//
 //
-//                            The Libhelper Project
+//                        The Libhelper Project
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -34,20 +34,54 @@
 #include "libhelper/strutils.h"
 #include "libhelper/hstring.h"
 
+/***********************************************************************
+* File loading and handling.
+***********************************************************************/
+
+/**
+ *  A small structure for handling and streamlining files in C. It's
+ *  used to pass around some extra information about a file like it's
+ *  original path, along with the size and data pointer.
+ *  
+ */
 typedef struct file_t {
     FILE    *desc;      /* Loaded file */
     size_t   size;      /* Size of the file */
+//  unsigned char *data;    /* WIP */
     char    *path;      /* Original path */
 } file_t;
 
-file_t *file_create ();
-file_t *file_load (const char *path);
-void file_close (file_t *file);
-int file_read (const char *path, unsigned char **buf, unsigned int *len);
+/**
+ *  Use `file_create()` for creating a new file_t structure by allocating
+ *  and initialising it. Should be used for safely creating a new struct.
+ * 
+ *  Use `file_load()` for loading a given file (including the file path)
+ *  into a file_t structure.
+ * 
+ *  Use `file_close()` to safely close a file, similar to `fclose()`.
+ * 
+ *  Use `file_free()` to free and NULL out the file_t structure.
+ */ 
+file_t  *file_create ();
+file_t  *file_load (const char *path);
+void     file_close (file_t *file);
+void     file_free (file_t *file);
 
-int file_write_new (char *filename, unsigned char *buf, size_t size);
+/**
+ *  Flags for results of `file_read()` and `file_write_new()`.
+ */
+#define     LH_FILE_FAILURE     0x0
+#define     LH_FILE_SUCCESS     0x1
 
-char *file_load_bytes (file_t *f, size_t size, off_t offset);
+/**
+ *  Use `file_write_new()` to create and write a new file at the given
+ *  path with the given data and size.
+ * 
+ *  Use `file_load_bytes()` to load `size` bytes from a given file
+ *  struct starting at a given offset.
+ */
+int      file_write_new (char *filename, unsigned char *buf, size_t size);
+char    *file_load_bytes (file_t *f, size_t size, uint32_t offset);
 
 
 #endif /* FILE_H_ */

@@ -91,17 +91,6 @@
 					                            //   to be run lazily via catching memory
 					                            //   faults to its writeable segments
 					                            //   (obsolete).
-#define     MH_BINDATLOAD	            0x8		//  The object file's undefined
-					                            //   references are bound by the dynamic
-					                            //   linker when loaded.
-#define     MH_PREBOUND	                0x10	//  The file has its dynamic undefined
-					                            //   references prebound.
-#define     MH_SPLIT_SEGS	            0x20	//  The file has its read-only and
-					                            //   read-write segments split.
-#define     MH_LAZY_INIT	            0x40	//  The shared library init routine is
-					                            //   to be run lazily via catching memory
-					                            //   faults to its writeable segments
-					                            //   (obsolete).
 #define     MH_TWOLEVEL	                0x80	//  The image is using two-level name
 					                            //   space bindings.
 #define     MH_FORCE_FLAT	            0x100	//  The executable is forcing all images

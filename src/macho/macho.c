@@ -235,7 +235,8 @@ void *macho_load_bytes (macho_t *macho, size_t size, uint32_t offset)
 
 void macho_free (macho_t *macho)
 {
-    // NULL and free() everything in the struct.
+    macho = NULL;
+    free (macho);
 }
 
 

@@ -1,6 +1,6 @@
-//===------------------------------ file -----------------------------===//
+//===---------------------------- file -----------------------------===//
 //
-//                            The Libhelper Project
+//                        The Libhelper Project
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -24,48 +24,72 @@
 
 #include "libhelper/file.h"
 
+
 file_t *file_create ()
 {
-	file_t *file = malloc(sizeof(file_t));
-    memset (file, '\0', sizeof(file_t));
-    return file;
+	file_t *file = malloc (sizeof (file_t));
+	memset (file, '\0', sizeof (file_t));
+	return file;
 }
+
 
 file_t *file_load (const char *path)
 {
-	/* Create a new file struct */
-	file_t *ret = malloc (sizeof(file_t));
-	memset (ret, '\0', sizeof(file_t));
+	/* Create the new file structure */
+	file_t *file = file_create ();
 
 	/* Set the file path */
 	if (!path) {
-		errorf ("File path no valid.\n");
-		exit (0);
+		errorf ("File path not valid.\n");
+		return NULL;
 	}
-	ret->path = (char *) path;
+	file->path = path;
 
 	/* Load the file */
-	ret->desc = fopen (ret->path, "rb");
-	if (!ret->desc) {
-		errorf ("File could not be loaded\n");
-		exit(0);
+	file->desc = fopen (file->path, "rb");
+	if (!file->desc) {
+		errorf ("File could not be loaded.\n");
+		return NULL;
 	}
 
 	/* Calculate the size of the file */
-	fseek (ret->desc, 0, SEEK_END);
-	ret->size = ftell (ret->desc);
-	fseek (ret->desc, 0, SEEK_SET);
+	fseek (file->desc, 0, SEEK_END);
+	file->size = ftell (file->desc);
+	fseek (file->desc, 0, SEEK_SET);
 
-	return ret;
+	/* Return the file */
+	return file;
 }
+
 
 void file_close (file_t *file)
 {
 	fclose (file->desc);
-	free(file);
+	file_free (file);
 }
 
-char *file_load_bytes (file_t *f, size_t size, off_t offset)
+
+void file_free (file_t *file)
+{
+	file = NULL;
+	free (file);
+}
+
+
+int file_write_new (char *filename, unsigned char *buf, size_t size)
+{
+	FILE *f = fopen (filename, "wb");
+	if (!f)
+		return LH_FILE_FAILURE;
+	
+	size_t res = fwrite (buf, sizeof (char), size, f);
+	fclose (f);
+
+	return res;
+}
+
+
+char *file_load_bytes (file_t *f, size_t size, uint32_t offset)
 {
 	char *buf = malloc (size);
 
@@ -73,50 +97,4 @@ char *file_load_bytes (file_t *f, size_t size, off_t offset)
 	fread (buf, size, 1, f->desc);
 
 	return buf;
-}
-
-int file_read (const char *path, unsigned char **buf, unsigned int *len)
-{
-	FILE *f = fopen (path, "rb");
-	if (!f) {
-		return -1;
-	}
-
-	fseek (f, 0, SEEK_END);
-	size_t size = ftell (f);
-	fseek (f, 0, SEEK_SET);
-
-	unsigned char *data = NULL; //= malloc (size);
-
-	// There is an issue here on Linux with MAP_FILE, it cannot find it,
-	// so if the OS is linux, use MAP_FAILED instead.
-#ifdef __APPLE__
-	data = mmap(data, size, PROT_READ | PROT_WRITE, MAP_FILE, f, 0);
-#else
-	data = mmap (data, size, PROT_READ | PROT_WRITE, MAP_FAILED, f, 0);
-#endif
-
-	fclose (f);
-
-	*buf = data;
-	*len = size;
-	return size;
-}
-
-void file_write (char *filename, file_t *file)
-{
-
-}
-
-int file_write_new (char *filename, unsigned char *buf, size_t size)
-{
-	FILE *f = fopen (filename, "wb");
-	if (!f) {
-		return -1;
-	}
-
-	size_t res = fwrite (buf, sizeof(char), size, f);
-	fclose(f); 
-
-	return res;
 }

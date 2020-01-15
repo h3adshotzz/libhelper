@@ -99,7 +99,7 @@ char *mstrappend(char *toap, ...) {
             
     // If there are enough args to continue
     if (count > 1) {
-        for (int i = 0; i < count; i++) {
+        for (size_t i = 0; i < count; i++) {
             // assign va_arg to a temp var
             char *tmp = va_arg(arg, char*);
             /* assign len as the current value + length of current value of tmp
@@ -112,7 +112,7 @@ char *mstrappend(char *toap, ...) {
     
         // allocated enough bytes in rt for all contents values + a null byte
         rt = malloc(len + 1);
-        for (int i = 0; i < count; i++) {
+        for (size_t i = 0; i < count; i++) {
             // append content at i to rt
             rt = strappend(rt, content[i]);
         }

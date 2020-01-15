@@ -41,10 +41,10 @@ mach_symtab_command_t *mach_symtab_command_create ()
  * 
  * 
  */
-mach_symtab_command_t *mach_symtab_command_load (unsigned char *data, uint32_t offset)
+mach_symtab_command_t *mach_symtab_command_load (macho_t *macho, uint32_t offset)
 {
     mach_symtab_command_t *symt = mach_symtab_command_create ();
-    symt = (mach_symtab_command_t *) macho_load_bytes (data, sizeof(mach_symtab_command_t), offset);
+    symt = (mach_symtab_command_t *) macho_load_bytes (macho, sizeof(mach_symtab_command_t), offset);
 
     if (!symt) {
         errorf ("[*] Error: Problem loading Mach Symbol Table at offset: 0x%llx\n", offset);
@@ -72,7 +72,8 @@ char *mach_symtab_find_symbol_name (macho_t *macho, nlist *sym, mach_symtab_comm
     
     HString *curr = h_string_new ("");
 
-    int found = 0, i = 0;
+    int found = 0;
+    uint32_t i = 0;
     while (!found) {
         if (i >= size) break;
         if (tmp[i] != 0x0) {
@@ -134,8 +135,8 @@ mach_symbol_table_t *mach_symtab_load_symbols (macho_t *macho, mach_symtab_comma
     size_t s = symbol_table->nsyms;
     off_t off = symbol_table->symoff;
 
-    for (int i = 0; i < s; i++) {
-        nlist *tmp = (nlist *) macho_load_bytes (macho->data, sizeof(nlist), off);
+    for (size_t i = 0; i < s; i++) {
+        nlist *tmp = (nlist *) macho_load_bytes (macho, sizeof(nlist), off);
 
         char *name = mach_symtab_find_symbol_name (macho, tmp, symbol_table);
 

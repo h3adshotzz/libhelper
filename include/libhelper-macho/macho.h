@@ -64,9 +64,13 @@
 #    include <byteswap.h>
 #endif
 
-//===-----------------------------------------------------------------------===//
-/*-- Mach-O Header                         									 --*/
-//===-----------------------------------------------------------------------===//
+/***********************************************************************
+* Mach-O Header.
+*
+*   Here are some definitions for CPU types, Mach-O types and the Mach
+*   O File Header.
+*
+***********************************************************************/
 
 
 /**
@@ -201,9 +205,9 @@ struct mach_header {
 typedef struct mach_header      mach_header_t;
 
 
-//===-----------------------------------------------------------------------===//
-/*-- FAT (Universal Binary) Header         									 --*/
-//===-----------------------------------------------------------------------===//
+/***********************************************************************
+* FAT (Universal Binary) Header.
+***********************************************************************/
 
 /**
  *  FAT Header (Universal Binary)
@@ -246,9 +250,9 @@ typedef struct fat_header_info_t {
 #	define OSSwapInt32(x)	bswap_32(x)
 #endif
 
-//===-----------------------------------------------------------------------===//
-/*-- Mach-O                              									 --*/
-//===-----------------------------------------------------------------------===//
+/***********************************************************************
+* Mach-O File Parsing.
+***********************************************************************/
 
 /**
  *  Mach-O file representation. Contains all the parsed properties of a Mach-O
@@ -296,9 +300,9 @@ HSList *mach_segment_get_list (macho_t *mach);
 
 mach_section_info_t *mach_section_info_from_name (macho_t *macho, char *segment, char *section);
 
-//===-----------------------------------------------------------------------===//
-/*-- FAT & Mach-O Header functions         									 --*/
-//===-----------------------------------------------------------------------===//
+/***********************************************************************
+* FAT & Mach-O Header functions.
+***********************************************************************/
 
 //  These are defined here because the Mach-O header functions require
 //  macho_t, but macho_t requires mach_header_t, so these are defined
