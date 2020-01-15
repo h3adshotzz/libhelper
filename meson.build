@@ -27,6 +27,7 @@ add_project_arguments('-Wno-error=sign-compare', language : 'c')
 add_project_arguments('-Wno-error=int-conversion', language : 'c')
 add_project_arguments('-Wno-error=incompatible-pointer-types', language : 'c')
 add_project_arguments('-Wno-error=format', language : 'c')
+add_project_arguments('-Wno-error=type-limits', language : 'c')
 
 
 #

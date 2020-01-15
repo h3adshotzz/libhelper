@@ -56,6 +56,13 @@
 #include "libhelper/hslist.h"
 #include "libhelper/strutils.h"
 
+//  Linux does not have OSSwapInt32(), instead it has bswap_32, so
+//  if the build platform is Linux, redefine bswap_32 as OSSwapInt32
+//  and include byteswap.h
+//
+#ifndef __APPLE__
+#    include <byteswap.h>
+#endif
 
 /***********************************************************************
 * Mach-O Header.
@@ -198,6 +205,22 @@ struct mach_header {
 typedef struct mach_header      mach_header_t;
 
 
+/**
+ *  Mach-O Header (32-bit)
+ * 
+ */
+struct mach_header_32 {
+    uint32_t            magic;          // mach magic number
+    cpu_type_t          cputype;        // cpu specifier
+    cpu_subtype_t       cpusubtype;     // cpu subtype specifier
+    uint32_t            filetype;       // type of mach-o e.g. exec, dylib ...
+    uint32_t            ncmds;          // number of load commands
+    uint32_t            sizeofcmds;     // size of load command region
+    uint32_t            flags;          // flags
+};
+typedef struct mach_header_32   mach_header_32_t;
+
+
 /***********************************************************************
 * FAT (Universal Binary) Header.
 ***********************************************************************/
@@ -237,8 +260,11 @@ typedef struct fat_header_info_t {
     HSList          *archs;
 } fat_header_info_t;
 
-#define OSSwapInt32(x)  _OSSwapInt32(x)
-
+#ifdef __APPLE__
+#	define OSSwapInt32(x) 	 _OSSwapInt32(x)
+#else
+#	define OSSwapInt32(x)	bswap_32(x)
+#endif
 
 /***********************************************************************
 * Mach-O File Parsing.
