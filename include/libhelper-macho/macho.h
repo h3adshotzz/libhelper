@@ -56,6 +56,13 @@
 #include "libhelper/hslist.h"
 #include "libhelper/strutils.h"
 
+//  Linux does not have OSSwapInt32(), instead it has bswap_32, so
+//  if the build platform is Linux, redefine bswap_32 as OSSwapInt32
+//  and include byteswap.h
+//
+#ifndef __APPLE__
+#    include <byteswap.h>
+#endif
 
 //===-----------------------------------------------------------------------===//
 /*-- Mach-O Header                         									 --*/
@@ -233,8 +240,11 @@ typedef struct fat_header_info_t {
     HSList          *archs;
 } fat_header_info_t;
 
-#define OSSwapInt32(x)  _OSSwapInt32(x)
-
+#ifdef __APPLE__
+#	define OSSwapInt32(x) 	 _OSSwapInt32(x)
+#else
+#	define OSSwapInt32(x)	bswap_32(x)
+#endif
 
 //===-----------------------------------------------------------------------===//
 /*-- Mach-O                              									 --*/
