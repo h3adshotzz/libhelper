@@ -22,21 +22,6 @@
 //
 //===------------------------------------------------------------------===//
 
-/**
- *                  === The Libhelper Project ===
- *                          HLibc? Maybe...
- *
- *  Implementation of Strings. Currently Libhelper uses GLib "GStrings",
- *  as part of my effort to move away from GLib and use as little external
- *  dependencies as possible - to make running my applications easier - I
- *  will put the effort in to rewrite certain GLib functionality.
- * 
- *  ----------------
- *  Original Author:
- *      Harry Moulton, @h3adsh0tzz  -   me@h3adsh0tzz.com.
- * 
- */
-
 #ifndef _LIBHELPER_H_STRING_H_
 #define _LIBHELPER_H_STRING_H_
 
@@ -44,27 +29,51 @@
 #include "strutils.h"
 #include "hslist.h"
 
-typedef struct _HString HString;
+/***********************************************************************
+* HString - Implementation of Strings
+*
+*   Implementation of Strings in C based on that of GLib's GString's.
+*   This is part of my effort to keep Libhelper dependency-free.
+*
+***********************************************************************/
 
+/**
+ *  HString structure. Contains the regular C "string" of characters,
+ *  a count of how long that string is, and the amount of memory that
+ *  has currently been allocated for it.
+ * 
+ */
+typedef struct _HString HString;
 struct _HString {
     char        *str;
     size_t       len;
     size_t       allocated;
 };
 
+/**
+ *  Macro's defined by GLib for HString.
+ * 
+ */
 #define H_UNLIKELY(expr) (expr)
-
+#define MY_MAXSIZE  ((size_t) -1)
 #define MAX(a, b)  (((a) > (b)) ? (a) : (b))
 #define MIN(a, b)  (((a) < (b)) ? (a) : (b))
 
+/**
+ *  Returns the given value if the expression is false.
+ * 
+ */
 #define h_return_val_if_fail(expr, val)  \
     if(!(#expr)) {                       \
         debugf ("bugger\n");             \
         return #val;                     \
     }
 
-#define MY_MAXSIZE  ((size_t) -1)
 
+/**
+ *  Functions for creating and manipulating HString's
+ * 
+ */
 HString *h_string_new (const char *init);
 HString *h_string_insert_len (HString *string, size_t pos, const char *val, size_t len);
 HString *h_string_append_len (HString *string, const char *val, size_t len);

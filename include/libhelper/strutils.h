@@ -37,10 +37,22 @@
 #include <string.h>
 #include <ctype.h>
 
-/* Error codes */
-#define ERR_NOT_DEBUG   "Debug mode not set"
+/***********************************************************************
+* Wrappers for printf ()
+*
+*   Part of Libhelper String Utilities are some print functions. There
+*   are three to be exact. errorf() prints an error message in red with
+*   "Error: " prepended to the given string, warningf() the same but in
+*   yellow. debugf() is slightly different because calls to it are only
+*   acted upon if the LIBHELPER_DEBUG is set in libhelper.h
+*
+***********************************************************************/
 
-/* Text Colours */
+/**
+ *  Types to tell __printf() what colour and message to prepend to
+ *  the start of the given message
+ * 
+ */
 typedef enum {
     LOG_ERROR,
     LOG_WARNING,
@@ -48,6 +60,9 @@ typedef enum {
     LOG_PRINT
 } log_type;
 
+/**
+ *  Defined colours for print functions
+ */
 #define ANSI_COLOR_RED     "\x1b[31m"
 #define ANSI_COLOR_GREEN   "\x1b[32m"
 #define ANSI_COLOR_YELLOW  "\x1b[33m"
@@ -56,30 +71,59 @@ typedef enum {
 #define ANSI_COLOR_CYAN    "\x1b[36m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
 
-/* String type */
+/**
+ *  Re-implementation of printf() just for these macros
+ */
+int __printf(log_type msgType, char *fmt, ...);
+
+/**
+ *  Macro's for each print type.
+ */
+#define errorf(fmt, ...)  __printf(LOG_ERROR, fmt, ##__VA_ARGS__)
+#define debugf(fmt, ...)  __printf(LOG_DEBUG, fmt, ##__VA_ARGS__)
+#define warningf(fmt, ...)  __printf(LOG_WARNING, fmt, ##__VA_ARGS__)
+
+
+/***********************************************************************
+* String Appending
+*
+*   Part of Libhelper String Utilities are some regular string appending
+*   functions. strappend() can take to strings, a and b, and append b to
+*   a. While mstrappend() can take a list of strings and append them all
+*   to fmt.
+*
+***********************************************************************/
+
+/**
+ *  Functions
+ */
+char *strappend (char *a, char *b);
+char *mstrappend (char *fmt, ...);
+
+
+/***********************************************************************
+* String Lists
+*
+*   Part of Libhelper String Utilities is a string split function. This 
+*   takes a string, and a delim to split it by, and returns a StringList
+*   accordingly.
+*
+***********************************************************************/
+
+/**
+ *  StringList structure. Has a list of strings and a count of how
+ *  many strings are in that list.
+ * 
+ */
 typedef struct StringList {
     char    **ptrs;
     int     count;
 } StringList;
 
-/* String appending */
-char *strappend (char *a, char *b);
-char *mstrappend (char *fmt, ...);
-
-/* String splits */
+/**
+ *  Functions
+ */
 StringList *strsplit (const char *s, const char *delim);
 
-/* Boyermoore Horspool memmem() */
-//static unsigned char *
-//boyermoore_horspool_memmem(const unsigned char* haystack, size_t hlen,
-//                           const unsigned char* needle,   size_t nlen);
-
-/* Logging */
-int __printf(log_type msgType, char *fmt, ...);
-#define errorf(fmt, ...)  __printf(LOG_ERROR, fmt, ##__VA_ARGS__)
-#define debugf(fmt, ...)  __printf(LOG_DEBUG, fmt, ##__VA_ARGS__)
-#define warningf(fmt, ...)  __printf(LOG_WARNING, fmt, ##__VA_ARGS__)
-
-//#define __UCHAR_MAX 255
 
 #endif /* libhelper_strutils_h */

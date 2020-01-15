@@ -92,7 +92,7 @@ typedef struct mach_symbol_table_t {
  *  Function definitions
  */
 mach_symtab_command_t *mach_symtab_command_create ();
-mach_symtab_command_t *mach_symtab_command_load (unsigned char *data, uint32_t offset);
+mach_symtab_command_t *mach_symtab_command_load (macho_t *macho, uint32_t offset);
 char *mach_symtab_find_symbol_name (macho_t *macho, nlist *sym, mach_symtab_command_t *cmd);
 mach_symbol_table_t *mach_symtab_load_symbols (macho_t *macho, mach_symtab_command_t *symbol_table);
 
