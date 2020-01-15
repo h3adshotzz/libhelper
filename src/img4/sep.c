@@ -136,8 +136,8 @@ size_t calc_size (const uint8_t *ptr, size_t sz)
     //  can recognise 32bit header and you can parse a 32bit header.
     //
     unsigned i;
-    const mach_header_t *header = (mach_header_t *) ptr;
-    const uint8_t *lc_ptr = ptr + sizeof(mach_header_t);
+    const mach_header_32_t *header = (mach_header_32_t *) ptr;
+    const uint8_t *lc_ptr = ptr + sizeof(mach_header_32_t);
     size_t end, tsize = 0;
 
 
@@ -191,7 +191,7 @@ static
 size_t restore_linkedit (uint8_t *ptr, size_t size)
 {
     unsigned i;
-    mach_header_t *hdr = (mach_header_t *) ptr;
+    mach_header_32_t *hdr = (mach_header_32_t *) ptr;
     uint64_t min = -1;
     uint64_t delta = 0;
     int is64 = 0;
@@ -211,7 +211,7 @@ size_t restore_linkedit (uint8_t *ptr, size_t size)
     //  Look for the __PAGEZERO segments, then set the min which is used when
     //  restoring the __LINKEDIT segment.
     //
-    lc_ptr = ptr + sizeof (mach_header_t) + is64;
+    lc_ptr = ptr + sizeof (mach_header_32_t) + is64;
     for (i = 0; i < hdr->ncmds; i++) {
         const mach_load_command_t *cmd = (mach_load_command_t *) lc_ptr;
 
@@ -237,7 +237,7 @@ size_t restore_linkedit (uint8_t *ptr, size_t size)
     //  Then, add that to the segment file offset, and the symbol table string
     //  table offset and symbol table offset.
     //
-    lc_ptr = ptr + sizeof (mach_header_t) + is64;
+    lc_ptr = ptr + sizeof (mach_header_32_t) + is64;
     for (i = 0; i < hdr->ncmds; i++) {
         const mach_load_command_t *cmd = (mach_load_command_t *) lc_ptr;
 
