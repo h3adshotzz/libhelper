@@ -27,6 +27,8 @@
 
 #include <stdio.h>
 
+#include "libhelper/strutils.h"
+#include "libhelper/file.h"
 #include "libhelper/version.h"
 
 #define LIBHELPER_DEBUG         0
