@@ -11,8 +11,10 @@
 
 #ifdef __x86_64__
 #   define BUILD_ARCH           "x86_64"
+#elif __arm64__
+#	define BUILD_ARCH			"arm64"
 #elif __arm__
-#   define BUILD_ARCH           "arm64"
+#   define BUILD_ARCH           "arm"
 #endif
 
 int main ()

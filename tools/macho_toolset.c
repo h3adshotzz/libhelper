@@ -37,8 +37,10 @@
 
 #ifdef __x86_64__
 #   define BUILD_ARCH           "x86_64"
+#elif __arm64__
+#	define BUILD_ARCH			"arm64"
 #elif __arm__
-#   define BUILD_ARCH           "arm64"
+#   define BUILD_ARCH           "arm"
 #endif
 
 
@@ -57,11 +59,11 @@
 *   The Toolset's version number is like libhelper, xxx.xx.x. 
 *
 ***********************************************************************/
-#define TOOLSET_VERS            "100.14.1"
+#define TOOLSET_VERS            "100.14.5"
 
-#define TOOL_SECT               0
+#define TOOL_SECT               1
 #define TOOL_SPLIT              0
-#define TOOL_DUMP               1
+#define TOOL_DUMP               0
 
 #if TOOL_SECT
 #   define TOOL_VERS            "1.0.0"
