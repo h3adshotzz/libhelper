@@ -59,11 +59,11 @@
 *   The Toolset's version number is like libhelper, xxx.xx.x. 
 *
 ***********************************************************************/
-#define TOOLSET_VERS            "100.14.5"
+#define TOOLSET_VERS            "101.52.6"
 
-#define TOOL_SECT               1
+#define TOOL_SECT               0
 #define TOOL_SPLIT              0
-#define TOOL_DUMP               0
+#define TOOL_DUMP               1
 
 #if TOOL_SECT
 #   define TOOL_VERS            "1.0.0"
@@ -72,7 +72,7 @@
 #   define TOOL_VERS            "1.0.0"
 #   define TOOL_NAME            "macho-split"
 #elif TOOL_DUMP
-#   define TOOL_VERS            "1.0.0"
+#   define TOOL_VERS            "1.0.1"
 #   define TOOL_NAME            "macho-dump"
 #endif
 
@@ -311,12 +311,14 @@ int dump_main (int argc, char *argv[])
     uint32_t offset = macho->offset;
     printf ("Filename: %s\nOffset: 0x%x\n", macho->path, offset);
     
-    if (!strcmp (argv[3], "-s")) {
-        // use a size
-        size = a2;
-    } else {
-        size = a2 - start;
-    }
+//    if (!strcmp (argv[3], "-s")) {
+//        // use a size
+//        size = a2;
+//    } else {
+//        size = a2 - start;
+//    }
+
+	size = a2;
     printf ("Size: %d\n", size);
     
     dump = malloc (size);
