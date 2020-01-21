@@ -54,6 +54,7 @@ dkms.conf
 
 # Meson build directory and test directory
 build/
+arm64_build/
 test/
 kernel.*
 kernelcache.*
