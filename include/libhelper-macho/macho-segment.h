@@ -75,6 +75,11 @@ typedef struct mach_segment_info_t {
     HSList                      *sections;  /* List of sections */
 } mach_segment_info_t;
 
+// VM Protection types
+#define VM_PROT_READ			0x00000001
+#define VM_PROT_WRITE			0x00000002
+#define VM_PROT_EXEC			0x00000004
+
 
 // Functions
 mach_segment_command_64_t *mach_segment_command_create ();
@@ -85,6 +90,7 @@ mach_segment_info_t *mach_segment_info_create ();
 mach_segment_info_t *mach_segment_info_load (unsigned char *data, uint32_t offset);
 mach_segment_info_t *mach_segment_info_search (HSList *segments, char *segname);
 
+char *mach_segment_vm_protection (vm_prot_t prot);
 
 //===-----------------------------------------------------------------------===//
 /*-- Mach-O Sections                     									 --*/
