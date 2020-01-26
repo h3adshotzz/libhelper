@@ -36,10 +36,10 @@
 *
 ***********************************************************************/
 
-#define LIBHELPER_VERSION_LONG              "libhelper-1000.921.14.5"
-#define LIBHELPER_VERSION_SHORT             "1.0.0"
-#define LIBHELPER_VERSION_TAG               "Release"
-#define LIBHELPER_VERSION_TAG_CAPS          "RELEASE"
+#define LIBHELPER_VERSION_LONG              "libhelper-1100.234.56.34~1"
+#define LIBHELPER_VERSION_SHORT             "1.1.0"
+#define LIBHELPER_VERSION_TAG               "Development"
+#define LIBHELPER_VERSION_TAG_CAPS          "DEVELOPMENT"
 
 
 /***********************************************************************
