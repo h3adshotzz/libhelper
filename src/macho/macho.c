@@ -195,8 +195,10 @@ macho_t *macho_load (const char *filename)
 {
     file_t          *file = NULL;
     macho_t         *macho = NULL;
-    uint32_t         size = 0;
-    unsigned char   *data = NULL;
+
+	//	These are unused, but should be.
+    //uint32_t         size = 0;
+    //unsigned char   *data = NULL;
 
     if (filename) {
 
@@ -306,7 +308,7 @@ mach_header_t *mach_header_load (macho_t *macho)
     // Check the macho given was at least initlaised and is not NULL
     if (macho) {
         unsigned char *data = macho->data;
-        uint32_t size = macho->size;
+        //uint32_t size = macho->size;
         header = mach_header_create ();
 
         // cpy bytes into the header struct.
@@ -400,8 +402,8 @@ struct fat_arch *swap_fat_arch_bytes (struct fat_arch *a)
  */
 fat_header_info_t *mach_universal_load (file_t *file)
 {
-    unsigned char *data = (unsigned char *) file_load_bytes (file, file->size, 0);
-    uint32_t size = file->size;
+	uint32_t size = file->size;
+    unsigned char *data = (unsigned char *) file_load_bytes (file, size, 0);
 
     // Create the FAT header so we can read some data from
     // the file. The header starts at 0x0 in the file. It
@@ -427,7 +429,7 @@ fat_header_info_t *mach_universal_load (file_t *file)
 
     // Create an offset to move through the archs.
     uint32_t offset = sizeof(fat_header_t);
-    for (int i = 0; i < fat_header->nfat_arch; i++) {
+    for (uint32_t i = 0; i < fat_header->nfat_arch; i++) {
 
         // Current arch. Also needs to swap the bytes.
         struct fat_arch *arch = (struct fat_arch *) malloc (sizeof (struct fat_arch));

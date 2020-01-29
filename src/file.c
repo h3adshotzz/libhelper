@@ -43,7 +43,7 @@ file_t *file_load (const char *path)
 		errorf ("File path not valid.\n");
 		return NULL;
 	}
-	file->path = path;
+	file->path = (char *) path;
 
 	/* Load the file */
 	file->desc = fopen (file->path, "rb");

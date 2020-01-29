@@ -63,6 +63,11 @@ struct _HString {
  *  Returns the given value if the expression is false.
  * 
  */
+//
+//	@TODO: This generates a warning:
+//		warning: incompatible poiunter types returning 'char *' from a
+//			function with result type 'HString *' (aka 'struct _HString *')
+//
 #define h_return_val_if_fail(expr, val)  \
     if(!(#expr)) {                       \
         debugf ("bugger\n");             \

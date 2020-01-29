@@ -162,7 +162,7 @@ size_t calc_size (const uint8_t *ptr, size_t sz)
     //  load commands there are, how big each segment is, then add that to the
     //  size of the header and we have our file size.
     //
-    for (int i = 0; i < header->ncmds; i++) {
+    for (i = 0; i < header->ncmds; i++) {
         const mach_load_command_t *cmd = (mach_load_command_t *) lc_ptr;
 
         //  Because SEPOS is 64bit, not 32bit, I'm not including checking for
@@ -297,7 +297,7 @@ int restore_file (unsigned index, const unsigned char *buf, size_t size, int res
         }
 
         *ptr = '\0';
-        printf ("%-12s phys 0x%lx, virt 0x%x, size 0x%x, entry 0x%x\n", tail, apps->phys, apps->virt, apps->size, apps->entry);
+        printf ("%-12s phys 0x%llx, virt 0x%x, size 0x%x, entry 0x%x\n", tail, apps->phys, apps->virt, apps->size, apps->entry);
         apps = (struct sepapp_t *) ((char *) apps + sizeof_sepapp);
 
     } else {
