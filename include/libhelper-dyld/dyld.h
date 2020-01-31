@@ -75,6 +75,38 @@ struct dyld_cache_header {
 };
 typedef struct dyld_cache_header        dyld_cache_header_t;
 
+/***********************************************************************
+* DYLD Shared Cache Parser.
+***********************************************************************/
+
+/**
+ * 
+ */
+typedef struct dyld_cache_t {
+
+	/* file data */
+	char		*path;		// file path
+
+	/* raw file properties */
+	uint8_t		*data;		// ptr to the dyld in memory
+	uint32_t	 size;		// size of dyld
+	
+	/* Parsed DYLD Cache properties */
+	dyld_cache_header_t		*header;
+
+} dyld_cache_t;
+
+
+// dyld cache file parser
+dyld_cache_t *dyld_cache_create ();
+dyld_cache_t *dyld_cache_load (const char *filename);
+dyld_cache_t *dyld_cache_create_from_file (file_t *file);
+void *dyld_load_bytes (dyld_cache_t *dyld, size_t size, uint32_t offset);
+
+void dyld_cache_free (dyld_cache_t *dyld);
+
+// dyld cache header
 dyld_cache_header_t *dyld_cache_header_create ();
+int dyld_shared_cache_verify_header (unsigned char *dyld_ptr);
 
 #endif /* libhelper_dyld_h */

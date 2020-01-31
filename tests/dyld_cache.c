@@ -42,6 +42,11 @@ int main (int argc, char *argv[])
     uint32_t size = file->size;
     unsigned char *data = (unsigned char *) file_load_bytes (file, size, 0);
 
+    if (!dyld_shared_cache_verify_header(data))
+        printf ("Not a dyld_shared_cache\n");
+    else
+        printf ("Is a dyld_shared_cahce\n");
+
     dyld_cache_header_t *cache_header = dyld_cache_header_create ();
     cache_header = (dyld_cache_header_t *) data;
 
