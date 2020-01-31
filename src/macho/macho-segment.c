@@ -264,7 +264,7 @@ mach_section_64_t *mach_find_section_command_at_index (HSList *segments, int ind
     int count = 0;
     for (int i = 0; i < h_slist_length (segments); i++) {
         mach_segment_info_t *seg = (mach_segment_info_t *) h_slist_nth_data (segments, i);
-        for (int k = 0; k < seg->segcmd->nsects; k++) {
+        for (int k = 0; k < (int) seg->segcmd->nsects; k++) {
             count++;
             if (count == index) {
                 return (mach_section_64_t *) h_slist_nth_data (seg->sections, k);

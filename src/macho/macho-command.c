@@ -352,7 +352,7 @@ mach_command_info_t *mach_lc_find_given_cmd (macho_t *macho, int cmd)
     HSList *cmds = macho->lcmds;
     for (int i = 0; i < h_slist_length (cmds); i++) {
         mach_command_info_t *tmp = (mach_command_info_t *) h_slist_nth_data (cmds, i);
-        if (tmp->type == cmd) {
+        if (tmp->type == (uint32_t) cmd) {
             return tmp;
         }
     }
@@ -511,7 +511,7 @@ mach_build_version_info_t *mach_lc_build_version_info (mach_build_version_comman
     // tools
     ret->ntools = bvc->ntools;
     off_t next_off = offset + sizeof(mach_build_version_command_t);
-    for (int i = 0; i < ret->ntools; i++) {
+    for (uint32_t i = 0; i < ret->ntools; i++) {
 
         struct build_tool_version *btv = (struct build_tool_version *) macho_load_bytes (macho, sizeof(struct build_tool_version), next_off);
         build_tool_info_t *inf = malloc (sizeof(build_tool_info_t));
