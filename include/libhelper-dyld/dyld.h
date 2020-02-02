@@ -75,6 +75,31 @@ struct dyld_cache_header {
 };
 typedef struct dyld_cache_header        dyld_cache_header_t;
 
+
+/**
+ * 	Cache Mapping Info
+ */
+struct dyld_cache_mapping_info {
+	uint64_t	address;
+	uint64_t	size;
+	uint64_t	fileoff;
+	uint32_t	maxProt;
+	uint32_t	initProt;
+};
+typedef struct dyld_cache_mapping_info		dyld_cache_mapping_info_t;
+
+/**
+ * 	Cache Image Info
+ */
+struct dyld_cache_image_info {
+	uint64_t	address;
+	uint64_t	modTime;
+	uint64_t	inode;
+	uint32_t	pathFileOffset;
+	uint32_t	pad;
+};
+typedef struct dyld_cache_image_info		dyld_cache_image_info_t;
+
 /***********************************************************************
 * DYLD Shared Cache Parser.
 ***********************************************************************/
