@@ -35,6 +35,25 @@ dyld_cache_t *dyld_cache_create ()
     return ret;
 }
 
+int dyld_cache_header_verify (char *magic)
+{
+    if ( !strcmp (magic, DYLD_MAGIC_I386) 
+        || !strcmp (magic, DYLD_MAGIC_x86_64)
+        || !strcmp (magic, DYLD_MAGIC_x86_64h)
+        || !strcmp (magic, DYLD_MAGIC_armv5)
+        || !strcmp (magic, DYLD_MAGIC_armv6)
+        || !strcmp (magic, DYLD_MAGIC_armv7)
+        || !strcmp (magic, DYLD_MAGIC_arm64)
+        || !strcmp (magic, DYLD_MAGIC_arm64_32)
+        || !strcmp (magic, DYLD_MAGIC_arm64e) )
+    {
+        debugf ("Magic: %s\n", magic);
+        return 1;
+    }
+
+    return 0;
+}
+
 dyld_cache_t *dyld_cache_create_from_file (file_t *file)
 {
     dyld_cache_t *dyld = dyld_cache_create ();
@@ -49,6 +68,12 @@ dyld_cache_t *dyld_cache_create_from_file (file_t *file)
     // load the header
     dyld_cache_header_t *dyld_hdr = dyld_cache_header_create ();
     dyld_hdr = (dyld_cache_header_t *) dyld_load_bytes (dyld, sizeof (dyld_cache_header_t), 0);
+    
+    // Verify the dyld header
+    if (!dyld_cache_header_verify(&dyld_hdr->magic))
+        return NULL;
+
+    // Set the dyld header
     dyld->header = dyld_hdr;
 
     return dyld;

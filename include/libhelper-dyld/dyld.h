@@ -48,6 +48,20 @@
 ***********************************************************************/
 
 /**
+ * 	DYLD Shared Cache Header magics
+ */
+#define DYLD_MAGIC_I386					"dyld_v1   i386"
+#define DYLD_MAGIC_x86_64				"dyld_v1   x86_64"
+#define DYLD_MAGIC_x86_64h				"dyld_v1   x86_64h"
+#define DYLD_MAGIC_armv5				"dyld_v1   armv5"
+#define DYLD_MAGIC_armv6				"dyld_v1   armv6"
+#define DYLD_MAGIC_armv7				"dyld_v1   armv7"
+#define DYLD_MAGIC_arm64				"dyld_v1   arm64"
+#define DYLD_MAGIC_arm64_32				"dyld_v1arm64_32"
+#define DYLD_MAGIC_arm64e				"dyld_v1   arm64e"
+
+
+/**
  *  Header for the DYLD Shared Cache file found on iOS devices.
  * 
  */
