@@ -126,4 +126,20 @@ typedef struct StringList {
 StringList *strsplit (const char *s, const char *delim);
 
 
+/***********************************************************************
+* Boyermoore Horspool memmem()
+*
+*   Boyermoore Horspool, or Horspool's Algorithim, is an algorithm for
+*   finding substrings in a buffer.
+*
+***********************************************************************/
+
+#define __UCHAR_MAX             255
+
+unsigned char *
+bh_memmem (const unsigned char *haystack, size_t hlen,
+           const unsigned char *needle,   size_t nlen);
+
+
+
 #endif /* libhelper_strutils_h */
