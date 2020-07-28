@@ -190,6 +190,132 @@ macho_t *macho_create_from_file (file_t *file)
     return macho;
 }
 
+//  TODO: Merge this with macho_create_from_file as they share a great deal
+//          of code.
+//
+macho_t *macho_create_from_buffer (unsigned char *data)
+{
+    macho_t *macho = macho_create ();
+
+    macho->path = "(memory_generated_macho)";
+
+    macho->data = (uint8_t *) data;
+    macho->offset = 0;
+
+    // Check valid bytes were given;
+    if (!data) {
+        warningf ("Invalid data\n");
+        return NULL;
+    }
+
+    // Try to detect if we are handling a fat file
+    if (FAT(macho->data)) {
+        warningf ("Cannot handle fat binary.\n");
+        return NULL;
+    }
+
+    // Try to load the mach header, and handle a failure if it occurs
+    macho->header = mach_header_load (macho);
+    if (macho->header == NULL) {
+        errorf ("Unable to load Mach-O\n");
+        macho_free (macho);
+        return NULL;
+    }
+
+    // PROPER DOCS IS IN libhelper/macho/macho.c
+    HSList *scmds = NULL;
+    HSList *lcmds = NULL;
+    HSList *dylibs = NULL;
+
+    uint32_t offset = sizeof (mach_header_t);
+
+    for (int i = 0; i < (int) macho->header->ncmds; i++) {
+
+        // Create the Command Info struct
+        mach_command_info_t *lc = mach_command_info_load (macho->data, offset);
+
+        // Check for an LC_SEGMENT
+        if (lc->type == LC_SEGMENT_64 || lc->type == LC_SEGMENT) {
+
+            // Check and ignore any 32-bit segments
+            if (lc->type == LC_SEGMENT) {
+                warningf ("Skipping LC_SEGMENT (32-bit) at offset 0x%x\n", offset);
+                continue;
+            }
+
+            // Create a Segment Info, then add to the hslist
+            mach_segment_info_t *seginfo = mach_segment_info_load (macho->data, offset);
+            if (seginfo == NULL) {
+                warningf ("Failed to load LC_SEGMENT_64 at offset: 0x%x\n", offset);
+                continue;
+            }
+
+            // Append to the segments list
+            scmds = h_slist_append (scmds, seginfo);
+
+        } else if (lc->type == LC_ID_DYLIB || lc->type == LC_LOAD_DYLIB ||
+                   lc->type == LC_LOAD_WEAK_DYLIB || lc->type == LC_REEXPORT_DYLIB) {
+
+            // Because a Mach-O can have multiple Dynamically linked libraries,
+            // that means there are multiple LC_DYLIB-like commands, so it's
+            // easier that we have a seperate list for them.
+
+            // Create the info struct for the command
+            mach_dylib_command_info_t *dylibinfo = malloc (sizeof (mach_dylib_command_info_t));
+            uint32_t cmdsize = lc->lc->cmdsize;
+
+            // Create and load the raw command
+            mach_dylib_command_t *raw = malloc (sizeof (mach_dylib_command_t));
+            memset (raw, '\0', sizeof (mach_dylib_command_t));
+            memcpy (raw, macho->data + offset, sizeof (mach_dylib_command_t));
+
+            // Load the name of the dylib. This is located after the Load Command
+            //  and is included in the cmdsize property of the Load Command.
+            uint32_t nsize = cmdsize - sizeof(mach_dylib_command_t);
+            uint32_t noff = offset + raw->dylib.offset;
+
+            char *name = malloc (nsize);
+            memset (name, '\0', nsize);
+            memcpy (name, macho->data + noff, nsize);
+
+            // Set the name, raw cmd struct and type of the dylib
+            dylibinfo->name = name;
+            dylibinfo->dylib = raw;
+            dylibinfo->type = lc->type;
+
+            // Add the offset to lc
+            lc->offset = offset;
+
+            //  Add it to the list
+            dylibs = h_slist_append (dylibs, dylibinfo);
+            lcmds = h_slist_append (lcmds, lc);
+
+        } else {
+
+            // Set the offset of the command so we can find it again
+            lc->offset = offset;
+
+            // Append the Load Command to the 
+            lcmds = h_slist_append (lcmds, lc);
+        }
+
+        
+        // increment the offset
+        offset += lc->lc->cmdsize;
+    }
+
+    macho->offset = offset;
+
+    macho->lcmds = lcmds;
+    macho->scmds = scmds;
+    macho->dylibs = dylibs;
+
+    // Fix the macho size
+    mach_segment_info_t *last_seg = (mach_segment_info_t *) h_slist_last (macho->scmds);
+    macho->size = last_seg->segcmd->fileoff + last_seg->segcmd->filesize;
+
+    return macho;
+}
 
 macho_t *macho_load (const char *filename)
 {
