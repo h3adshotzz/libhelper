@@ -53,8 +53,10 @@
 
 #ifdef __APPLE__
 #   define LIBHELPER_PLATFORM               "Darwin"
+#   define LIBHELPER_PLATFORM_LWR           "darwin"
 #else
 #   define LIBHELPER_PLATFORM               "Linux"
+#   define LIBHELPER_PLATFORM_LWR           "linux"
 #endif
 
 
@@ -68,13 +70,38 @@
 ***********************************************************************/
 
 #ifdef __x86_64__
+#   define LIBHELPER_BUILD_ARCH         "x86_64"
 #   define LIBHELPER_VERS_WITH_ARCH     LIBHELPER_VERSION_LONG "/" LIBHELPER_VERSION_TAG_CAPS "_X86_64 x86_64"
 #elif __arm__
+#   define LIBHELPER_BUILD_ARCH         "arm"
 #   define LIBHELPER_VERS_WITH_ARCH     LIBHELPER_VERSION_LONG "/" LIBHELPER_VERSION_TAG_CAPS "_ARM arm"
 #elif __arm64__
+#   define LIBHELPER_BUILD_ARCH         "arm64"
 #   define LIBHELPER_VERS_WITH_ARCH     LIBHELPER_VERSION_LONG "/" LIBHELPER_VERSION_TAG_CAPS "_ARM64 arm64"
 #else 
+#   define LIBHELPER_BUILD_ARCH         "unknown_architecture"
 #   define LIBHELPER_VERS_WITH_ARCH     LIBHELPER_VERSION_LONG "/" LIBHELPER_VERSION_TAG_CAPS "_NA unknown_architecture"
 #endif
+
+
+/***********************************************************************
+* Libhelper Architecture Support.
+*
+*   Libhelper Architecture Support for Apple Silicon (Developer Transition
+*   Kit).  
+*
+***********************************************************************/
+
+#define LIBHELPER_PLATFORM_APPLE_SILICON        1
+#define LIBHELPER_PLATFORM_INTEL_GENUINE        2
+// maybe add one for AMD-based linux systems
+
+#if defined(__arm64__) && defined(__APPLE__)
+#   define LIBHELPER_PLATFORM_TYPE              LIBHELPER_PLATFORM_APPLE_SILICON
+#else
+#   define LIBHELPER_PLATFORM_TYPE              LIBHELPER_PLATFORM_INTEL_GENUINE
+#endif
+
+
 
 #endif /* libhelper_version_h */
