@@ -156,6 +156,12 @@ typedef enum cpu_type_t {
     CPU_TYPE_ARM64_32 = (CPU_TYPE_ARM | CPU_ARCH_ABI64_32)
 } cpu_type_t;
 
+// Capability bits used in cpu_subtype_t
+#define CPU_SUBTYPE_MASK        0xff000000      /* mask for feature flags */
+#define CPU_SUBTYPE_LIB64       0x80000000      /* 64 bit libraries */
+#define CPU_SUBTYPE_PIRAUTH_ABI 0x80000000      /* pointer authentication with versioned ABI */
+
+
 // TODO
 typedef enum cpu_subtype_t {
     CPU_SUBTYPE_ANY = 100,
