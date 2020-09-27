@@ -312,6 +312,8 @@ typedef struct macho_t {
 
 // Functions
 macho_t *macho_create ();
+macho_t *macho_create_from_file (file_t *file);
+macho_t *macho_create_from_buffer (unsigned char *data);
 
 macho_t *macho_load (const char *filename);
 void *macho_load_bytes (macho_t *macho, size_t size, uint32_t offset);

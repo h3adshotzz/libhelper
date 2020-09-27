@@ -1,0 +1,260 @@
+[
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Isrc/25a6634@@helper@sta -Isrc -I../src -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'src/25a6634@@helper@sta/libhelper.c.o' -MF 'src/25a6634@@helper@sta/libhelper.c.o.d' -o 'src/25a6634@@helper@sta/libhelper.c.o' -c ../src/libhelper.c",
+    "file": "../src/libhelper.c",
+    "output": "src/25a6634@@helper@sta/libhelper.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Isrc/25a6634@@helper@sta -Isrc -I../src -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'src/25a6634@@helper@sta/file.c.o' -MF 'src/25a6634@@helper@sta/file.c.o.d' -o 'src/25a6634@@helper@sta/file.c.o' -c ../src/file.c",
+    "file": "../src/file.c",
+    "output": "src/25a6634@@helper@sta/file.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Isrc/25a6634@@helper@sta -Isrc -I../src -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'src/25a6634@@helper@sta/strutils.c.o' -MF 'src/25a6634@@helper@sta/strutils.c.o.d' -o 'src/25a6634@@helper@sta/strutils.c.o' -c ../src/strutils.c",
+    "file": "../src/strutils.c",
+    "output": "src/25a6634@@helper@sta/strutils.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Isrc/25a6634@@helper@sta -Isrc -I../src -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'src/25a6634@@helper@sta/hslist.c.o' -MF 'src/25a6634@@helper@sta/hslist.c.o.d' -o 'src/25a6634@@helper@sta/hslist.c.o' -c ../src/hslist.c",
+    "file": "../src/hslist.c",
+    "output": "src/25a6634@@helper@sta/hslist.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Isrc/25a6634@@helper@sta -Isrc -I../src -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'src/25a6634@@helper@sta/hstring.c.o' -MF 'src/25a6634@@helper@sta/hstring.c.o.d' -o 'src/25a6634@@helper@sta/hstring.c.o' -c ../src/hstring.c",
+    "file": "../src/hstring.c",
+    "output": "src/25a6634@@helper@sta/hstring.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Isrc/25a6634@@helper@sta -Isrc -I../src -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'src/25a6634@@helper@sta/macho_macho.c.o' -MF 'src/25a6634@@helper@sta/macho_macho.c.o.d' -o 'src/25a6634@@helper@sta/macho_macho.c.o' -c ../src/macho/macho.c",
+    "file": "../src/macho/macho.c",
+    "output": "src/25a6634@@helper@sta/macho_macho.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Isrc/25a6634@@helper@sta -Isrc -I../src -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'src/25a6634@@helper@sta/macho_macho-command.c.o' -MF 'src/25a6634@@helper@sta/macho_macho-command.c.o.d' -o 'src/25a6634@@helper@sta/macho_macho-command.c.o' -c ../src/macho/macho-command.c",
+    "file": "../src/macho/macho-command.c",
+    "output": "src/25a6634@@helper@sta/macho_macho-command.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Isrc/25a6634@@helper@sta -Isrc -I../src -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'src/25a6634@@helper@sta/macho_macho-segment.c.o' -MF 'src/25a6634@@helper@sta/macho_macho-segment.c.o.d' -o 'src/25a6634@@helper@sta/macho_macho-segment.c.o' -c ../src/macho/macho-segment.c",
+    "file": "../src/macho/macho-segment.c",
+    "output": "src/25a6634@@helper@sta/macho_macho-segment.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Isrc/25a6634@@helper@sta -Isrc -I../src -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'src/25a6634@@helper@sta/macho_macho-symbol.c.o' -MF 'src/25a6634@@helper@sta/macho_macho-symbol.c.o.d' -o 'src/25a6634@@helper@sta/macho_macho-symbol.c.o' -c ../src/macho/macho-symbol.c",
+    "file": "../src/macho/macho-symbol.c",
+    "output": "src/25a6634@@helper@sta/macho_macho-symbol.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Isrc/25a6634@@helper@sta -Isrc -I../src -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'src/25a6634@@helper@sta/dyld_dyld.c.o' -MF 'src/25a6634@@helper@sta/dyld_dyld.c.o.d' -o 'src/25a6634@@helper@sta/dyld_dyld.c.o' -c ../src/dyld/dyld.c",
+    "file": "../src/dyld/dyld.c",
+    "output": "src/25a6634@@helper@sta/dyld_dyld.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Isrc/25a6634@@helper@sta -Isrc -I../src -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'src/25a6634@@helper@sta/img4_sep.c.o' -MF 'src/25a6634@@helper@sta/img4_sep.c.o.d' -o 'src/25a6634@@helper@sta/img4_sep.c.o' -c ../src/img4/sep.c",
+    "file": "../src/img4/sep.c",
+    "output": "src/25a6634@@helper@sta/img4_sep.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Isrc/25a6634@@helper@sta -Isrc -I../src -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'src/25a6634@@helper@sta/lzss_lzss.c.o' -MF 'src/25a6634@@helper@sta/lzss_lzss.c.o.d' -o 'src/25a6634@@helper@sta/lzss_lzss.c.o' -c ../src/lzss/lzss.c",
+    "file": "../src/lzss/lzss.c",
+    "output": "src/25a6634@@helper@sta/lzss_lzss.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Isrc/25a6634@@helper@sta -Isrc -I../src -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'src/25a6634@@helper@sta/lzfse_lzfse_encode_base.c.o' -MF 'src/25a6634@@helper@sta/lzfse_lzfse_encode_base.c.o.d' -o 'src/25a6634@@helper@sta/lzfse_lzfse_encode_base.c.o' -c ../src/lzfse/lzfse_encode_base.c",
+    "file": "../src/lzfse/lzfse_encode_base.c",
+    "output": "src/25a6634@@helper@sta/lzfse_lzfse_encode_base.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Isrc/25a6634@@helper@sta -Isrc -I../src -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'src/25a6634@@helper@sta/lzfse_lzfse_decode_base.c.o' -MF 'src/25a6634@@helper@sta/lzfse_lzfse_decode_base.c.o.d' -o 'src/25a6634@@helper@sta/lzfse_lzfse_decode_base.c.o' -c ../src/lzfse/lzfse_decode_base.c",
+    "file": "../src/lzfse/lzfse_decode_base.c",
+    "output": "src/25a6634@@helper@sta/lzfse_lzfse_decode_base.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Isrc/25a6634@@helper@sta -Isrc -I../src -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'src/25a6634@@helper@sta/lzfse_lzfse_decode.c.o' -MF 'src/25a6634@@helper@sta/lzfse_lzfse_decode.c.o.d' -o 'src/25a6634@@helper@sta/lzfse_lzfse_decode.c.o' -c ../src/lzfse/lzfse_decode.c",
+    "file": "../src/lzfse/lzfse_decode.c",
+    "output": "src/25a6634@@helper@sta/lzfse_lzfse_decode.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Isrc/25a6634@@helper@sta -Isrc -I../src -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'src/25a6634@@helper@sta/lzfse_lzfse_encode.c.o' -MF 'src/25a6634@@helper@sta/lzfse_lzfse_encode.c.o.d' -o 'src/25a6634@@helper@sta/lzfse_lzfse_encode.c.o' -c ../src/lzfse/lzfse_encode.c",
+    "file": "../src/lzfse/lzfse_encode.c",
+    "output": "src/25a6634@@helper@sta/lzfse_lzfse_encode.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Isrc/25a6634@@helper@sta -Isrc -I../src -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'src/25a6634@@helper@sta/lzfse_lzfse_fse.c.o' -MF 'src/25a6634@@helper@sta/lzfse_lzfse_fse.c.o.d' -o 'src/25a6634@@helper@sta/lzfse_lzfse_fse.c.o' -c ../src/lzfse/lzfse_fse.c",
+    "file": "../src/lzfse/lzfse_fse.c",
+    "output": "src/25a6634@@helper@sta/lzfse_lzfse_fse.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Isrc/25a6634@@helper@sta -Isrc -I../src -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'src/25a6634@@helper@sta/lzfse_lzvn_encode_base.c.o' -MF 'src/25a6634@@helper@sta/lzfse_lzvn_encode_base.c.o.d' -o 'src/25a6634@@helper@sta/lzfse_lzvn_encode_base.c.o' -c ../src/lzfse/lzvn_encode_base.c",
+    "file": "../src/lzfse/lzvn_encode_base.c",
+    "output": "src/25a6634@@helper@sta/lzfse_lzvn_encode_base.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Isrc/25a6634@@helper@sta -Isrc -I../src -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'src/25a6634@@helper@sta/lzfse_lzvn_decode_base.c.o' -MF 'src/25a6634@@helper@sta/lzfse_lzvn_decode_base.c.o.d' -o 'src/25a6634@@helper@sta/lzfse_lzvn_decode_base.c.o' -c ../src/lzfse/lzvn_decode_base.c",
+    "file": "../src/lzfse/lzvn_decode_base.c",
+    "output": "src/25a6634@@helper@sta/lzfse_lzvn_decode_base.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Isrc/25a6634@@helper@sha -Isrc -I../src -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'src/25a6634@@helper@sha/libhelper.c.o' -MF 'src/25a6634@@helper@sha/libhelper.c.o.d' -o 'src/25a6634@@helper@sha/libhelper.c.o' -c ../src/libhelper.c",
+    "file": "../src/libhelper.c",
+    "output": "src/25a6634@@helper@sha/libhelper.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Isrc/25a6634@@helper@sha -Isrc -I../src -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'src/25a6634@@helper@sha/file.c.o' -MF 'src/25a6634@@helper@sha/file.c.o.d' -o 'src/25a6634@@helper@sha/file.c.o' -c ../src/file.c",
+    "file": "../src/file.c",
+    "output": "src/25a6634@@helper@sha/file.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Isrc/25a6634@@helper@sha -Isrc -I../src -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'src/25a6634@@helper@sha/strutils.c.o' -MF 'src/25a6634@@helper@sha/strutils.c.o.d' -o 'src/25a6634@@helper@sha/strutils.c.o' -c ../src/strutils.c",
+    "file": "../src/strutils.c",
+    "output": "src/25a6634@@helper@sha/strutils.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Isrc/25a6634@@helper@sha -Isrc -I../src -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'src/25a6634@@helper@sha/hslist.c.o' -MF 'src/25a6634@@helper@sha/hslist.c.o.d' -o 'src/25a6634@@helper@sha/hslist.c.o' -c ../src/hslist.c",
+    "file": "../src/hslist.c",
+    "output": "src/25a6634@@helper@sha/hslist.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Isrc/25a6634@@helper@sha -Isrc -I../src -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'src/25a6634@@helper@sha/hstring.c.o' -MF 'src/25a6634@@helper@sha/hstring.c.o.d' -o 'src/25a6634@@helper@sha/hstring.c.o' -c ../src/hstring.c",
+    "file": "../src/hstring.c",
+    "output": "src/25a6634@@helper@sha/hstring.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Isrc/25a6634@@helper@sha -Isrc -I../src -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'src/25a6634@@helper@sha/macho_macho.c.o' -MF 'src/25a6634@@helper@sha/macho_macho.c.o.d' -o 'src/25a6634@@helper@sha/macho_macho.c.o' -c ../src/macho/macho.c",
+    "file": "../src/macho/macho.c",
+    "output": "src/25a6634@@helper@sha/macho_macho.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Isrc/25a6634@@helper@sha -Isrc -I../src -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'src/25a6634@@helper@sha/macho_macho-command.c.o' -MF 'src/25a6634@@helper@sha/macho_macho-command.c.o.d' -o 'src/25a6634@@helper@sha/macho_macho-command.c.o' -c ../src/macho/macho-command.c",
+    "file": "../src/macho/macho-command.c",
+    "output": "src/25a6634@@helper@sha/macho_macho-command.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Isrc/25a6634@@helper@sha -Isrc -I../src -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'src/25a6634@@helper@sha/macho_macho-segment.c.o' -MF 'src/25a6634@@helper@sha/macho_macho-segment.c.o.d' -o 'src/25a6634@@helper@sha/macho_macho-segment.c.o' -c ../src/macho/macho-segment.c",
+    "file": "../src/macho/macho-segment.c",
+    "output": "src/25a6634@@helper@sha/macho_macho-segment.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Isrc/25a6634@@helper@sha -Isrc -I../src -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'src/25a6634@@helper@sha/macho_macho-symbol.c.o' -MF 'src/25a6634@@helper@sha/macho_macho-symbol.c.o.d' -o 'src/25a6634@@helper@sha/macho_macho-symbol.c.o' -c ../src/macho/macho-symbol.c",
+    "file": "../src/macho/macho-symbol.c",
+    "output": "src/25a6634@@helper@sha/macho_macho-symbol.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Isrc/25a6634@@helper@sha -Isrc -I../src -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'src/25a6634@@helper@sha/dyld_dyld.c.o' -MF 'src/25a6634@@helper@sha/dyld_dyld.c.o.d' -o 'src/25a6634@@helper@sha/dyld_dyld.c.o' -c ../src/dyld/dyld.c",
+    "file": "../src/dyld/dyld.c",
+    "output": "src/25a6634@@helper@sha/dyld_dyld.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Isrc/25a6634@@helper@sha -Isrc -I../src -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'src/25a6634@@helper@sha/img4_sep.c.o' -MF 'src/25a6634@@helper@sha/img4_sep.c.o.d' -o 'src/25a6634@@helper@sha/img4_sep.c.o' -c ../src/img4/sep.c",
+    "file": "../src/img4/sep.c",
+    "output": "src/25a6634@@helper@sha/img4_sep.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Isrc/25a6634@@helper@sha -Isrc -I../src -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'src/25a6634@@helper@sha/lzss_lzss.c.o' -MF 'src/25a6634@@helper@sha/lzss_lzss.c.o.d' -o 'src/25a6634@@helper@sha/lzss_lzss.c.o' -c ../src/lzss/lzss.c",
+    "file": "../src/lzss/lzss.c",
+    "output": "src/25a6634@@helper@sha/lzss_lzss.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Isrc/25a6634@@helper@sha -Isrc -I../src -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'src/25a6634@@helper@sha/lzfse_lzfse_encode_base.c.o' -MF 'src/25a6634@@helper@sha/lzfse_lzfse_encode_base.c.o.d' -o 'src/25a6634@@helper@sha/lzfse_lzfse_encode_base.c.o' -c ../src/lzfse/lzfse_encode_base.c",
+    "file": "../src/lzfse/lzfse_encode_base.c",
+    "output": "src/25a6634@@helper@sha/lzfse_lzfse_encode_base.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Isrc/25a6634@@helper@sha -Isrc -I../src -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'src/25a6634@@helper@sha/lzfse_lzfse_decode_base.c.o' -MF 'src/25a6634@@helper@sha/lzfse_lzfse_decode_base.c.o.d' -o 'src/25a6634@@helper@sha/lzfse_lzfse_decode_base.c.o' -c ../src/lzfse/lzfse_decode_base.c",
+    "file": "../src/lzfse/lzfse_decode_base.c",
+    "output": "src/25a6634@@helper@sha/lzfse_lzfse_decode_base.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Isrc/25a6634@@helper@sha -Isrc -I../src -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'src/25a6634@@helper@sha/lzfse_lzfse_decode.c.o' -MF 'src/25a6634@@helper@sha/lzfse_lzfse_decode.c.o.d' -o 'src/25a6634@@helper@sha/lzfse_lzfse_decode.c.o' -c ../src/lzfse/lzfse_decode.c",
+    "file": "../src/lzfse/lzfse_decode.c",
+    "output": "src/25a6634@@helper@sha/lzfse_lzfse_decode.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Isrc/25a6634@@helper@sha -Isrc -I../src -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'src/25a6634@@helper@sha/lzfse_lzfse_encode.c.o' -MF 'src/25a6634@@helper@sha/lzfse_lzfse_encode.c.o.d' -o 'src/25a6634@@helper@sha/lzfse_lzfse_encode.c.o' -c ../src/lzfse/lzfse_encode.c",
+    "file": "../src/lzfse/lzfse_encode.c",
+    "output": "src/25a6634@@helper@sha/lzfse_lzfse_encode.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Isrc/25a6634@@helper@sha -Isrc -I../src -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'src/25a6634@@helper@sha/lzfse_lzfse_fse.c.o' -MF 'src/25a6634@@helper@sha/lzfse_lzfse_fse.c.o.d' -o 'src/25a6634@@helper@sha/lzfse_lzfse_fse.c.o' -c ../src/lzfse/lzfse_fse.c",
+    "file": "../src/lzfse/lzfse_fse.c",
+    "output": "src/25a6634@@helper@sha/lzfse_lzfse_fse.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Isrc/25a6634@@helper@sha -Isrc -I../src -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'src/25a6634@@helper@sha/lzfse_lzvn_encode_base.c.o' -MF 'src/25a6634@@helper@sha/lzfse_lzvn_encode_base.c.o.d' -o 'src/25a6634@@helper@sha/lzfse_lzvn_encode_base.c.o' -c ../src/lzfse/lzvn_encode_base.c",
+    "file": "../src/lzfse/lzvn_encode_base.c",
+    "output": "src/25a6634@@helper@sha/lzfse_lzvn_encode_base.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Isrc/25a6634@@helper@sha -Isrc -I../src -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'src/25a6634@@helper@sha/lzfse_lzvn_decode_base.c.o' -MF 'src/25a6634@@helper@sha/lzfse_lzvn_decode_base.c.o.d' -o 'src/25a6634@@helper@sha/lzfse_lzvn_decode_base.c.o' -c ../src/lzfse/lzvn_decode_base.c",
+    "file": "../src/lzfse/lzvn_decode_base.c",
+    "output": "src/25a6634@@helper@sha/lzfse_lzvn_decode_base.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Itools/f9d35d4@@macho_tool_NAME@exe -Itools -I../tools -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'tools/f9d35d4@@macho_tool_NAME@exe/macho_toolset.c.o' -MF 'tools/f9d35d4@@macho_tool_NAME@exe/macho_toolset.c.o.d' -o 'tools/f9d35d4@@macho_tool_NAME@exe/macho_toolset.c.o' -c ../tools/macho_toolset.c",
+    "file": "../tools/macho_toolset.c",
+    "output": "tools/f9d35d4@@macho_tool_NAME@exe/macho_toolset.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Itools/f9d35d4@@libhelper-version@exe -Itools -I../tools -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'tools/f9d35d4@@libhelper-version@exe/libhelper_version.c.o' -MF 'tools/f9d35d4@@libhelper-version@exe/libhelper_version.c.o.d' -o 'tools/f9d35d4@@libhelper-version@exe/libhelper_version.c.o' -c ../tools/libhelper_version.c",
+    "file": "../tools/libhelper_version.c",
+    "output": "tools/f9d35d4@@libhelper-version@exe/libhelper_version.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Itests/59830eb@@macholl-lib@exe -Itests -I../tests -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'tests/59830eb@@macholl-lib@exe/macho-ll-lib.c.o' -MF 'tests/59830eb@@macholl-lib@exe/macho-ll-lib.c.o.d' -o 'tests/59830eb@@macholl-lib@exe/macho-ll-lib.c.o' -c ../tests/macho-ll-lib.c",
+    "file": "../tests/macho-ll-lib.c",
+    "output": "tests/59830eb@@macholl-lib@exe/macho-ll-lib.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Itests/59830eb@@dyld_cache@exe -Itests -I../tests -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'tests/59830eb@@dyld_cache@exe/dyld_cache.c.o' -MF 'tests/59830eb@@dyld_cache@exe/dyld_cache.c.o.d' -o 'tests/59830eb@@dyld_cache@exe/dyld_cache.c.o' -c ../tests/dyld_cache.c",
+    "file": "../tests/dyld_cache.c",
+    "output": "tests/59830eb@@dyld_cache@exe/dyld_cache.c.o"
+  },
+  {
+    "directory": "/Users/h3adsh0tzz/Sources/htool/libs/libhelper/builddir",
+    "command": "cc -Itests/59830eb@@func_starts@exe -Itests -I../tests -I../src/../include -Xclang -fcolor-diagnostics -pipe -Wall -Winvalid-pch -Wextra -Werror -std=c11 -g -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=int-conversion -Wno-error=missing-field-initializers -Wno-error=sign-compare -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=format -Wno-error=type-limits -MD -MQ 'tests/59830eb@@func_starts@exe/func_starts.c.o' -MF 'tests/59830eb@@func_starts@exe/func_starts.c.o.d' -o 'tests/59830eb@@func_starts@exe/func_starts.c.o' -c ../tests/func_starts.c",
+    "file": "../tests/func_starts.c",
+    "output": "tests/59830eb@@func_starts@exe/func_starts.c.o"
+  }
+]

@@ -31,7 +31,7 @@
 #include "libhelper/file.h"
 #include "libhelper/version.h"
 
-#define LIBHELPER_DEBUG         1
+#define LIBHELPER_DEBUG         0
 
 char *libhelper_version_string ();
 
