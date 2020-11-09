@@ -2,11 +2,12 @@
 # Libhelper version tags
 LIBHELPER_VERSION			:= 1.1.0
 LIBHELPER_VERSION_LONG		:= libhelper-1200.643.21
+LIBHELPER_OUTPUT			:= libhelper.1.dylib
 
 #
 ROOT			:= $(shell pwd)
 SRC				:= $(ROOT)/src
-OBJ				:= $(ROOT)/.obj
+OBJDIR			:= $(ROOT)/.obj
 INC				:= $(ROOT)/include
 TOOLS			:= $(ROOT)/tools
 TESTS			:= $(ROOT)/tests
@@ -17,60 +18,32 @@ CC		:= clang
 LD		:= ld
 
 # General Options
-LIBHELPER_CC_FLAGS		?= -DLIBHELPER_VERSION='"$(LIBHELPER_VERSION)"' -DLIBHELPER_VERSION_LONG='"$(LIBHELPER_VERSION_LONG)"' -I$(INC) $(LIBHELPER_LD_FLAGS)
+CFLAGS				= -Wall -O2 -I$(INC)
+CFLAGS				+= -DLIBHELPER_VERSION='"$(LIBHELPER_VERSION)"' -DLIBHELPER_VERSION_LONG='"$(LIBHELPER_VERSION_LONG)"'
 
 # Source code groups
-LIBHELPER_CORE			:= $(wildcat $(SRC)/*.c)
-LIBHELPER_MACHO			:= $(wildcat $(SRC)/macho/*.c)
-LIBHELPER_LZSS			:= $(wildcat $(SRC)/lzss/*.c)
-LIBHELPER_LZFSE			:= $(wildcat $(SRC)/lzfse/*.c)
-LIBHELPER_IMG4			:= $(wildcat $(SRC)/img4/*.c)
-LIBHELPER_DYLD			:= $(wildcat $(SRC)/dyld/*.c)
+rwildcard 		= $(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
+LIBHELPER_SRC 	= $(call rwildcard,$(SRC),*.c)
+OBJ 			= $(LIBHELPER_SRC:$(SRC)/%.c=$(OBJDIR)/%.o)
+
+
 
 .PHONY: all clean
 	
-all: $(BUILD)/libhelper.1.dylib | $(BUILD)
+all: $(BUILD)/libhelper.1.dylib
 	
-$(OBJ)/%.o: $(LIBHELPER_CORE)/%.c
+$(BUILD)/libhelper.1.dylib: $(OBJ)
 	@mkdir -p "$(@D)"
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) -shared -o $(LIBHELPER_OUTPUT) $(OBJ)
 	
-$(OBJ)/%.o: $(LIBHELPER_MACHO)/%.c
-	@mkdir -p "$(@D)"
-	$(CC) $(CFLAGS) -c $< -o $@
-	
-$(OBJ)/%.o: $(LIBHELPER_LZSS)/%.c
-	@mkdir -p "$(@D)"
-	$(CC) $(CFLAGS) -c $< -o $@
-	
-$(OBJ)/%.o: $(LIBHELPER_LZFSE)/%.c
-	@mkdir -p "$(@D)"
-	$(CC) $(CFLAGS) -c $< -o $@
-	
-$(OBJ)/%.o: $(LIBHELPER_IMG4)/%.c
-	@mkdir -p "$(@D)"
-	$(CC) $(CFLAGS) -c $< -o $@
-	
-$(OBJ)/%.o: $(LIBHELPER_DYLD)/%.c
+$(OBJDIR)/%.o: $(LIBHELPER_SRC)/%.c
 	@mkdir -p "$(@D)"
 	$(CC) $(CFLAGS) -c $< -o $@
 	
 ########################################################
-
-$(BUILD)/libhelper.1.dylib: $(OBJ)
-	$(CC) 
-	
-	
-	
-	
-$(BUILD)/libhelper.1.dylib: $(LIBHELPER_CORE) $(LIBHELPER_MACHO) $(LIBHELPER_LZSS) $(LIBHELPER_LZFSE) $(LIBHELPER_IMG4) $(LIBHELPER_DYLD) | $(BUILD)
-	$(CC) -o $@ $(LIBHELPER_CC_FLAGS) $(LIBHELPER_CORE) $(LIBHELPER_MACHO) $(LIBHELPER_LZSS) $(LIBHELPER_LZFSE) $(LIBHELPER_IMG4) $(LIBHELPER_DYLD)
-	
-$(BUILD):
-	mkdir -p %@
-	
+	 
 clean:
-	rm -rf $(BUILD)
+	rm -rf $(BUILD) $(OBJDIR) || true
 	
 	
 	
