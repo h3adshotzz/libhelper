@@ -71,7 +71,7 @@ macho_t *macho_create_from_file (file_t *file)
     // Try to load the mach header, and handle a failure if it occurs
     macho->header = mach_header_load (macho);
     if (macho->header == NULL) {
-        errorf ("Unable to load Mach-O\n");
+        //errorf ("Unable to load Mach-O\n");
         macho_free (macho);
         return NULL;
     }
@@ -217,7 +217,7 @@ macho_t *macho_create_from_buffer (unsigned char *data)
     // Try to load the mach header, and handle a failure if it occurs
     macho->header = mach_header_load (macho);
     if (macho->header == NULL) {
-        errorf ("Unable to load Mach-O\n");
+        //errorf ("Unable to load Mach-O\n");
         macho_free (macho);
         return NULL;
     }
@@ -369,6 +369,20 @@ void macho_free (macho_t *macho)
 
 
 //===-----------------------------------------------------------------------===//
+/*-- Generic Mach-O Loader                 									 --*/
+//===-----------------------------------------------------------------------===//
+
+/**
+ *	This should be the backend of the macho_create_from_buffer and
+ *	macho_create_from_file functions.
+ *
+ */
+macho_t *_macho_create_generic (unsigned char *data, uint32_t size, char *path)
+{
+	return NULL;
+}
+
+//===-----------------------------------------------------------------------===//
 /*-- FAT & Mach-O Header functions         									 --*/
 //===-----------------------------------------------------------------------===//
 
@@ -467,10 +481,11 @@ mach_header_t *mach_header_load (macho_t *macho)
         } else if (type == MH_TYPE_MACHO32) {
             debugf ("Detected Mach-O 32-bit\n");
         } else if (type == MH_TYPE_FAT) {
-            errorf ("Detected Universal Binary, but cannot load it.\n");
+			// should be an error but --analyse requires that it doesn't output errors
+            debugf ("Detected Universal Binary, but cannot load it.\n");
             header = NULL;
         } else {
-            errorf ("Unknown file magic: 0x%08x\n", header->magic);
+            debugf ("Unknown file magic: 0x%08x\n", header->magic);
             header = NULL;
         }
     }
