@@ -53,6 +53,10 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	$(info [ CC ] $<)
 	$(CC) $(CFLAGS) -c $< -o $@
 	
+install:
+	cp build/libhelper.$(LIBHELPER_VERSION).dylib /usr/local/lib/libhelper.$(LIBHELPER_VERSION).dylib
+	cp build/libhelper.a /usr/local/lib/libhelper.a
+	
 clean:
 	rm -rf $(OBJ_DIR) $(BUILD_DIR) || true
 	
