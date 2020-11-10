@@ -1,10 +1,6 @@
 
 # Libhelper version
 LIBHELPER_VERSION			= 1.1.0
-LIBHELPER_VERSION_LONG		= libhelper-1200.643.21
-# DEV, BETA, RELEASE
-LIBHELPER_VERSION_TYPE		= DEV
-
 LIBHELPER_OUTPUT			= libhelper.1.dylib
 
 # File structure
@@ -25,7 +21,6 @@ CC			= clang
 AR			= ar
 
 CFLAGS		= -Wall -O2 -Iinclude
-CFLAGS		+= -DLIBHELPER_VERSION='"$(LIBHELPER_VERSION)"' -DLIBHELPER_VERSION_LONG='"$(LIBHELPER_VERSION_LONG)"' -DLIBHELPER_VERSION_TYPE='"$(LIBHELPER_VERSION_TYPE)"'
 
 
 # Make rules
@@ -54,7 +49,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 	
 install:
-	cp build/libhelper.$(LIBHELPER_VERSION).dylib /usr/local/lib/libhelper.$(LIBHELPER_VERSION).dylib
+	cp build/libhelper.1.dylib /usr/local/lib/libhelper.1.dylib
 	cp build/libhelper.a /usr/local/lib/libhelper.a
 	
 clean:

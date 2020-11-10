@@ -1,3 +1,34 @@
+<<<<<<< Local Changes
+//===----------------------------- libhelper ----------------------------===//
+//
+//                         The Libhelper Project
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//
+//  Copyright (C) 2019, Is This On?, @h3adsh0tzz
+//  me@h3adsh0tzz.com.
+//
+//
+//===------------------------------------------------------------------===//
+
+/***********************************************************************
+* Libhelper API.
+*
+*   The Libhelper Library
+*
+***********************************************************************/=======
 //===----------------------------- libhelper ----------------------------===//
 //
 //                         The Libhelper Project
@@ -42,17 +73,9 @@
 *
 ***********************************************************************/
 
-#ifndef LIBHELPER_VERSION
-#	error							"LIBHELPER_VERSION is not defined. Cannot continue."
-#endif
-
-#ifndef LIBHELPER_VERSION_LONG
-#	error							"LIBHELPER_VERSION_LONG is not defined. Cannot continue."
-#endif
-
-#ifndef LIBHELPER_VERSION_TYPE
-#	error							"LIBHELPER_VERSION_TYPE is not defined. Cannot continue."
-#endif
+#define LIBHELPER_VERSION			"1.1.0"
+#define LIBHELPER_VERSION_LONG		"libhelper-1200.643.21"
+#define LIBHELPER_VERSION_TYPE		"DEVELOPMENT"
 
 char *libhelper_version_string ();
 
@@ -98,4 +121,4 @@ char *libhelper_version_string ();
 
 
 
-#endif /* libhelper_h */
+#endif /* libhelper_h */>>>>>>> External Changes
