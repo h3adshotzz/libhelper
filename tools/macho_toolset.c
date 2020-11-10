@@ -27,22 +27,6 @@
 #include <libhelper-macho/macho-command.h>
 #include <libhelper-macho/macho-segment.h> 
 
-#ifdef __APPLE__
-#   define BUILD_TARGET         "darwin"
-#   define BUILD_TARGET_CAP     "Darwin"
-#else
-#   define BUILD_TARGET         "linux"
-#   define BUILD_TARGET_CAP     "Linux"
-#endif
-
-#ifdef __x86_64__
-#   define BUILD_ARCH           "x86_64"
-#elif __arm64__
-#	define BUILD_ARCH			"arm64"
-#elif __arm__
-#   define BUILD_ARCH           "arm"
-#endif
-
 
 /***********************************************************************
 * Libhelper's MachO-Helper-Toolset.
@@ -59,26 +43,10 @@
 *   The Toolset's version number is like libhelper, xxx.xx.x. 
 *
 ***********************************************************************/
-#define TOOLSET_VERS            "101.52.6"
-
-#define TOOL_SECT               0
-#define TOOL_SPLIT              0
-#define TOOL_DUMP               1
-
-#if TOOL_SECT
-#   define TOOL_VERS            "1.0.0"
-#   define TOOL_NAME            "macho-section"
-#elif TOOL_SPLIT
-#   define TOOL_VERS            "1.0.0"
-#   define TOOL_NAME            "macho-split"
-#elif TOOL_DUMP
-#   define TOOL_VERS            "1.0.1"
-#   define TOOL_NAME            "macho-dump"
-#endif
 
 #define FAT(p) ((*(unsigned int *)(p) & ~1) == 0xbebafeca)
 
-#if TOOL_SPLIT
+#if defined(TOOL_SPLIT)
 struct archs {
 	size_t 	  size;
 	char	 *buf;
@@ -94,8 +62,9 @@ struct archs {
 void banner ()
 {
     printf ("-----------------------------------------------------\n");
-    printf (" %s %s (macho-helper-%s) - Built " __TIMESTAMP__ "\n", TOOL_NAME, TOOL_VERS, TOOLSET_VERS);
+    printf (" %s version %s (macho-helper-%s) - Built " __TIMESTAMP__ "\n", TOOL_NAME, TOOLSET_VERS, TOOLSET_VERS_LONG);
     printf ("-----------------------------------------------------\n");
+	
 }
 
 
@@ -106,7 +75,7 @@ void banner ()
  */
 void version ()
 {
-    printf ("MachO-Helper %s Version %s (macho-helper-%s)\n", TOOL_NAME, TOOL_VERS, TOOLSET_VERS);
+    printf ("%s version %s (macho-helper-%s))\n", TOOL_NAME, TOOLSET_VERS, TOOLSET_VERS_LONG);
     
     printf ("  Build Time:\t\t" __TIMESTAMP__ "\n");
     printf ("  Default Target:\t%s-%s\n", BUILD_TARGET, BUILD_ARCH);
@@ -125,11 +94,11 @@ void help ()
     banner ();
 
     printf ("Usage: %s", TOOL_NAME);
-#if TOOL_SECT
+#if defined(TOOL_SECT)
     printf (" FILE [segment] [section]\n\n");
-#elif TOOL_SPLIT
+#elif defined(TOOL_SPLIT)
     printf (" FILE\n\n");
-#elif TOOL_DUMP
+#elif defined(TOOL_DUMP)
     printf (" FILE [start_addr] [end_addr | -s size]\n\n");
 #endif
 
@@ -138,7 +107,7 @@ void help ()
 }
 
 
-#if TOOL_SECT
+#if defined(TOOL_SECT)
 /**
  *  Main flow for the macho-sect tool.
  * 
@@ -194,7 +163,7 @@ SECT_ERROR:
 #endif
 
 
-#if TOOL_SPLIT
+#if defined(TOOL_SPLIT)
 /**
  *  Main flow for the macho-split tool.
  * 
@@ -291,7 +260,7 @@ SPLIT_ERROR:
 #endif
 
 
-#if TOOL_DUMP
+#if defined(TOOL_DUMP)
 /**
  *  Main flow for the macho-dump tool.
  * 
@@ -403,7 +372,7 @@ int main (int argc, char *argv[])
      	}
     }
 
-#if TOOL_DUMP || TOOL_SECT
+#if defined(TOOL_DUMP) || defined(TOOL_SECT)
     // Make sure no less than 4 args are given
     if (argc < 4) {
         help ();
@@ -417,11 +386,11 @@ int main (int argc, char *argv[])
     // Return code
     int ret = 0;
 
-#if TOOL_SECT
+#if defined(TOOL_SECT)
     ret = section_main (argc, argv);
-#elif TOOL_SPLIT
+#elif defined(TOOL_SPLIT)
     ret = split_main (argc, argv);
-#elif TOOL_DUMP
+#elif defined(TOOL_DUMP)
     ret = dump_main (argc, argv);
 #endif
 

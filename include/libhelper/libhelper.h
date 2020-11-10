@@ -29,10 +29,73 @@
 
 #include "libhelper/strutils.h"
 #include "libhelper/file.h"
-#include "libhelper/version.h"
 
-#define LIBHELPER_DEBUG         0
+
+/***********************************************************************
+* Libhelper Version.
+*
+*   Four definitions for Libhelper version info. The long version string
+*   has a similar format to XNU's versioning. There is then a more human
+*   readable "marketing" version number with a traditional Major.Minor.Rev
+*   format, and finally two more definitions with the version Tag both
+*   normal and capatalised.
+*
+***********************************************************************/
+
+#ifndef LIBHELPER_VERSION
+#	error							"LIBHELPER_VERSION is not defined. Cannot continue."
+#endif
+
+#ifndef LIBHELPER_VERSION_LONG
+#	error							"LIBHELPER_VERSION_LONG is not defined. Cannot continue."
+#endif
+
+#ifndef LIBHELPER_VERSION_TYPE
+#	error							"LIBHELPER_VERSION_TYPE is not defined. Cannot continue."
+#endif
 
 char *libhelper_version_string ();
+
+/***********************************************************************
+* Libhelper Platform.
+*
+*   The platform type, either "Darwin" for macOS/iOS et al. And "Linux"
+*   for Linux-based systems. Only the correct one is defined, based on
+*   the system used to compile Libhelper.
+*
+***********************************************************************/
+
+#ifdef __APPLE__
+#   define BUILD_TARGET         	"darwin"
+#   define BUILD_TARGET_CAP     	"Darwin"
+#else
+#   define BUILD_TARGET         	"linux"
+#   define BUILD_TARGET_CAP     	"Linux"
+#endif
+
+#ifdef __x86_64__
+#   define BUILD_ARCH           	"x86_64"
+#   define BUILD_ARCH_CAP          	"X86_64"
+#elif __arm64__
+#   define BUILD_ARCH           	"arm64"
+#   define BUILD_ARCH_CAP          	"ARM64"
+#elif __arm__
+#   define BUILD_ARCH           	"arm"
+#   define BUILD_ARCH_CAP         	"ARM"
+#endif
+
+
+/***********************************************************************
+* Libhelper Architecture String.
+*
+*   The architecture type, either x86_64, arm64 or arm. It's prepended
+*   with the long version, and the version tag. Only the correct one
+*   is defined and is based on the system used to compile Libhelper.
+*
+***********************************************************************/
+
+#define LIBHELPER_VERS_WITH_ARCH     LIBHELPER_VERSION_LONG "/" LIBHELPER_VERSION_TYPE "_" BUILD_ARCH_CAP " " BUILD_ARCH
+
+
 
 #endif /* libhelper_h */

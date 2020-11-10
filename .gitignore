@@ -53,6 +53,7 @@ Mkfile.old
 dkms.conf
 
 # Meson build directory and test directory
+.obj/
 build/
 arm64_build/
 test/
