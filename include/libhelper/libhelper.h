@@ -29,7 +29,6 @@
 
 #include "libhelper/strutils.h"
 #include "libhelper/file.h"
-#include "libhelper/version.h"
 
 
 /***********************************************************************
@@ -67,9 +66,22 @@ char *libhelper_version_string ();
 ***********************************************************************/
 
 #ifdef __APPLE__
-#	define LIBHELPER_PLATFORM		"Darwin"
+#   define BUILD_TARGET         	"darwin"
+#   define BUILD_TARGET_CAP     	"Darwin"
 #else
-#	define LIBHELPER_PLATFORM		"Linux"
+#   define BUILD_TARGET         	"linux"
+#   define BUILD_TARGET_CAP     	"Linux"
+#endif
+
+#ifdef __x86_64__
+#   define BUILD_ARCH           	"x86_64"
+#   define BUILD_ARCH_CAP          	"X86_64"
+#elif __arm64__
+#   define BUILD_ARCH           	"arm64"
+#   define BUILD_ARCH_CAP          	"ARM64"
+#elif __arm__
+#   define BUILD_ARCH           	"arm"
+#   define BUILD_ARCH_CAP         	"ARM"
 #endif
 
 
@@ -82,15 +94,8 @@ char *libhelper_version_string ();
 *
 ***********************************************************************/
 
-#ifdef __x86_64__
-#   define LIBHELPER_VERS_WITH_ARCH     LIBHELPER_VERSION_LONG "/" LIBHELPER_VERSION_TAG_CAPS "_X86_64 x86_64"
-#elif __arm__
-#   define LIBHELPER_VERS_WITH_ARCH     LIBHELPER_VERSION_LONG "/" LIBHELPER_VERSION_TAG_CAPS "_ARM arm"
-#elif __arm64__
-#   define LIBHELPER_VERS_WITH_ARCH     LIBHELPER_VERSION_LONG "/" LIBHELPER_VERSION_TAG_CAPS "_ARM64 arm64"
-#else 
-#   define LIBHELPER_VERS_WITH_ARCH     LIBHELPER_VERSION_LONG "/" LIBHELPER_VERSION_TAG_CAPS "_NA unknown_architecture"
-#endif
+#define LIBHELPER_VERS_WITH_ARCH     LIBHELPER_VERSION_LONG "/" LIBHELPER_VERSION_TYPE "_" BUILD_ARCH_CAP " " BUILD_ARCH
+
 
 
 #endif /* libhelper_h */

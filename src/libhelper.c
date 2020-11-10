@@ -42,5 +42,5 @@
 
 char *libhelper_version_string ()
 {
-    return LIBHELPER_PLATFORM " Libhelper " LIBHELPER_VERSION_SHORT "; " __TIMESTAMP__ "; " LIBHELPER_VERS_WITH_ARCH;
+    return BUILD_TARGET_CAP " Libhelper " LIBHELPER_VERSION "; " __TIMESTAMP__ "; " LIBHELPER_VERS_WITH_ARCH;
 }
