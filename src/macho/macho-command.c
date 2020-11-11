@@ -530,14 +530,13 @@ mach_build_version_info_t *mach_lc_build_version_info (mach_build_version_comman
                 inf->tool = "(null)";
                 break;
         }
-
+	
         inf->version = btv->version;
 
         ret->tools = h_slist_append (ret->tools, inf);
 
         next_off += sizeof(mach_build_version_command_t);
     }
-
 
     return ret;
 }

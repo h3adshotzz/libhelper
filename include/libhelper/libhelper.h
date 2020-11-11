@@ -73,9 +73,12 @@
 ***********************************************************************/
 
 #define LIBHELPER_VERSION			"1.1.0"
-#define LIBHELPER_VERSION_LONG		"libhelper-1200.643.21"
+#define LIBHELPER_VERSION_LONG		"libhelper-1200.643.47"
 #define LIBHELPER_VERSION_TYPE		"DEVELOPMENT"
 
+#define LIBHELPER_DEBUG				1
+
+int libhelper_is_debug ();
 char *libhelper_version_string ();
 
 /***********************************************************************

@@ -20,7 +20,7 @@ OBJ			= $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 CC			= clang
 AR			= ar
 
-CFLAGS		= -Wall -O2 -Iinclude
+CFLAGS		= -Wall -Wextra -g -Iinclude
 
 
 # Make rules
@@ -42,6 +42,7 @@ $(BUILD_DIR)/libhelper.1.dylib: $(OBJ)
 	$(CC) -shared -o $(BUILD_DIR)/libhelper.1.dylib $(OBJ)
 	$(AR) -rv $(BUILD_DIR)/libhelper.a $(OBJ)
 	
+	cd build && dsymutil libhelper.1.dylib	
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p "$(@D)"
