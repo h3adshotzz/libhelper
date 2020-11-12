@@ -1,6 +1,6 @@
-//===---------------------------- file -----------------------------===//
+//===--------------------------- libhelper ----------------------------===//
 //
-//                        The Libhelper Project
+//                         The Libhelper Project
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -17,13 +17,14 @@
 //
 //
 //  Copyright (C) 2019, Is This On?, @h3adsh0tzz
+//	Copyright (C) 2020, Is This On?, @h3adsh0tzz
+//
 //  me@h3adsh0tzz.com.
 //
 //
 //===------------------------------------------------------------------===//
 
-#include "libhelper/file.h"
-
+#include "libhelper/libhelper.h"
 
 file_t *file_create ()
 {
@@ -35,30 +36,31 @@ file_t *file_create ()
 
 file_t *file_load (const char *path)
 {
-	/* Create the new file structure */
 	file_t *file = file_create ();
 
-	/* Set the file path */
+	/* set the file path */
 	if (!path) {
-		errorf ("File path not valid.\n");
+		//errorf ("File path is not valid\n");
 		return NULL;
 	}
 	file->path = (char *) path;
 
-	/* Load the file */
+	/* load the file */
 	file->desc = fopen (file->path, "rb");
 	if (!file->desc) {
-		errorf ("File could not be loaded.\n");
+		//errorf ("File could not be loaded\n");
 		return NULL;
 	}
-
-	/* Calculate the size of the file */
+	
+	/* calculate file size */
 	fseek (file->desc, 0, SEEK_END);
 	file->size = ftell (file->desc);
 	fseek (file->desc, 0, SEEK_SET);
-
-	/* Return the file */
-	return file;
+	
+	if (file->size)
+		return file;
+	else
+		return NULL;
 }
 
 

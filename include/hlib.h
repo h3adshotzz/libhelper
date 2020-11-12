@@ -24,15 +24,47 @@
 //
 //===------------------------------------------------------------------===//
 
-#include <libhelper/libhelper.h>
-#include "version.h"
+//
+//	PRIVATE API FILE
+//
 
-int libhelper_is_debug ()
-{
-	return LIBHELPER_DEBUG;
-}
+#ifndef LIBHELPER_INTERNAL_HLIB_H
+#define LIBHELPER_INTERNAL_HLIB_H
 
-char *libhelper_version_string ()
-{
-    return BUILD_TARGET_CAP " Libhelper " LIBHELPER_VERSION "; " __TIMESTAMP__ "; " LIBHELPER_VERS_WITH_ARCH;
+#ifdef cplusplus
+extern "C" {
+#endif
+	
+#include "libhelper/libhelper.h"
+
+
+/**
+ *	HString macro's
+ */	 
+#define H_UNLIKELY(expr) (expr)
+#define MY_MAXSIZE  ((size_t) -1)
+#define MAX(a, b)  (((a) > (b)) ? (a) : (b))
+#define MIN(a, b)  (((a) < (b)) ? (a) : (b))
+	
+//
+//	@TODO: This generates a warning:
+//		warning: incompatible poiunter types returning 'char *' from a
+//			function with result type 'HString *' (aka 'struct _HString *')
+//
+#define h_return_val_if_fail(expr, val)  \
+    if(!(#expr)) {                       \
+        debugf ("bugger\n");             \
+        return #val;                     \
+    }
+	
+/**
+ *  Allocates a block of memory and initialises to 0.
+ */
+void 	*h_slice_alloc0 (size_t size);
+
+
+#ifdef cplusplus
 }
+#endif
+
+#endif /* libhelper_internal_hlib_h */

@@ -1,6 +1,6 @@
-//===-----------------------  macho-header-const ----------------------===//
+//===--------------------------- libhelper ----------------------------===//
 //
-//                          Libhelper Mach-O Parser
+//                         The Libhelper Project
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -17,23 +17,30 @@
 //
 //
 //  Copyright (C) 2019, Is This On?, @h3adsh0tzz
+//	Copyright (C) 2020, Is This On?, @h3adsh0tzz
+//
 //  me@h3adsh0tzz.com.
 //
 //
 //===------------------------------------------------------------------===//
-
 /*
- * Copyright (c) 1999-2010 Apple Inc.  All Rights Reserved.
+ * Copyright (c) 2007-2016 Apple, Inc. All rights reserved.
+ * Copyright (c) 2000 Apple Computer, Inc. All rights reserved.
  *
- * @APPLE_LICENSE_HEADER_START@
- * 
+ * @APPLE_OSREFERENCE_LICENSE_HEADER_START@
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
- * compliance with the License. Please obtain a copy of the License at
- * http://www.opensource.apple.com/apsl/ and read it before using this
- * file.
- * 
+ * compliance with the License. The rights granted to you under the License
+ * may not be used to create, or enable the creation or redistribution of,
+ * unlawful or unlicensed copies of an Apple operating system, or to
+ * circumvent, violate, or enable the circumvention or violation of, any
+ * terms of an Apple operating system software license agreement.
+ *
+ * Please obtain a copy of the License at
+ * http://www.opensource.apple.com/apsl/ and read it before using this file.
+ *
  * The Original Code and all software distributed under the License are
  * distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
  * EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
@@ -41,38 +48,48 @@
  * FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
  * Please see the License for the specific language governing rights and
  * limitations under the License.
- * 
- * @APPLE_LICENSE_HEADER_END@
+ *
+ * @APPLE_OSREFERENCE_LICENSE_HEADER_END@
+ */
+/*
+ * Mach Operating System
+ * Copyright (c) 1991,1990,1989,1988,1987 Carnegie Mellon University
+ * All Rights Reserved.
+ *
+ * Permission to use, copy, modify and distribute this software and its
+ * documentation is hereby granted, provided that both the copyright
+ * notice and this permission notice appear in all copies of the
+ * software, derivative works or modified versions, and any portions
+ * thereof, and that both notices appear in supporting documentation.
+ *
+ * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS "AS IS"
+ * CONDITION.  CARNEGIE MELLON DISCLAIMS ANY LIABILITY OF ANY KIND FOR
+ * ANY DAMAGES WHATSOEVER RESULTING FROM THE USE OF THIS SOFTWARE.
+ *
+ * Carnegie Mellon requests users of this software to return to
+ *
+ *  Software Distribution Coordinator  or  Software.Distribution@CS.CMU.EDU
+ *  School of Computer Science
+ *  Carnegie Mellon University
+ *  Pittsburgh PA 15213-3890
+ *
+ * any improvements or extensions that they make and grant Carnegie Mellon
+ * the rights to redistribute these changes.
  */
 
-#ifndef LIBHELPER_MACHO_HEADER_CONST_LL_H
-#define LIBHELPER_MACHO_HEADER_CONST_LL_H
+//
+//  NOTE: The licenses from both Mach and Apple are included as many of the
+//      definitions within this header are taken from the `mach/` directory
+//      of the macOS SDK.
+//
 
-/**
- *                  === The Libhelper Project ===
- *                          Mach-O Parser
- * 
- *  Documentation relating to the macho-header-consts.h header file:
- *                                                                      
- *      This header contains a range of definitions for constants required
- *      by macho-header.h/.c. These include header flags.
- * 
- *      The definitions in this file are taken from the mach-o/loader.h
- *      header that ships with macOS, so the Open Source License, under
- *      APSL, is included above.
- * 
- * 
- *  ----------------
- *  Original Author:
- *      Harry Moulton, @h3adsh0tzz  -   me@h3adsh0tzz.com.
- * 
- */
+#ifndef LIBHELPER_MACHO_HEADER_TYPES_H
+#define LIBHELPER_MACHO_HEADER_TYPES_H
 
+#ifdef cplusplus
+extern "C" {
+#endif
 
-/**
- *  Constants for the flags field of the mach_header_64_t
- * 
- */
 #define     MH_NOUNDEFS                 0x1     //  The object file has no undefined references.
 #define     MH_INCRLINK                 0x2     //  The object file is the output of an
 					                            //   incremental link against a base file
@@ -195,5 +212,8 @@
  */ 
 #define     MH_DYLIB_IN_CACHE           0x80000000
 
+#ifdef cplusplus
+}
+#endif
 
-#endif /* libhelper_macho_header_const_ll_h */
+#endif /* libhelper_macho_header_types_h */
