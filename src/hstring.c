@@ -25,6 +25,7 @@
 //===------------------------------------------------------------------===//
 
 #include "libhelper/libhelper.h"
+#include "version.h"
 #include "hlib.h"
 
 static inline size_t
