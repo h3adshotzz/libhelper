@@ -34,6 +34,21 @@
 #include <libhelper/libhelper.h>
 #include <libhelper/libhelper-macho.h>
 
+void __libhelper_macho_command_print_test (mach_load_command_info_t *inf, mach_load_command_t *lc)
+{
+    if (inf) {
+        debugf ("--- Meta:\n");
+        debugf ("  Type:\t0x%x\n", inf->type);
+        debugf ("Offset:\t0x%llx\n", inf->offset);
+
+        if (!lc)
+            lc = inf->lc;
+    }
+
+    debugf ("     Command:\t%s\n", mach_load_command_get_string (lc));
+    debugf ("Command Size:\t%d\n", lc->cmdsize);
+}
+
 int _libhelper_macho_tests (const char *path)
 {
     //macho_t *macho = macho_load (path);
@@ -57,6 +72,40 @@ int _libhelper_macho_tests (const char *path)
     printf ("LC Size: \t%d\n", header->sizeofcmds);
 
     printf ("------------------\n\n");
+
+    
+    // segments
+    for (int i = 0; i < (int) h_slist_length (macho->scmds); i++) {
+        mach_segment_info_t *info = (mach_segment_info_t *) h_slist_nth_data (macho->scmds, i);
+
+        mach_segment_command_64_t *seg64 = info->segcmd;
+            printf ("LC %d: LC_SEGMENT_64\tOff: 0x%09llx-0x%09llx\t%s/%s   %s\n",
+                        i, seg64->vmaddr - info->padding, (seg64->vmaddr + seg64->vmsize) - info->padding, 
+                        mach_segment_vm_protection (seg64->initprot), mach_segment_vm_protection (seg64->maxprot),
+                        seg64->segname);
+
+            //  TODO: Add the vm protection just before the segment name, so it looks like:
+            //          ... rw-/r--     __DATA
+            //
+
+            if (h_slist_length (info->sects)) {
+                for (int k = 0; k < (int) h_slist_length (info->sects); k++) {
+                    mach_section_64_t *sect64 = mach_section_create ();
+                    sect64 = (mach_section_64_t *) h_slist_nth_data (info->sects, k);
+
+                    // this should be pre-set names for known sections 
+                    //char *__placeholder_text = "(placeholder)";
+					char *__placeholder_text = "";
+
+                    printf ("\tOff: 0x%09llx-0x%09llx\t%d bytes\t\t%s.%s\t%s\n",
+                            sect64->addr, (sect64->addr + sect64->size), sect64->size,
+                            sect64->segname, sect64->sectname,
+                            __placeholder_text);
+                }
+            } else {
+                printf ("\tNo Section 64 data\n");
+            }
+    }
 
 }
 

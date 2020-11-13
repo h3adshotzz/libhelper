@@ -27,6 +27,8 @@
 #include "libhelper/libhelper.h"
 #include "libhelper/libhelper-macho.h"
 
+#include "version.h"
+
 
 //===-----------------------------------------------------------------------===//
 /*-- Mach-O                              									 --*/
@@ -153,10 +155,56 @@ macho_t *macho_create_from_buffer (unsigned char *data)
 
     // we'll search through every load command and sort them
     for (int i = 0; i < (int) macho->header->ncmds; i++) {
+        mach_load_command_info_t *lc = mach_load_command_info_load (macho->data, offset);
 
-        // TODO: mach_load_command_info_load ();
+        /**
+         *  Different types of Load Command are sorted into one of the three 
+         *  lists defined above: scmds, lcmds and dylibs.
+         */
+        if (lc->type == LC_SEGMENT || lc->type == LC_SEGMENT_64) {
+            if (lc->type == LC_SEGMENT) {
+                warningf ("macho_create_from_buffer(): Found LC_SEGMENT, 32 bit Mach-O's are not supported for parsing\n");
+                continue;
+            }
 
+            // create a segment info struct, then add to the list
+            mach_segment_info_t *seginf = mach_segment_info_load (macho->data, offset);
+            if (seginf == NULL) {
+                warningf ("macho_create_from_buffer(): failed to load LC_SEGMENT_64 at offset: 0x%08x\n", offset);
+                continue;
+            }
+
+            // add to segments lists
+            scmds = h_slist_append (scmds, seginf);
+        } else if (lc->type == LC_ID_DYLIB || lc->type == LC_LOAD_DYLIB ||
+                   lc->type == LC_LOAD_WEAK_DYLIB || lc->type == LC_REEXPORT_DYLIB) {
+            /**
+             *  Because a Mach-O  can have multiple dynamically linked libraries which
+             *  means there are multiple LC_DYLIB-like commands, so it's easier that
+             *  there is a sperate list for DYLIB-related commands.
+             */
+            
+
+        } else {
+            // set the offset of the command so we can find it again
+            lc->offset = offset;
+            lcmds = h_slist_append (lcmds, lc);
+        }
+
+        offset += lc->lc->cmdsize;
     }
+
+    // set macho offset
+    macho->offset = offset;
+
+    // set LC lists
+    macho->lcmds = lcmds;
+    macho->scmds = scmds;
+    macho->dylibs = dylibs;
+
+    // fix size
+    mach_segment_info_t *last_seg = (mach_segment_info_t *) h_slist_last (macho->scmds);
+    macho->size = last_seg->segcmd->fileoff + last_seg->segcmd->filesize;
 
     return macho;
 }
