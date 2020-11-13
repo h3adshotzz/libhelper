@@ -17,28 +17,20 @@
 //
 //
 //  Copyright (C) 2019, Is This On?, @h3adsh0tzz
+//	Copyright (C) 2020, Is This On?, @h3adsh0tzz
+//
 //  me@h3adsh0tzz.com.
 //
 //
 //===------------------------------------------------------------------===//
 
-#include "libhelper/libhelper.h"
+#include <libhelper/libhelper.h>
+#include "version.h"
 
-/**
- *  The point of libhelper is to have some utilities to help with different
- *  projects. Some of the stuff i want to add:
- *      - ASN1 parser
- *      - MachO parser
- *      - File handling with glib
- *   
- *  I want to have build args to only build parts of libhelper that are required
- *  for a certain project, e.g. libhelper-macho, libhelper-asn1 etc.
- * 
- *  Also i need to sort out some sort of a versioning system.
- * 
- * 
- */
-
+int libhelper_is_debug ()
+{
+	return LIBHELPER_DEBUG;
+}
 
 int libhelper_is_debug ()
 {

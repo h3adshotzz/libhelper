@@ -17,20 +17,32 @@
 //
 //
 //  Copyright (C) 2019, Is This On?, @h3adsh0tzz
+//	Copyright (C) 2020, Is This On?, @h3adsh0tzz
+//
 //  me@h3adsh0tzz.com.
 //
 //
 //===------------------------------------------------------------------===//
+/*
+ *  LZSS.C -- A data compression program for decompressing lzss compressed objects
+ *  4/6/1989 Haruhiko Okumura
+ *  Use, distribute, and modify this program freely.
+ *  Please send me your improved versions.
+ *  PC-VAN      SCIENCE
+ *  NIFTY-Serve PAF01022
+ *  CompuServe  74050,1022
+ *
+ *  Copyright (c) 2003 Apple Computer, Inc.
+ *  DRI: Josh de Cesare
+ */
 
-#include <stdio.h>
-#include "version.h"
+#include <stdint.h>
 
-int main ()
-{
-	printf ("%s Libhelper Version %s~%s (%s)\n", BUILD_TARGET_CAP, LIBHELPER_VERSION, LIBHELPER_VERSION_TYPE, LIBHELPER_VERSION_LONG);
-	printf ("  Build Time:\t\t" __TIMESTAMP__ "\n");
-	printf ("  Default Target:\t%s-%s\n", BUILD_TARGET, BUILD_ARCH);
-	printf ("  Libhelper:\t\t%s\n", LIBHELPER_VERSION_LONG);
-	
-	return 0;
-}
+#ifndef LIBHELPER_LZSS_H
+#define LIBHELPER_LZSS_H
+
+extern uint32_t         lzadler32               (uint8_t *buf, int32_t len);
+extern uint8_t         *compress_lzss           (uint8_t *dst, uint32_t dstlen, uint8_t *src, uint32_t srcLen);
+extern int              decompress_lzss         (uint8_t *dst, uint8_t *src, uint32_t srclen);
+
+#endif /* libhelper_lzss_h */

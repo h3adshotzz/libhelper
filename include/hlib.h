@@ -17,20 +17,54 @@
 //
 //
 //  Copyright (C) 2019, Is This On?, @h3adsh0tzz
+//	Copyright (C) 2020, Is This On?, @h3adsh0tzz
+//
 //  me@h3adsh0tzz.com.
 //
 //
 //===------------------------------------------------------------------===//
 
-#include <stdio.h>
-#include "version.h"
+//
+//	PRIVATE API FILE
+//
 
-int main ()
-{
-	printf ("%s Libhelper Version %s~%s (%s)\n", BUILD_TARGET_CAP, LIBHELPER_VERSION, LIBHELPER_VERSION_TYPE, LIBHELPER_VERSION_LONG);
-	printf ("  Build Time:\t\t" __TIMESTAMP__ "\n");
-	printf ("  Default Target:\t%s-%s\n", BUILD_TARGET, BUILD_ARCH);
-	printf ("  Libhelper:\t\t%s\n", LIBHELPER_VERSION_LONG);
+#ifndef LIBHELPER_INTERNAL_HLIB_H
+#define LIBHELPER_INTERNAL_HLIB_H
+
+#ifdef cplusplus
+extern "C" {
+#endif
 	
-	return 0;
+#include "libhelper/libhelper.h"
+
+
+/**
+ *	HString macro's
+ */	 
+#define H_UNLIKELY(expr) (expr)
+#define MY_MAXSIZE  ((size_t) -1)
+#define MAX(a, b)  (((a) > (b)) ? (a) : (b))
+#define MIN(a, b)  (((a) < (b)) ? (a) : (b))
+	
+//
+//	@TODO: This generates a warning:
+//		warning: incompatible poiunter types returning 'char *' from a
+//			function with result type 'HString *' (aka 'struct _HString *')
+//
+#define h_return_val_if_fail(expr, val)  \
+    if(!(#expr)) {                       \
+        debugf ("bugger\n");             \
+        return #val;                     \
+    }
+	
+/**
+ *  Allocates a block of memory and initialises to 0.
+ */
+void 	*h_slice_alloc0 (size_t size);
+
+
+#ifdef cplusplus
 }
+#endif
+
+#endif /* libhelper_internal_hlib_h */

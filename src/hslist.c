@@ -1,4 +1,4 @@
-//===----------------------------- hslist ----------------------------===//
+//===--------------------------- libhelper ----------------------------===//
 //
 //                         The Libhelper Project
 //
@@ -17,13 +17,14 @@
 //
 //
 //  Copyright (C) 2019, Is This On?, @h3adsh0tzz
+//	Copyright (C) 2020, Is This On?, @h3adsh0tzz
+//
 //  me@h3adsh0tzz.com.
 //
 //
 //===------------------------------------------------------------------===//
 
-#include "libhelper/hslist.h"
-
+#include "libhelper/libhelper.h"
 
 void *h_slice_alloc0 (size_t size)
 {
