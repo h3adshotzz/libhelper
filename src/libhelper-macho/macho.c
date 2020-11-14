@@ -339,7 +339,7 @@ char *mach_header_read_cpu_type (cpu_type_t type)
  * 
  *  @returns            string representing given subtype
  */
-char *mach_header_read_cpu_sub_type (cpu_subtype_t type)
+char *mach_header_read_cpu_subtype (cpu_subtype_t type)
 {
     char *cpu_subtype = "";
     switch (type) {

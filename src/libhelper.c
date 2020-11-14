@@ -32,9 +32,14 @@ int libhelper_is_debug ()
 	return LIBHELPER_DEBUG;
 }
 
-int libhelper_is_debug ()
+char *libhelper_get_version_long ()
 {
-	return LIBHELPER_DEBUG;
+    return LIBHELPER_VERSION_LONG;
+}
+
+char *libhelper_get_version_with_arch ()
+{
+    return LIBHELPER_VERS_WITH_ARCH;
 }
 
 char *libhelper_version_string ()

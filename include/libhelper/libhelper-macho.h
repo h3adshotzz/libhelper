@@ -452,6 +452,8 @@ extern void                      mach_load_command_info_print       (mach_load_c
 extern void                      mach_load_command_print            (void *cmd, int flag);
 extern char                     *mach_load_command_get_string       (mach_load_command_t *lc);
 
+extern mach_load_command_info_t *mach_lc_find_given_cmd             (macho_t *macho, int cmd);  
+
 
 /***********************************************************************
 * Mach-O Segment Commands.
@@ -574,6 +576,10 @@ extern mach_section_64_t            *mach_section_load                  (unsigne
 extern mach_section_64_t            *mach_section_from_segment_info     (mach_segment_info_t *info, char *sectname);
 extern mach_section_64_t            *mach_find_section_command_at_index (HSList *segments, int index);
 
+extern mach_section_info_t          *mach_section_info_from_name        (macho_t *macho, char *segment, char *section);
+
+extern char                         *mach_lc_load_str                   (macho_t *macho, uint32_t cmdsize, uint32_t struct_size, 
+                                                                         off_t cmd_offset, off_t str_offset);
 
 /***********************************************************************
 * Mach-O Other Load Commands.
@@ -1054,6 +1060,9 @@ extern mach_symtab_command_t        *mach_symtab_command_load       (macho_t *ma
 extern mach_symbol_table_t          *mach_symtab_load_symbols       (macho_t *macho, mach_symtab_command_t *symbol_table);
 extern char                         *mach_symtab_find_symbol_name   (macho_t *macho, nlist *sym, mach_symtab_command_t *cmd);
 
+extern char                         *mach_symtab_find_symbol_name   (macho_t *macho, nlist *sym, mach_symtab_command_t *cmd);
+
+extern mach_symtab_command_t        *mach_lc_find_symtab_cmd        (macho_t *macho);
 
 /***********************************************************************
 * Mach-O Dynamic Symbol Load Commands.
@@ -1183,6 +1192,13 @@ struct dysymtab_command {
 };
 // libhelper-macho alias
 typedef struct dysymtab_command         mach_dysymtab_command_t;
+
+
+// Functions
+extern mach_dysymtab_command_t              *mach_lc_find_dysymtab_cmd      (macho_t *macho);
+
+
+/////////////////////////////////////////////////////////////////////////////////////
 
 #ifdef cplusplus
 }
