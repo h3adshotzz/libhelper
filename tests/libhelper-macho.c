@@ -38,7 +38,7 @@ void __libhelper_macho_command_print_test (mach_load_command_info_t *inf, mach_l
 {
     if (inf) {
         debugf ("--- Meta:\n");
-        debugf ("  Type:\t0x%x\n", inf->type);
+        debugf ("  Type:\t0x%x\n", inf->lc->cmd);
         debugf ("Offset:\t0x%llx\n", inf->offset);
 
         if (!lc)

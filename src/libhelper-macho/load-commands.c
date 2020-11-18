@@ -142,7 +142,6 @@ mach_load_command_info_t *mach_load_command_info_load (unsigned char *data, uint
 
     // fill the lc_inf struct
     lc_inf->offset = offset;
-    lc_inf->type = lc->cmd;
     lc_inf->lc = lc;
 
     return lc_inf;
@@ -180,10 +179,13 @@ lc_string_failed:
 
 mach_load_command_info_t *mach_lc_find_given_cmd (macho_t *macho, int cmd)
 {
-    HSList *cmds = macho->lcmds;
-    for (int i = 0; i < h_slist_length (cmds); i++) {
-        mach_load_command_info_t *tmp = (mach_load_command_info_t *) h_slist_nth_data (cmds, i);
-        if (tmp->type == (uint32_t) cmd) {
+    uint32_t size = (uint32_t) h_slist_length (macho->lcmds);
+    debugf ("load-commands.c: mach_lc_find_given_cmd(): macho->lcmds size: %d\n", size);
+
+    for (int i = 0; i < h_slist_length (macho->lcmds); i++) {
+        mach_load_command_info_t *tmp = (mach_load_command_info_t *) h_slist_nth_data (macho->lcmds, i);
+        debugf ("load-commands.c: mach_lc_find_given_cmd(): check %d %d\n", tmp->lc->cmd, cmd);
+        if (tmp->lc->cmd == (uint32_t) cmd) {
             return tmp;
         }
     }
@@ -207,7 +209,7 @@ mach_source_version_command_t *mach_lc_find_source_version_cmd (macho_t *macho)
     HSList *cmds = macho->lcmds;
     for (int i = 0; i < h_slist_length (cmds); i++) {
         mach_load_command_info_t *tmp = (mach_load_command_info_t *) h_slist_nth_data (cmds, i);
-        if (tmp->type == LC_SOURCE_VERSION) {
+        if (tmp->lc->cmd == LC_SOURCE_VERSION) {
             ret = (mach_source_version_command_t *) macho_load_bytes (macho, size, tmp->offset);
             
             if (!ret) {
@@ -453,7 +455,7 @@ mach_uuid_command_t *mach_lc_find_uuid_cmd (macho_t *macho)
     HSList *cmds = macho->lcmds;
     for (int i = 0; i < h_slist_length (cmds); i++) {
         mach_load_command_info_t *tmp = (mach_load_command_info_t *) h_slist_nth_data (cmds, i);
-        if (tmp->type == LC_UUID) {
+        if (tmp->lc->cmd == LC_UUID) {
             ret = (mach_uuid_command_t *) macho_load_bytes (macho, size, tmp->offset);
             
             if (!ret) {
@@ -509,7 +511,11 @@ mach_symtab_command_t *mach_lc_find_symtab_cmd (macho_t *macho)
     mach_symtab_command_t *ret = malloc (size);
     
     mach_load_command_info_t *cmdinfo = mach_lc_find_given_cmd (macho, LC_SYMTAB);
-    ret = (mach_symtab_command_t *) macho_load_bytes (macho, size, cmdinfo->offset);
+    if (cmdinfo) {
+        ret = (mach_symtab_command_t *) macho_load_bytes (macho, size, cmdinfo->offset);
+    } else {
+        return NULL;
+    }
 
     return ret;
 }

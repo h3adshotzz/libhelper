@@ -161,8 +161,8 @@ macho_t *macho_create_from_buffer (unsigned char *data)
          *  Different types of Load Command are sorted into one of the three 
          *  lists defined above: scmds, lcmds and dylibs.
          */
-        if (lc->type == LC_SEGMENT || lc->type == LC_SEGMENT_64) {
-            if (lc->type == LC_SEGMENT) {
+        if (lc->lc->cmd == LC_SEGMENT || lc->lc->cmd == LC_SEGMENT_64) {
+            if (lc->lc->cmd == LC_SEGMENT) {
                 warningf ("macho_create_from_buffer(): Found LC_SEGMENT, 32 bit Mach-O's are not supported for parsing\n");
                 continue;
             }
@@ -176,12 +176,16 @@ macho_t *macho_create_from_buffer (unsigned char *data)
 
             // add to segments lists
             scmds = h_slist_append (scmds, seginf);
-        } else if (lc->type == LC_ID_DYLIB || lc->type == LC_LOAD_DYLIB ||
-                   lc->type == LC_LOAD_WEAK_DYLIB || lc->type == LC_REEXPORT_DYLIB) {
+        } else if (lc->lc->cmd == LC_ID_DYLIB || lc->lc->cmd == LC_LOAD_DYLIB ||
+                   lc->lc->cmd == LC_LOAD_WEAK_DYLIB || lc->lc->cmd == LC_REEXPORT_DYLIB) {
             /**
              *  Because a Mach-O  can have multiple dynamically linked libraries which
              *  means there are multiple LC_DYLIB-like commands, so it's easier that
              *  there is a sperate list for DYLIB-related commands.
+             */
+
+            /**
+             *  TODO: Add the dylib handling here.
              */
             
 
@@ -307,6 +311,8 @@ mach_header_t *mach_header_load (macho_t *macho)
  */
 char *mach_header_read_cpu_type (cpu_type_t type)
 {
+    debugf ("macho.c: mach_header_read_cpu_type: type: %d\n", type);
+
     char *cpu_type = "";
     switch (type) {
         case CPU_TYPE_X86:
@@ -343,6 +349,8 @@ char *mach_header_read_cpu_subtype (cpu_subtype_t type)
 {
     char *cpu_subtype = "";
     switch (type) {
+        case CPU_SUBTYPE_X86_64_ALL:
+            cpu_subtype = "x86_64";
         case CPU_SUBTYPE_ARM64_ALL:
             cpu_subtype = "arm64";
             break;
@@ -383,8 +391,12 @@ char *mach_header_read_file_type (uint32_t type)
         case MACH_TYPE_KEXT_BUNDLE:
             ret = "Mach Kernel Extension Bundle (MH_KEXT_BUNDLE)";
             break;
+        case MACH_TYPE_FILESET:
+            ret = "Mach File Set (MH_FILESET)";
+            break;
         default:
             ret = "Unknown";
+            warningf ("mach_header_read_file_type(): Unknown mach-o type: %d\n", type);
             break;
     }
     return ret;
@@ -410,6 +422,9 @@ char *mach_header_read_file_type_short (uint32_t type)
             break;
         case MACH_TYPE_DYLIB:
             ret = "Dynamic Library";
+            break;
+        case MACH_TYPE_FILESET:
+            ret = "File set";
             break;
         default:
             ret = "Unknown";
