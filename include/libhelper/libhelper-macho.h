@@ -141,7 +141,7 @@ typedef int                 cpu_threadtype_t;
  */
 #define CPU_ARCH_MASK           0xff000000          /* mask for architecture bits */
 #define CPU_ARCH_ABI64          0x01000000          /* 64 bit ABI */
-#define CPU_ARCH_ABI64_32       0x02000000          /* ABI for 64-bit hardware with 32-bit types.
+#define CPU_ARCH_ABI64_32       0x02000000          /* ABI for 64-bit hardware with 32-bit types. */
 
 #define CPU_SUBTYPE_MASK        0xff000000          /* mask for feature flags */
 #define CPU_SUBTYPE_LIB64       0x80000000          /* 64 bit libraries */
@@ -983,6 +983,29 @@ struct rpath_command {
 // libhelper-macho alias
 typedef struct rpath_command                mach_rpath_command_t;
 
+/////////////////////////////////////////////////////////////////////////////////
+
+/**
+ *  The LC_FILESET_ENTRY command describes constituent Mach-O files that are part
+ *  of what Apple calls a "fileset". Entries are their own Mach-O files, for example
+ *  dylibs, with their own headers nad text, data segments. Each entry is further
+ *  described by it's own header.
+ * 
+ */
+struct fileset_entry_command {
+    uint32_t        cmd;            /* LC_FILESET_ENTRY */
+    uint32_t        cmdsize;        /* size, including entry_id strings */
+    uint64_t        vmaddr;         /* memory address of the entry */
+    uint64_t        fileoff;        /* file offset of the entry */
+
+    uint32_t        offset;         /* contained entry_id */
+#ifndef __LP64__
+    char           *ptr;
+#endif  
+    uint32_t        reserved;       /* reserved */
+};
+// libhelper-macho alias
+typedef struct fileset_entry_command        mach_fileset_entry_t;
 
 /***********************************************************************
 * Mach-O Static Symbol Load Commands.
@@ -1199,6 +1222,10 @@ extern mach_dysymtab_command_t              *mach_lc_find_dysymtab_cmd      (mac
 
 
 /////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
 
 #ifdef cplusplus
 }
