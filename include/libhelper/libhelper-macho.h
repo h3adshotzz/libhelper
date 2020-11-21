@@ -374,7 +374,7 @@ extern mach_header_t            *mach_header_load                   (macho_t *ma
 extern mach_header_type_t        mach_header_verify                 (uint32_t magic);
 
 extern char                     *mach_header_read_cpu_type          (cpu_type_t type);
-extern char                     *mach_header_read_cpu_subtype       (cpu_subtype_t type);
+extern char                     *mach_header_read_cpu_subtype       (cpu_type_t type, cpu_subtype_t subtype);
 extern char                     *mach_header_read_file_type         (uint32_t type);
 extern char                     *mach_header_read_file_type_short   (uint32_t type);
 
@@ -514,6 +514,7 @@ typedef struct segment_command mach_segment_command_32_t;
  */
 struct __libhelper_mach_segment_info {
     mach_segment_command_64_t       *segcmd;            /* segment command */
+    uint32_t                         offset;            /* offset in Mach-O */
     uint64_t                         padding;
     HSList                          *sects;             /* list of sections */
 };

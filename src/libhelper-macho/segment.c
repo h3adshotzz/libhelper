@@ -91,6 +91,7 @@ mach_segment_info_t *mach_segment_info_load (unsigned char *data, uint32_t offse
         sectoff += sizeof (mach_section_64_t);
     }
 
+    seg_inf->offset = offset;
     seg_inf->segcmd = seg;
     return seg_inf;
 }
