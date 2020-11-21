@@ -210,8 +210,8 @@ mach_source_version_command_t *mach_lc_find_source_version_cmd (macho_t *macho)
     for (int i = 0; i < h_slist_length (cmds); i++) {
         mach_load_command_info_t *tmp = (mach_load_command_info_t *) h_slist_nth_data (cmds, i);
         if (tmp->type == LC_SOURCE_VERSION) {
-            ret = (mach_source_version_command_t *) macho_load_bytes (macho, size, tmp->offset);
-            
+            macho_dup_bytes (macho, tmp->offset, &ret, size);
+
             if (!ret) {
                 debugf ("[*] Error: Failed to load LC_SOURCE_VERSION command from offset: 0x%llx\n");
                 return NULL;
@@ -221,6 +221,8 @@ mach_source_version_command_t *mach_lc_find_source_version_cmd (macho_t *macho)
         }
     }
 
+    free (ret);
+
     return NULL;
 }
 
@@ -229,7 +231,9 @@ mach_source_version_command_t *mach_lc_find_source_version_cmd (macho_t *macho)
  */
 char *mach_lc_load_str (macho_t *macho, uint32_t cmdsize, uint32_t struct_size, off_t cmd_offset, off_t str_offset)
 {
-    return macho_load_bytes (macho, cmdsize - struct_size, cmd_offset + str_offset);
+    char *str;
+    macho_dup_bytes (macho, cmd_offset + str_offset, &str, cmdsize - struct_size);
+    return str;
 }
 
 
@@ -347,11 +351,13 @@ mach_build_version_info_t *mach_lc_build_version_info (mach_build_version_comman
     ret->ntools = bvc->ntools;
     off_t next_off = offset + sizeof(mach_build_version_command_t);
     for (uint32_t i = 0; i < ret->ntools; i++) {
+        struct build_tool_version btv;
 
-        struct build_tool_version *btv = (struct build_tool_version *) macho_load_bytes (macho, sizeof(struct build_tool_version), next_off);
+        macho_dup_bytes (macho, next_off, &btv, sizeof (struct build_tool_version));
+
         build_tool_info_t *inf = malloc (sizeof(build_tool_info_t));
 
-        switch (btv->tool) {
+        switch (btv.tool) {
             case TOOL_CLANG:
                 inf->tool = "Clang";
                 break;
@@ -366,7 +372,7 @@ mach_build_version_info_t *mach_lc_build_version_info (mach_build_version_comman
                 break;
         }
 	
-        inf->version = btv->version;
+        inf->version = btv.version;
 
         ret->tools = h_slist_append (ret->tools, inf);
 
@@ -435,7 +441,12 @@ char *mach_lc_dylib_get_type_string (mach_dylib_command_t *dylib)
  */
 char *mach_lc_load_dylinker_name (macho_t *macho, mach_dylinker_command_t *dylinker, off_t offset)
 {
-    return macho_load_bytes (macho, dylinker->cmdsize - sizeof(mach_dylinker_command_t), offset + dylinker->offset);
+    char *name = malloc (dylinker->cmdsize - sizeof(mach_dylinker_command_t));
+    macho_dup_bytes (macho,
+                     offset + dylinker->offset,
+                     &name,
+                     dylinker->cmdsize - sizeof(mach_dylinker_command_t));
+    return name;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -456,16 +467,19 @@ mach_uuid_command_t *mach_lc_find_uuid_cmd (macho_t *macho)
     for (int i = 0; i < h_slist_length (cmds); i++) {
         mach_load_command_info_t *tmp = (mach_load_command_info_t *) h_slist_nth_data (cmds, i);
         if (tmp->type == LC_UUID) {
-            ret = (mach_uuid_command_t *) macho_load_bytes (macho, size, tmp->offset);
-            
+            macho_dup_bytes (macho, tmp->offset, &ret, size);
+
             if (!ret) {
                 debugf ("mach_lc_find_uuid_cmd(): Failed to load LC_UUID command from offset: 0x%llx\n");
+
                 return NULL;
             } else {
                 return ret;
             }
         }
     }
+
+    free (ret);
 
     return NULL;
 }
@@ -512,8 +526,10 @@ mach_symtab_command_t *mach_lc_find_symtab_cmd (macho_t *macho)
     
     mach_load_command_info_t *cmdinfo = mach_lc_find_given_cmd (macho, LC_SYMTAB);
     if (cmdinfo) {
-        ret = (mach_symtab_command_t *) macho_load_bytes (macho, size, cmdinfo->offset);
+        macho_dup_bytes (macho, cmdinfo->offset, &ret, size);
     } else {
+        free (ret);
+
         return NULL;
     }
 
@@ -530,7 +546,7 @@ mach_dysymtab_command_t *mach_lc_find_dysymtab_cmd (macho_t *macho)
     mach_dysymtab_command_t *ret = malloc (size);
     
     mach_load_command_info_t *cmdinfo = mach_lc_find_given_cmd (macho, LC_SYMTAB);
-    ret = (mach_dysymtab_command_t *) macho_load_bytes (macho, size, cmdinfo->offset);
+    macho_dup_bytes (macho, cmdinfo->offset, &ret, size);
 
     debugf ("LC_DYSYMTAB: %d\n", LC_DYSYMTAB);
     debugf ("test symtab: 0x%llx\n", ret->cmdsize);

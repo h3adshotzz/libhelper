@@ -385,8 +385,11 @@ extern char                     *mach_header_read_file_type_short   (uint32_t ty
 extern macho_t                  *macho_create                       ();
 extern macho_t                  *macho_create_from_buffer           (unsigned char *data);
 
-extern macho_t                  *macho_load                         (const char *filename);
-extern void                     *macho_load_bytes                   (macho_t *macho, size_t size, uint32_t offset);
+extern macho_t                  *macho_load                         (const char  *filename);
+extern void                      macho_dup_bytes                    (macho_t     *macho,
+                                                                     uint32_t     offset,
+                                                                     void        *buffer,
+                                                                     size_t       size);
 
 // TODO: NOTE: MUST MOVE TO SEPARATE HEADER
 #define FAT(p) ((*(unsigned int *)(p) & ~1) == 0xbebafeca)

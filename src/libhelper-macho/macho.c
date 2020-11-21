@@ -98,19 +98,18 @@ macho_t *macho_load (const char *filename)
 
 
 /**
- *  Load bytes from a Mach-O for a given size from an offset.
+ * macho_dup_bytes:
+ * @macho: the #macho_t to load from.
+ * @offset: to start copying from.
+ * @buffer: (out caller-allocates): where to put the bytes
+ * @size: amount of bytes to copy.
  * 
- *  @param          `macho_t` to load from.
- *  @param          amount of bytes to copy.
- *  @param          offset to start copying from.
- * 
- *  @returns        pointer to the data loaded.     
+ * Load bytes from a Mach-O for a given size from an offset.
  */
-void *macho_load_bytes (macho_t *macho, size_t size, uint32_t offset)
+void
+macho_dup_bytes (macho_t *macho, uint32_t offset, void *buffer, size_t size)
 {
-    void *ret = malloc (size);
-    memcpy (ret, macho->data + offset, size);
-    return ret;
+    memcpy (buffer, macho->data + offset, size);
 }
 
 

@@ -43,7 +43,7 @@ mach_symtab_command_t *mach_symtab_command_create ()
 mach_symtab_command_t *mach_symtab_command_load (macho_t *macho, uint32_t offset)
 {
     mach_symtab_command_t *sym = mach_symtab_command_create ();
-    sym = (mach_symtab_command_t *) macho_load_bytes (macho, sizeof (mach_symtab_command_t), offset);
+    macho_dup_bytes (macho, offset, &sym, sizeof (mach_symtab_command_t));
 
     if (!sym) {
         errorf ("mach_symtab_command_load(): problem loading mach symbol table at offset: 0x%08x\n", offset);
@@ -126,38 +126,40 @@ mach_symbol_table_t *mach_symtab_load_symbols (macho_t *macho, mach_symtab_comma
     off_t off = symbol_table->symoff;
 
     for (size_t i = 0; i < s; i++) {
-        nlist *tmp = (nlist *) macho_load_bytes (macho, sizeof(nlist), off);
+        nlist tmp;
+        
+        macho_dup_bytes (macho, off, &tmp, sizeof(nlist));
 
-        char *name = mach_symtab_find_symbol_name (macho, tmp, symbol_table);
+        char *name = mach_symtab_find_symbol_name (macho, &tmp, symbol_table);
 
         // THIS WILL MOVE TO A SEPERATE FUNCTION
-        debugf ("symbol.c:mach_symtab_load_symbols(): 0x%08x \tSymbol Name:\t%s\n", tmp->n_strx, name);
-        debugf ("symbol.c:mach_symtab_load_symbols(): 0x%08x \tType:\n", tmp->n_type);
+        debugf ("symbol.c:mach_symtab_load_symbols(): 0x%08x \tSymbol Name:\t%s\n", tmp.n_strx, name);
+        debugf ("symbol.c:mach_symtab_load_symbols(): 0x%08x \tType:\n", tmp.n_type);
 
 
-        if ((tmp->n_type & N_STAB) == N_STAB) debugf ("\t\t0x%02x\tN_STAB\n", N_STAB);
+        if ((tmp.n_type & N_STAB) == N_STAB) debugf ("\t\t0x%02x\tN_STAB\n", N_STAB);
 
-        if ((tmp->n_type & N_PEXT) == N_PEXT) debugf ("\t\t0x%02x\tN_PEXT\n", N_PEXT);
+        if ((tmp.n_type & N_PEXT) == N_PEXT) debugf ("\t\t0x%02x\tN_PEXT\n", N_PEXT);
 
         // The N_TYPE can also have differnet types, for example
             // N_UNDF (0x0), N_ABS (0x2), N_SECT (0xe), N_PBUD (0xc)
             // and N_INDR (0xa)
-            if ((tmp->n_type & N_UNDF) == N_UNDF) debugf ("\t\t0x%02x\tN_UNDF\n", N_UNDF);
+            if ((tmp.n_type & N_UNDF) == N_UNDF) debugf ("\t\t0x%02x\tN_UNDF\n", N_UNDF);
 
-            if ((tmp->n_type & N_ABS) == N_ABS) debugf ("\t\t0x%02x\tN_ABS\n", N_ABS);
+            if ((tmp.n_type & N_ABS) == N_ABS) debugf ("\t\t0x%02x\tN_ABS\n", N_ABS);
 
-            if ((tmp->n_type & N_SECT) == N_SECT) debugf ("\t\t0x%02x\tN_SECT\n", N_SECT);
+            if ((tmp.n_type & N_SECT) == N_SECT) debugf ("\t\t0x%02x\tN_SECT\n", N_SECT);
 
-            if ((tmp->n_type & N_PBUD) == N_PBUD) debugf ("\t\t0x%02x\tN_PBUD\n", N_PBUD);
+            if ((tmp.n_type & N_PBUD) == N_PBUD) debugf ("\t\t0x%02x\tN_PBUD\n", N_PBUD);
 
-            if ((tmp->n_type & N_INDR) == N_INDR) debugf ("\t\t0x%02x\tN_INDR\n", N_INDR);
+            if ((tmp.n_type & N_INDR) == N_INDR) debugf ("\t\t0x%02x\tN_INDR\n", N_INDR);
 
-        if ((tmp->n_type & N_EXT) == N_EXT) debugf ("\t\t0x%02x\tN_EXT\n", N_EXT); 
+        if ((tmp.n_type & N_EXT) == N_EXT) debugf ("\t\t0x%02x\tN_EXT\n", N_EXT); 
 
 
-        if (tmp->n_sect) {
-            mach_section_64_t *section = mach_find_section_command_at_index (macho->scmds, tmp->n_sect);
-            debugf ("symbol.c:mach_symtab_load_symbols(): 0x%08x \tSection:\t%d (%s,%s)\n", tmp->n_sect, tmp->n_sect, section->segname, section->sectname);
+        if (tmp.n_sect) {
+            mach_section_64_t *section = mach_find_section_command_at_index (macho->scmds, tmp.n_sect);
+            debugf ("symbol.c:mach_symtab_load_symbols(): 0x%08x \tSection:\t%d (%s,%s)\n", tmp.n_sect, tmp.n_sect, section->segname, section->sectname);
         } else {
             debugf ("symbol.c:mach_symtab_load_symbols(): 0x%08x \tSection:\tNO_SECT\n");
         }
