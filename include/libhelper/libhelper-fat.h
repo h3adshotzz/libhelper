@@ -144,6 +144,7 @@ typedef struct __libhelper_fat_header_info      fat_header_info_t;
 // Functions
 extern fat_header_info_t    *mach_universal_load    (file_t *file);
 extern fat_header_t         *swap_header_bytes      (fat_header_t *header);
+extern mach_header_t        *swap_mach_header_bytes (mach_header_t *header);
 
 extern struct fat_arch      *swap_fat_arch_bytes    (struct fat_arch *a);
 

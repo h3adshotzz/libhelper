@@ -50,6 +50,29 @@ fat_header_t *swap_header_bytes (fat_header_t *header)
 
 
 /**
+ *  Function:   swap_mach_header_bytes
+ *  ------------------------------------
+ * 
+ *  Swaps the bytes of a mach_header_t. 
+ * 
+ *  returns:    A swapped mach_header_t struct.
+ * 
+ */
+mach_header_t *swap_mach_header_bytes (mach_header_t *header)
+{
+    header->magic = OSSwapInt32(header->magic);
+    header->cputype = OSSwapInt32(header->cputype);
+    header->cpusubtype = OSSwapInt32(header->cpusubtype);
+    header->filetype = OSSwapInt32(header->filetype);
+    header->ncmds = OSSwapInt32(header->ncmds);
+    header->sizeofcmds = OSSwapInt32(header->sizeofcmds);
+    header->flags = OSSwapInt32(header->flags);
+    header->reserved = OSSwapInt32(header->reserved);
+    return header;
+}
+
+
+/**
  *  Function:   swap_fat_arch_bytes
  *  ------------------------------------
  * 
@@ -102,7 +125,7 @@ fat_header_info_t *mach_universal_load (file_t *file)
     }
 
     if (fat_header->nfat_arch > 1) 
-        printf ("[*] %s: Mach-O Universal Binary. Found %d architectures.\n", file->path, fat_header->nfat_arch);
+        debugf ("fat.c: mach_universal_load(): %s: Mach-O Universal Binary. Found %d architectures.\n", file->path, fat_header->nfat_arch);
 
     // Arch list
     HSList *archs = NULL;
