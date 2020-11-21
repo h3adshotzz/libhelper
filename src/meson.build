@@ -1,0 +1,26 @@
+sources = [
+    'libhelper-compression/lzfse_decode_base.c',
+    'libhelper-compression/lzfse_encode_base.c',
+    'libhelper-compression/lzfse_fse.c',
+    'libhelper-compression/lzvn_decode_base.c',
+    'libhelper-compression/lzfse_decode.c',
+    'libhelper-compression/lzfse_encode.c',
+    'libhelper-compression/lzss.c',
+    'libhelper-compression/lzvn_encode_base.c',
+    'libhelper-img4/sep.c',
+    'libhelper-macho/dyld.c',
+    'libhelper-macho/fat.c',
+    'libhelper-macho/load-commands.c',
+    'libhelper-macho/macho.c',
+    'libhelper-macho/section.c',
+    'libhelper-macho/segment.c',
+    'libhelper-macho/symbol.c',
+    'file.c',
+    'hslist.c',
+    'hstring.c',
+    'libhelper.c',
+]
+
+libhelper_lib = library('libhelper', sources,
+                        include_directories: libhelper_inc,
+                                    install: true)

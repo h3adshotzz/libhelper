@@ -127,6 +127,7 @@ typedef int                 cpu_threadtype_t;
 #ifdef __APPLE__
 #	define OSSwapInt32(x) 	 _OSSwapInt32(x)
 #else
+#   include <byteswap.h>
 #	define OSSwapInt32(x)	bswap_32(x)
 #endif
 
