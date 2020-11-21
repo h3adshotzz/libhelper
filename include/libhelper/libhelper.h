@@ -185,18 +185,7 @@ extern void		*h_slist_nth_data (HSList *list, int n);
 
 /* HSList end */
 ///////////////////////////////////////////////////////////////
-/* HString start */
 
-
-/**
- *	HString structure
- */
-typedef struct __libhelper_hstring HString;
-struct __libhelper_hstring {
-	char		*str;
-	size_t 	 	len;
-	size_t 	 	allocated;
-};
 
 
 /**
@@ -209,14 +198,6 @@ struct __libhelper_stringlist {
 };
 
 
-// HString functions
-extern HString	*h_string_new (const char *init);
-extern HString 	*h_string_insert_len (HString *string, size_t pos, const char *val, size_t len);
-extern HString 	*h_string_append_len (HString *string, const char *val, size_t len);
-extern HString 	*h_string_sized_new (size_t size);
-
-extern HString 	*h_string_insert_c (HString *string, size_t pos, char c);
-extern HString 	*h_string_append_c (HString *string, char c);
 
 extern StringList	*strsplit (const char *s, const char *delim);
 
@@ -224,7 +205,6 @@ extern StringList	*strsplit (const char *s, const char *delim);
 extern char		*strappend (char *a, char *b);
 extern char		*mstrappend (char *fmt, ...);
 
-/* HString end */
 ///////////////////////////////////////////////////////////////
 
 

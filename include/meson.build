@@ -1,5 +1,4 @@
 includes = [
-    'hlib.h',
     'libhelper/compression/lzfse.h',
     'libhelper/compression/lzss.h',
     'libhelper/img4/sep.h',

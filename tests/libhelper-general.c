@@ -31,7 +31,6 @@
 //		Purpose is to test functions of general libhelper functionality, such
 //		as:
 //			- hslist
-//			- hstring
 //			- file
 //			- strutils
 //
@@ -86,17 +85,6 @@ int _libhelper_hslist_tests ()
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
-void _libhelper_hstring_tests ()
-{
-	HString *test = h_string_new ("test");
-	printf ("test: %s\n", test->str);
-	
-	char *test2 = mstrappend ("%s%s", "a", "b");
-	printf ("test2: %s\n", test2);
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////
-
 void _libhelper_file_tests (unsigned char *path)
 {
 	file_t *test = file_load (path);
@@ -110,9 +98,6 @@ int main (int argc, char *argv[])
 	
 	// hslist testing
 	_libhelper_hslist_tests ();
-	
-	// hstring testing
-	_libhelper_hstring_tests ();
 	
 	// file testing
 	if (argc > 1)

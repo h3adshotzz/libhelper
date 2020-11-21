@@ -24,6 +24,8 @@
 //
 //===------------------------------------------------------------------===//
 
+#include <glib.h>
+
 #include "libhelper/libhelper.h"
 #include "libhelper/libhelper-macho.h"
 
@@ -61,7 +63,7 @@ char *mach_symtab_find_symbol_name (macho_t *macho, nlist *sym, mach_symtab_comm
     uint32_t size = cmd->strsize - sym->n_strx;
     uint32_t offset = cmd->stroff + sym->n_strx;
 
-    HString *curr = h_string_new ("");
+    GString *curr = g_string_new ("");
     uint32_t found = 0, i = 0;
     char *tmp = malloc (size);
 
@@ -69,17 +71,17 @@ char *mach_symtab_find_symbol_name (macho_t *macho, nlist *sym, mach_symtab_comm
     while (!found) {
         if (i >= size) break;
         if (tmp[i] != 0x0) {
-            curr = h_string_append_c (curr, tmp[i]);
+            curr = g_string_append_c (curr, tmp[i]);
             i++;
         } else {
             if (curr->str && curr->len > 0) {
                 found = 1;
-                return curr->str;
+                return g_string_free (curr, FALSE);
             }
             break;
         }
     }
-    return "(no name)";
+    return g_strdup ("(no name)");
 }
 
 /**
@@ -130,7 +132,7 @@ mach_symbol_table_t *mach_symtab_load_symbols (macho_t *macho, mach_symtab_comma
         
         macho_dup_bytes (macho, off, &tmp, sizeof(nlist));
 
-        char *name = mach_symtab_find_symbol_name (macho, &tmp, symbol_table);
+        g_autofree char *name = mach_symtab_find_symbol_name (macho, &tmp, symbol_table);
 
         // THIS WILL MOVE TO A SEPERATE FUNCTION
         debugf ("symbol.c:mach_symtab_load_symbols(): 0x%08x \tSymbol Name:\t%s\n", tmp.n_strx, name);

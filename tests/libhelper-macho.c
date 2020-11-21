@@ -31,6 +31,8 @@
 //      Purpose is to test libhelper-macho
 //
 
+#include <glib.h>
+
 #include <libhelper/libhelper.h>
 #include <libhelper/libhelper-macho.h>
 
@@ -77,12 +79,16 @@ int _libhelper_macho_tests (const char *path)
     // segments
     for (int i = 0; i < (int) h_slist_length (macho->scmds); i++) {
         mach_segment_info_t *info = (mach_segment_info_t *) h_slist_nth_data (macho->scmds, i);
-
         mach_segment_command_64_t *seg64 = info->segcmd;
-            printf ("LC %d: LC_SEGMENT_64\tOff: 0x%09llx-0x%09llx\t%s/%s   %s\n",
-                        i, seg64->vmaddr - info->padding, (seg64->vmaddr + seg64->vmsize) - info->padding, 
-                        mach_segment_vm_protection (seg64->initprot), mach_segment_vm_protection (seg64->maxprot),
-                        seg64->segname);
+        g_autofree char *str1 = NULL;
+        g_autofree char *str2 = NULL;
+
+        str1 = mach_segment_vm_protection (seg64->initprot);
+        str2 = mach_segment_vm_protection (seg64->maxprot);
+
+        printf ("LC %d: LC_SEGMENT_64\tOff: 0x%09llx-0x%09llx\t%s/%s   %s\n",
+                i, seg64->vmaddr - info->padding, (seg64->vmaddr + seg64->vmsize) - info->padding, 
+                str1, str2, seg64->segname);
 
             //  TODO: Add the vm protection just before the segment name, so it looks like:
             //          ... rw-/r--     __DATA

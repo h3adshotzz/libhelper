@@ -24,6 +24,8 @@
 //
 //===------------------------------------------------------------------===//
 
+#include <glib.h>
+
 #include "libhelper/libhelper.h"
 #include "libhelper/libhelper-macho.h"
 
@@ -172,25 +174,24 @@ mach_segment_command_64_t *mach_segment_command_from_info (mach_segment_info_t *
  */
 char *mach_segment_vm_protection (vm_prot_t prot)
 {
-    HString *str = h_string_new ("");
+    GString *str = g_string_new ("");
     
     if ((prot & VM_PROT_READ) == VM_PROT_READ)
-        str = h_string_append_c (str, 'r');
+        str = g_string_append_c (str, 'r');
     else
-        str = h_string_append_c (str, '-');
+        str = g_string_append_c (str, '-');
 
     if ((prot & VM_PROT_WRITE) == VM_PROT_WRITE)
-        str = h_string_append_c (str, 'w');
+        str = g_string_append_c (str, 'w');
     else
-        str = h_string_append_c (str, '-');
+        str = g_string_append_c (str, '-');
 
     if ((prot & VM_PROT_EXEC) == VM_PROT_EXEC)
-        str = h_string_append_c (str, 'x');
+        str = g_string_append_c (str, 'x');
     else
-        str = h_string_append_c (str, '-');
+        str = g_string_append_c (str, '-');
 
-    str = h_string_append_c (str, '\0');
-    return str->str;
+    return g_string_free (str, FALSE);
 }
 
 
