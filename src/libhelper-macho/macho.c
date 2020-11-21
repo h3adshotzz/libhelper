@@ -205,7 +205,7 @@ macho_t *macho_create_from_buffer (unsigned char *data)
             // set the name, raw cmd struct and type
             dylibinfo->name = name;
             dylibinfo->dylib = raw;
-            dylibinfo->type = lc->type;
+            dylibinfo->type = lc->lc->cmd;
 
             // add the offset to the load command
             lc->offset = offset;

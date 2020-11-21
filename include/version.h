@@ -56,7 +56,7 @@ char *libhelper_version_string ();
 *
 ***********************************************************************/
 
-#define LIBHELPER_DEBUG				0
+#define LIBHELPER_DEBUG				1
 
 int libhelper_debug_status ();
 

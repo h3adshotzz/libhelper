@@ -209,7 +209,7 @@ mach_source_version_command_t *mach_lc_find_source_version_cmd (macho_t *macho)
     HSList *cmds = macho->lcmds;
     for (int i = 0; i < h_slist_length (cmds); i++) {
         mach_load_command_info_t *tmp = (mach_load_command_info_t *) h_slist_nth_data (cmds, i);
-        if (tmp->type == LC_SOURCE_VERSION) {
+        if (tmp->lc->cmd == LC_SOURCE_VERSION) {
             ret = (mach_source_version_command_t *) macho_load_bytes (macho, size, tmp->offset);
             
             if (!ret) {
@@ -455,7 +455,7 @@ mach_uuid_command_t *mach_lc_find_uuid_cmd (macho_t *macho)
     HSList *cmds = macho->lcmds;
     for (int i = 0; i < h_slist_length (cmds); i++) {
         mach_load_command_info_t *tmp = (mach_load_command_info_t *) h_slist_nth_data (cmds, i);
-        if (tmp->type == LC_UUID) {
+        if (tmp->lc->cmd == LC_UUID) {
             ret = (mach_uuid_command_t *) macho_load_bytes (macho, size, tmp->offset);
             
             if (!ret) {
