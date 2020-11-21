@@ -87,8 +87,8 @@ int _libhelper_hslist_tests ()
 
 void _libhelper_file_tests (unsigned char *path)
 {
-	file_t *test = file_load (path);
-	unsigned char *test_str = file_load_bytes (test, test->size, 0);
+	g_autoptr (file_t) test = file_load (path);
+	const unsigned char *test_str = file_get_data (test, 0);
 	printf ("file: %s\n", test_str);
 }
 

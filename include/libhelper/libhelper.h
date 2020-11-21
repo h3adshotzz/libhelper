@@ -40,6 +40,8 @@ extern "C" {
 #include <stdarg.h>
 #include <sys/mman.h>
 
+#include <glib.h>
+
 
 extern char			*libhelper_get_version 		();
 extern char 		*libhelper_version_string 	();
@@ -62,16 +64,14 @@ extern int			 libhelper_is_debug			();
  *
  */
 struct __libhelper_file {
-	FILE		*desc;			/* loaded file */
-	size_t		 size;			/* loaded file size */
 	char		*path;			/* laoded file path */
+	GMappedFile *data;
 };
 typedef struct __libhelper_file		file_t;
 
 // Functions for creating and opening a file
 extern file_t 		*file_create ();
 extern file_t 		*file_load (const char *path);
-extern void 		 file_close (file_t *file);
 extern void 		 file_free (file_t *file);
 
 
@@ -94,17 +94,12 @@ extern void 		 file_free (file_t *file);
  */
 extern int			file_write_new (char *filename, unsigned char *buf, size_t size);
 
+size_t              file_get_length (file_t *f);
+const void         *file_get_data   (file_t *f, uint32_t offset);
+void                file_read_data  (file_t *f, uint32_t offset, void *buf, size_t size);
+void               *file_dup_data   (file_t *f, uint32_t offset, size_t size);
 
-/**
- *	Load a set amount of bytes from the given offset of a file.
- *
- *	@param		file to read from
- *	@param		amount of bytes to read
- *	@param		offset to begin reading from.
- *
- *	@return 	bytes read from the file, OR NULL if there was a failure.
- */
-extern char		*file_load_bytes (file_t *f, size_t size, uint32_t offset);
+G_DEFINE_AUTOPTR_CLEANUP_FUNC (file_t, file_free);
 
 /* End of libhelper-file */
 

@@ -68,21 +68,27 @@ void macho_free (macho_t *macho)
  */
 macho_t *macho_load (const char *filename)
 {
-    file_t      *file = NULL;
+    g_autoptr (file_t) file = NULL;
     macho_t     *macho = NULL;
 
     if (filename) {
         debugf ("macho.c: reading Mach-O from filename: %s\n", filename);
 
         file = file_load (filename);
-        if (file->size <= 0) {
-            errorf ("File could not be loaded properly: %d", file->size);
+        if (file_get_length (file) <= 0) {
+            errorf ("File could not be loaded properly: %d", file_get_length (file));
             macho_free (macho);
             return NULL;
         } 
 
         debugf ("macho.c: creating Mach-O struct\n");
-        macho = macho_create_from_buffer (file_load_bytes (file, file->size, 0));
+        /*
+         * WARNING: It's another leak
+         * what lifetime should the buffer have?
+         * who owns it?
+         * Answers on a postcard please
+         */
+        macho = macho_create_from_buffer (file_dup_data (file, 0, file_get_length (file)));
 
         if (macho == NULL) {
             errorf ("Error creating Mach-O: NULL\n");

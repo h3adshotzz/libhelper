@@ -55,8 +55,12 @@ int _libhelper_macho_tests (const char *path)
 {
     //macho_t *macho = macho_load (path);
 
-    file_t *f = file_load (path);
-    macho_t *macho = macho_create_from_buffer (file_load_bytes (f, f->size, 0));
+    g_autoptr (file_t) f = file_load (path);
+    /* 
+     * We _know_ macho and f have the same lifetime so we should be able to
+     * get away with not duping
+     */
+    macho_t *macho = macho_create_from_buffer (file_get_data (f, 0));
 
 
     if (!macho)

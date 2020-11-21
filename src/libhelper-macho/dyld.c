@@ -45,8 +45,11 @@ dyld_cache_t *dyld_cache_create_from_file (file_t *file)
 
     dyld->path = file->path;
 
-    dyld->size = file->size;
-    dyld->data = (uint8_t *) file_load_bytes (file, dyld->size, 0);
+    dyld->size = file_get_length (file);
+    /* TODO: If we can guarntee file lives as long as dyld then this can
+     * be a simple file_get_data (so no malloc)
+     */
+    dyld->data = (uint8_t *) file_dup_data (file, 0, dyld->size);
     
     // Check we are 100% using a dyld_shared_cache
 
@@ -60,17 +63,16 @@ dyld_cache_t *dyld_cache_create_from_file (file_t *file)
 
 dyld_cache_t *dyld_cache_load (const char *filename)
 {
+    /* Ownership seems to move to dyld so won't leak _most_ of the time */
     file_t          *file = NULL;
     dyld_cache_t    *dyld = NULL; 
-    uint32_t         size = 0;
-    unsigned char   *data = NULL;
 
     if (filename) {
 
         debugf ("Reading dyld_cache from filename: %s\n", filename);
 
         file = file_load (filename);
-        if (file->size == 0) {
+        if (file_get_length (file) == 0) {
             errorf ("File not loaded properly\n");
             dyld_cache_free (dyld);
             return NULL;
@@ -99,7 +101,7 @@ void *dyld_load_bytes (dyld_cache_t *dyld, size_t size, uint32_t offset)
 
 void dyld_cache_free (dyld_cache_t *dyld)
 {
-    dyld = NULL;
+    g_clear_pointer (&dyld->data, g_free);
     free (dyld);
 }
 

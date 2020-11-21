@@ -105,8 +105,7 @@ struct fat_arch *swap_fat_arch_bytes (struct fat_arch *a)
  */
 fat_header_info_t *mach_universal_load (file_t *file)
 {
-	uint32_t size = file->size;
-    unsigned char *data = (unsigned char *) file_load_bytes (file, size, 0);
+    const unsigned char *data = file_get_data (file, 0);
 
     // Create the FAT header so we can read some data from
     // the file. The header starts at 0x0 in the file. It

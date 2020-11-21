@@ -28,14 +28,14 @@
 
 file_t *file_create ()
 {
-	file_t *file = malloc (sizeof (file_t));
-	memset (file, '\0', sizeof (file_t));
+	file_t *file = g_new0 (file_t, 1);
 	return file;
 }
 
 
 file_t *file_load (const char *path)
 {
+	g_autoptr (GError) error = NULL;
 	file_t *file = file_create ();
 
 	/* set the file path */
@@ -43,38 +43,30 @@ file_t *file_load (const char *path)
 		//errorf ("File path is not valid\n");
 		return NULL;
 	}
-	file->path = (char *) path;
+	file->path = g_strdup (path);
 
 	/* load the file */
-	file->desc = fopen (file->path, "rb");
-	if (!file->desc) {
+	file->data = g_mapped_file_new (file->path, FALSE, &error);
+	if (!file->data) {
+		/* maybe do something with error here? */
 		//errorf ("File could not be loaded\n");
 		return NULL;
 	}
 	
-	/* calculate file size */
-	fseek (file->desc, 0, SEEK_END);
-	file->size = ftell (file->desc);
-	fseek (file->desc, 0, SEEK_SET);
-	
-	if (file->size)
+	if (g_mapped_file_get_length (file->data)) {
 		return file;
-	else
+	} else {
+		g_clear_pointer (&file, file_free);
 		return NULL;
-}
-
-
-void file_close (file_t *file)
-{
-	fclose (file->desc);
-	file_free (file);
+	}
 }
 
 
 void file_free (file_t *file)
 {
-	file = NULL;
-	free (file);
+	g_clear_pointer (&file->path, g_free);
+	g_clear_pointer (&file->data, g_mapped_file_unref);
+	g_free (file);
 }
 
 
@@ -91,12 +83,69 @@ int file_write_new (char *filename, unsigned char *buf, size_t size)
 }
 
 
-char *file_load_bytes (file_t *f, size_t size, uint32_t offset)
+/**
+ * file_get_data:
+ * @f: the #file_t
+ * 
+ * Returns: the length of @f's data
+ */
+size_t
+file_get_length (file_t *f)
 {
-	char *buf = malloc (size);
+	g_return_val_if_fail (f != NULL && f->data != NULL, 0);
 
-	fseek (f->desc, offset, SEEK_SET);
-	fread (buf, size, 1, f->desc);
+	return g_mapped_file_get_length (f->data);
+}
+
+
+
+/**
+ * file_get_data:
+ * @f: the #file_t to read from
+ * @offset: where in the file to start
+ * 
+ * Returns: (transfer none): the contents starting at @offset
+ */
+const void *
+file_get_data (file_t *f, uint32_t offset)
+{
+	g_return_val_if_fail (f != NULL && f->data != NULL, NULL);
+
+	return g_mapped_file_get_contents (f->data) + offset;
+}
+
+
+/**
+ * file_read_data:
+ * @f: the #file_t to read from
+ * @offset: where in the file to start
+ * @buf: (out caller-allocates): where to memcpy() to
+ * @size: how much to read
+ */
+void
+file_read_data (file_t *f, uint32_t offset, void *buf, size_t size)
+{
+	g_return_if_fail (f != NULL && f->data != NULL);
+	g_return_if_fail (g_mapped_file_get_length (f->data) <= offset + size);
+
+	memcpy (buf, file_get_data (f, offset), size);
+}
+
+
+/**
+ * file_dup_data:
+ * @f: the #file_t to read from
+ * @offset: where in the file to start
+ * @size: how much to read
+ * 
+ * Returns: (transfer full): the contents
+ */
+void *
+file_dup_data (file_t *f, uint32_t offset, size_t size)
+{
+	void *buf = malloc (size);
+
+	file_read_data (f, offset, buf, size);
 
 	return buf;
 }
