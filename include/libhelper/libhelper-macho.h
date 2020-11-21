@@ -127,6 +127,7 @@ typedef int                 cpu_threadtype_t;
 #ifdef __APPLE__
 #	define OSSwapInt32(x) 	 _OSSwapInt32(x)
 #else
+#   include <byteswap.h>
 #	define OSSwapInt32(x)	bswap_32(x)
 #endif
 
@@ -425,13 +426,11 @@ typedef struct load_command         mach_load_command_t;
  *  and the offset of the command within the Mach-O.
  * 
  */
-#warning "The use of `type` within __libhelper_mach_command_info is deprecated and will soon be removed!"
 struct __libhelper_mach_command_info {
     mach_load_command_t     *lc;    /* load command */
 
     uint32_t        offset;         /* offset in the Mach-O */
     uint32_t        index;          /* index in the LC list */
-    uint32_t        type;           /* type of LC (DEPRECATED) */
 };
 // libhelper-macho alias
 typedef struct __libhelper_mach_command_info    mach_load_command_info_t;
@@ -447,8 +446,6 @@ extern mach_load_command_t      *mach_load_command_create           ();
 extern mach_load_command_info_t *mach_load_command_info_create      ();
 extern mach_load_command_info_t *mach_load_command_info_load        (unsigned char *data, uint32_t offset);
 
-#warning "The use of mach_load_command_info_print() and mach_load_command_print() is deprecated and will soon be removed"
-extern void                      mach_load_command_info_print       (mach_load_command_info_t *cmd);
 extern void                      mach_load_command_print            (void *cmd, int flag);
 extern char                     *mach_load_command_get_string       (mach_load_command_t *lc);
 
