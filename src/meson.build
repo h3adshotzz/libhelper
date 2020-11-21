@@ -23,4 +23,5 @@ sources = [
 
 libhelper_lib = library('libhelper', sources,
                         include_directories: libhelper_inc,
+                               dependencies: [glib_dep],
                                     install: true)
