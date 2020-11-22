@@ -115,6 +115,21 @@ void *macho_load_bytes (macho_t *macho, size_t size, uint32_t offset)
 
 
 /**
+ *  Load bytes from a Mach-O for a given size from an offset
+ * 
+ *  @macho:         the #macho_t to load from.
+ *  @offset:        to start copying from.
+ *  @buffer:        (out caller-allocates): where to put the bytes
+ *  @size:          amount of bytes to copy.    
+ *    
+ */
+void macho_dup_bytes (macho_t *macho, uint32_t offset, void *buffer, size_t size)
+{
+    memcpy (buffer, macho->data + offset, size);
+}
+
+
+/**
  *  Loads a Mach-O from a given buffer into a `macho_t`
  * 
  *  @param          data to load.
