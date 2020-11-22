@@ -93,6 +93,23 @@ struct fat_arch *swap_fat_arch_bytes (struct fat_arch *a)
 
 
 /**
+ *  Function:   swap_fat_header_bytes
+ *  ------------------------------------
+ * 
+ *  Swaps the bytes of a fat_header_t. 
+ * 
+ *  returns:    A swapped fat_header_t struct.
+ * 
+ */
+fat_header_t *swap_fat_header_bytes (fat_header_t *h)
+{
+    h->magic = OSSwapInt32(h->magic);
+    h->nfat_arch = OSSwapInt32(h->nfat_arch);
+    return h;
+}
+
+
+/**
  *  Function:   mach_universal_load
  *  ----------------------------------
  * 

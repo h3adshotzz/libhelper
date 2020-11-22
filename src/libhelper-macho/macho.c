@@ -75,6 +75,11 @@ macho_t *macho_load (const char *filename)
         debugf ("macho.c: reading Mach-O from filename: %s\n", filename);
 
         file = file_load (filename);
+        if (!file) {
+            free (file);
+            return NULL;
+        }
+
         if (file->size <= 0) {
             errorf ("File could not be loaded properly: %d", file->size);
             macho_free (macho);
