@@ -115,35 +115,20 @@ mach_load_command_t *mach_load_command_create ()
 
 /**
  * 
- * 
  */
-mach_load_command_info_t *mach_load_command_info_create ()
+mach_load_command_info_t *mach_load_command_info_load (const char *data, uint32_t offset)
 {
-    mach_load_command_info_t *ret = malloc (sizeof (mach_load_command_t));
-    memset (ret, '\0', sizeof (mach_load_command_info_t));
-    return ret;
-}
-
-
-/**
- * 
- */
-mach_load_command_info_t *mach_load_command_info_load (unsigned char *data, uint32_t offset)
-{
-    mach_load_command_t *lc = mach_load_command_create ();
-    mach_load_command_info_t *lc_inf = mach_load_command_info_create ();
+    mach_load_command_info_t *lc_inf = calloc (1, sizeof (mach_load_command_info_t));
 
     // loads bytes from `data[offset]`.
-    memcpy (lc, data + offset, sizeof (mach_load_command_t));
-    if (!lc) {
+    lc_inf->lc = (mach_load_command_t *) (data + offset);
+    if (!lc_inf->lc) {
         errorf ("mach_load_command_info_load(): Could not load LC: 0x%08x\n", offset);
         return NULL;
     }
 
     // fill the lc_inf struct
     lc_inf->offset = offset;
-    lc_inf->type = lc->cmd;
-    lc_inf->lc = lc;
 
     return lc_inf;
 }

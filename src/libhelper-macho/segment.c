@@ -29,41 +29,16 @@
 
 
 /**
- * 
- */
-mach_segment_command_64_t *mach_segment_command_create ()
-{
-    mach_segment_command_64_t *ret = malloc (sizeof (mach_segment_command_64_t));
-    memset (ret, '\0', sizeof (mach_segment_command_64_t));
-    return ret;
-}
-
-
-/**
- * 
- */
-mach_segment_info_t *mach_segment_info_create ()
-{
-    mach_segment_info_t *ret = malloc (sizeof (mach_segment_info_t));
-    memset (ret, '\0', sizeof (mach_segment_info_t));
-    return ret;
-}
-
-
-/**
- * 
+ *  NOTE: Change to const and const char
  */
 mach_segment_command_64_t *mach_segment_command_load (unsigned char *data, uint32_t offset)
 {
-    mach_segment_command_64_t *sc = mach_segment_command_create ();
-    memset (sc, '\0', sizeof (mach_segment_command_64_t));
-    memcpy (sc, data + offset, sizeof (mach_segment_command_64_t));
+    mach_segment_command_64_t *sc = (mach_segment_command_64_t *) (data + offset);
 
     if (!sc) {
-        errorf ("mach_segment_command_load(): Could not load Segment Command at offset: 0x%08x\n", offset);
+        errorf ("mach_segment_command_load(): could not load segment command at offset: 0x%08x\n", offset);
         return NULL;
     }
-
     return sc;
 }
 
@@ -73,7 +48,7 @@ mach_segment_command_64_t *mach_segment_command_load (unsigned char *data, uint3
  */
 mach_segment_info_t *mach_segment_info_load (unsigned char *data, uint32_t offset)
 {
-    mach_segment_info_t *seg_inf = mach_segment_info_create ();
+    mach_segment_info_t *seg_inf = calloc (1, sizeof (mach_segment_info_t));
     mach_segment_command_64_t *seg = mach_segment_command_load (data, offset);
 
     // check the segment is valid

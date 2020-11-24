@@ -31,25 +31,11 @@
 /**
  * 
  */
-mach_section_64_t *mach_section_create ()
-{
-    mach_section_64_t *ret = malloc (sizeof(mach_section_64_t));
-    memset (ret, '\0', sizeof(mach_section_64_t));
-    return ret;
-}
-
-
-/**
- * 
- */
 mach_section_64_t *mach_section_load (unsigned char *data, uint32_t offset)
 {
-    mach_section_64_t *sect = mach_section_create ();
-    memcpy (sect, data + offset, sizeof (mach_section_64_t));
+    mach_section_64_t *sect = (mach_section_64_t *) (data + offset);
 
-    if (sect == NULL) {
-        errorf ("There was a problme loading the section at offset 0x%x\n");
-    }
+    if (sect == NULL) errorf ("mach_section_load(): could not load section at offset: 0x%08x\n", offset);
     return sect;
 }
 
@@ -61,15 +47,15 @@ mach_section_64_t *mach_section_from_segment_info (mach_segment_info_t *info, ch
 {
     // Check the sectname given is valid
     if (!sectname || strlen(sectname) > 16) {
-        debugf ("[*] Section name not valid\n");
-        exit (0);
+        debugf ("section.c: mach_section_from_segment_info(): section name not valid\n");
+        return NULL;
     }
 
     // Check the length of the sections
     int c = h_slist_length (info->sects);
     if (!c) {
-        debugf ("[*] Error: No Sections\n");
-        exit (0);
+        debugf ("section.c: mach_section_from_segment_info(): no sections\n");
+        return NULL;
     }
 
     // Go through each of them, look for `sectname`
@@ -120,10 +106,6 @@ mach_section_info_t *mach_section_info_from_name (macho_t *macho, char *segment,
     ret->sectname = sect->sectname;
     ret->size = sect->size;
     ret->addr = sect->offset;
-
-    ret->data = malloc (sect->size);
-    memset (ret->data, '\0', sect->size);
-    memcpy (ret->data, macho->data + sect->offset, sect->size);
 
     return ret;
 }

@@ -25,6 +25,11 @@
 //===------------------------------------------------------------------===//
 
 #include "libhelper/libhelper.h"
+#include <fcntl.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 file_t *file_create ()
 {
@@ -40,34 +45,29 @@ file_t *file_load (const char *path)
 
 	/* set the file path */
 	if (!path) {
-		//errorf ("File path is not valid\n");
+		//error ("File path is not valid\n");
 		return NULL;
 	}
-	file->path = (char *) path;
+	file->path = strdup (path);
 
-	/* load the file */
-	file->desc = fopen (file->path, "rb");
-	if (!file->desc) {
-		//errorf ("File could not be loaded\n");
+	/* create the file descriptor */
+	FILE *fd = open (file->path, O_RDONLY);
+
+	/* calculate the file file */
+	struct stat st;
+	fstat (fd, &st);
+	file->size = st.st_size;
+
+	/* mmap() the file */
+	file->data = mmap (NULL, file->size, PROT_READ, MAP_PRIVATE, fd, 0);
+	close (fd);
+
+	if (file->data == MAP_FAILED) {
+		errorf ("file_load(): mapping failed: %d\n", errno);
 		return NULL;
 	}
 	
-	/* calculate file size */
-	fseek (file->desc, 0, SEEK_END);
-	file->size = ftell (file->desc);
-	fseek (file->desc, 0, SEEK_SET);
-	
-	if (file->size)
-		return file;
-	else
-		return NULL;
-}
-
-
-void file_close (file_t *file)
-{
-	fclose (file->desc);
-	file_free (file);
+	return (file->data) ? file : NULL;
 }
 
 
@@ -91,12 +91,24 @@ int file_write_new (char *filename, unsigned char *buf, size_t size)
 }
 
 
-char *file_load_bytes (file_t *f, size_t size, uint32_t offset)
+const void *
+file_get_data (file_t *f, uint32_t offset)
 {
-	char *buf = malloc (size);
+	return (void *) f->data + offset;
+}
 
-	fseek (f->desc, offset, SEEK_SET);
-	fread (buf, size, 1, f->desc);
 
+void
+file_read_data (file_t *f, uint32_t offset, void *buf, size_t size)
+{
+	memcpy (buf, file_get_data (f, offset), size);
+}
+
+
+void *
+file_dup_data (file_t *f, uint32_t offset, size_t size)
+{
+	void *buf = malloc (size);
+	file_read_data (f, offset, buf, size);
 	return buf;
 }

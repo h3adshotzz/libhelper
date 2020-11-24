@@ -34,18 +34,6 @@
 /*-- Mach-O                              									 --*/
 //===-----------------------------------------------------------------------===//
 
-/**
- *  Create a `macho_t` structure.
- *  
- *  @returns        `macho_t` structure.
- */
-macho_t *macho_create ()
-{
-    macho_t *ret = malloc (sizeof (macho_t));
-    memset (ret, '\0', sizeof (macho_t));
-    return ret;
-}
-
 
 /**
  *  Free a `macho_t` structure.
@@ -82,7 +70,7 @@ macho_t *macho_load (const char *filename)
         } 
 
         debugf ("macho.c: creating Mach-O struct\n");
-        macho = macho_create_from_buffer (file_load_bytes (file, file->size, 0));
+        macho = macho_create_from_buffer (file_get_data (file, 0));
 
         if (macho == NULL) {
             errorf ("Error creating Mach-O: NULL\n");
@@ -123,7 +111,8 @@ void *macho_load_bytes (macho_t *macho, size_t size, uint32_t offset)
  */
 macho_t *macho_create_from_buffer (unsigned char *data)
 {
-    macho_t *macho = macho_create ();
+    // zero out some memory for macho.
+    macho_t *macho = calloc (1, sizeof (macho_t));
 
     macho->data = (uint8_t *) data;
     macho->offset = 0;
@@ -156,13 +145,14 @@ macho_t *macho_create_from_buffer (unsigned char *data)
     // we'll search through every load command and sort them
     for (int i = 0; i < (int) macho->header->ncmds; i++) {
         mach_load_command_info_t *lc = mach_load_command_info_load (macho->data, offset);
+        uint32_t type = lc->lc->cmd;
 
         /**
          *  Different types of Load Command are sorted into one of the three 
          *  lists defined above: scmds, lcmds and dylibs.
          */
-        if (lc->type == LC_SEGMENT || lc->type == LC_SEGMENT_64) {
-            if (lc->type == LC_SEGMENT) {
+        if (type == LC_SEGMENT || type == LC_SEGMENT_64) {
+            if (type == LC_SEGMENT) {
                 warningf ("macho_create_from_buffer(): Found LC_SEGMENT, 32 bit Mach-O's are not supported for parsing\n");
                 continue;
             }
@@ -176,8 +166,8 @@ macho_t *macho_create_from_buffer (unsigned char *data)
 
             // add to segments lists
             scmds = h_slist_append (scmds, seginf);
-        } else if (lc->type == LC_ID_DYLIB || lc->type == LC_LOAD_DYLIB ||
-                   lc->type == LC_LOAD_WEAK_DYLIB || lc->type == LC_REEXPORT_DYLIB) {
+        } else if (type == LC_ID_DYLIB || type == LC_LOAD_DYLIB ||
+                   type == LC_LOAD_WEAK_DYLIB || type == LC_REEXPORT_DYLIB) {
             /**
              *  Because a Mach-O  can have multiple dynamically linked libraries which
              *  means there are multiple LC_DYLIB-like commands, so it's easier that

@@ -431,7 +431,6 @@ struct __libhelper_mach_command_info {
 
     uint32_t        offset;         /* offset in the Mach-O */
     uint32_t        index;          /* index in the LC list */
-    uint32_t        type;           /* type of LC (DEPRECATED) */
 };
 // libhelper-macho alias
 typedef struct __libhelper_mach_command_info    mach_load_command_info_t;
@@ -445,7 +444,7 @@ typedef struct __libhelper_mach_command_info    mach_load_command_info_t;
 extern mach_load_command_t      *mach_load_command_create           ();
 
 extern mach_load_command_info_t *mach_load_command_info_create      ();
-extern mach_load_command_info_t *mach_load_command_info_load        (unsigned char *data, uint32_t offset);
+extern mach_load_command_info_t *mach_load_command_info_load        (const char *data, uint32_t offset);
 
 #warning "The use of mach_load_command_info_print() and mach_load_command_print() is deprecated and will soon be removed"
 extern void                      mach_load_command_info_print       (mach_load_command_info_t *cmd);
@@ -552,24 +551,20 @@ struct __libhelper_mach_section_info {
     uint32_t         size;
     char            *segname;
     char            *sectname;
-    char            *data;
 };
 typedef struct __libhelper_mach_section_info                mach_section_info_t;
 
 
 // Functions
-extern mach_segment_command_64_t    *mach_segment_command_create        ();
 extern mach_segment_command_64_t    *mach_segment_command_load          (unsigned char *data, uint32_t offset);
 extern mach_segment_command_64_t    *mach_segment_command_from_info     (mach_segment_info_t *info);
 
-extern mach_segment_info_t          *mach_segment_info_create           ();
 extern mach_segment_info_t          *mach_segment_info_load             (unsigned char *data, uint32_t offset);
 extern mach_segment_info_t          *mach_segment_info_search           (HSList *segments, char *segname);
 
 extern char                         *mach_segment_vm_protection         (vm_prot_t prot);
 
 
-extern mach_section_64_t            *mach_section_create                ();
 extern mach_section_64_t            *mach_section_load                  (unsigned char *data, uint32_t offset);
 extern mach_section_64_t            *mach_section_from_segment_info     (mach_segment_info_t *info, char *sectname);
 extern mach_section_64_t            *mach_find_section_command_at_index (HSList *segments, int index);

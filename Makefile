@@ -59,6 +59,8 @@ all: library version tests #toolset
 
 ############################################################
 
+# add -O3 and lto for release builds
+
 .PHONY: libhelper
 
 $(BUILD_DIR)/libhelper.1.dylib: $(OBJ)
@@ -101,14 +103,13 @@ $(BUILD_DIR)/libhelper-general:
 	@mkdir -p "$(@D)"
 	$(info [ TEST ] Building libhelper-general)
 	$(CC) $(CFLAGS) tests/libhelper-general.c -o $(BUILD_DIR)/test-libhelper-general build/libhelper.a
-	dsymutil $(BUILD_DIR)/test-libhelper-general
+	#dsymutil $(BUILD_DIR)/test-libhelper-general
 
 $(BUILD_DIR)/libhelper-macho:
 	@mkdir -p "$(@D)"
 	$(info [ TEST ] Building libhelper-macho)
 	$(CC) $(CFLAGS) tests/libhelper-macho.c -o $(BUILD_DIR)/test-libhelper-macho build/libhelper.a
-	dsymutil $(BUILD_DIR)/test-libhelper-macho
-
+	#dsymutil $(BUILD_DIR)/test-libhelper-macho
 
 #$(BUILD_DIR)/tests: $(TESTS_)#
 #	@mkdir -p "$(@D)"

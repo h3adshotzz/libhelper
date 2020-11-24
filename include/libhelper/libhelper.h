@@ -58,17 +58,26 @@ extern int			 libhelper_is_debug			();
  *
  */
 struct __libhelper_file {
-	FILE		*desc;			/* loaded file */
-	size_t		 size;			/* loaded file size */
-	char		*path;			/* laoded file path */
+	char			*path;		/* loaded file path */
+	size_t			 size;		/* loaded file size */
+	unsigned char	*data;		/* mmaped() file */
 };
 typedef struct __libhelper_file		file_t;
 
-// Functions for creating and opening a file
-extern file_t 		*file_create ();
-extern file_t 		*file_load (const char *path);
-extern void 		 file_close (file_t *file);
-extern void 		 file_free (file_t *file);
+// Functions for handling files
+extern file_t			*file_create	();
+extern file_t			*file_load		(const char *path);
+extern void				 file_close		(file_t *file);
+extern void				 file_free		(file_t *file);
+
+extern const void *
+file_get_data (file_t *f, 
+			   uint32_t);
+
+extern int
+file_write_new (char *filename, 
+				unsigned char *buf, 
+				size_t size);
 
 
 /**
@@ -77,30 +86,6 @@ extern void 		 file_free (file_t *file);
 #define		LH_FILE_FAILURE			0x0
 #define 	LH_FILE_SUCCESS			0x1
 
-
-/**
- *	Create and write a new file at the path with the given data and file
- *	size.
- *
- *	@param 		filepath to write the new file to.
- *	@param		data to write to the new file
- *	@param		amount of bytes from the data to write to the file
- *
- *	@return		result flag, either LH_FILE_SUCCESS or LH_FILE_FAILURE.
- */
-extern int			file_write_new (char *filename, unsigned char *buf, size_t size);
-
-
-/**
- *	Load a set amount of bytes from the given offset of a file.
- *
- *	@param		file to read from
- *	@param		amount of bytes to read
- *	@param		offset to begin reading from.
- *
- *	@return 	bytes read from the file, OR NULL if there was a failure.
- */
-extern char		*file_load_bytes (file_t *f, size_t size, uint32_t offset);
 
 /* End of libhelper-file */
 

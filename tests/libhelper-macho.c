@@ -38,7 +38,7 @@ void __libhelper_macho_command_print_test (mach_load_command_info_t *inf, mach_l
 {
     if (inf) {
         debugf ("--- Meta:\n");
-        debugf ("  Type:\t0x%x\n", inf->type);
+        debugf ("  Type:\t0x%x\n", inf->lc->cmd);
         debugf ("Offset:\t0x%llx\n", inf->offset);
 
         if (!lc)
@@ -54,7 +54,10 @@ int _libhelper_macho_tests (const char *path)
     //macho_t *macho = macho_load (path);
 
     file_t *f = file_load (path);
-    macho_t *macho = macho_create_from_buffer (file_load_bytes (f, f->size, 0));
+
+    unsigned char *test = (unsigned char *) file_get_data (f, 0);
+
+    macho_t *macho = macho_create_from_buffer (file_get_data (f, 0));
 
 
     if (!macho)
@@ -90,8 +93,7 @@ int _libhelper_macho_tests (const char *path)
 
             if (h_slist_length (info->sects)) {
                 for (int k = 0; k < (int) h_slist_length (info->sects); k++) {
-                    mach_section_64_t *sect64 = mach_section_create ();
-                    sect64 = (mach_section_64_t *) h_slist_nth_data (info->sects, k);
+                    mach_section_64_t *sect64 = (mach_section_64_t *) h_slist_nth_data (info->sects, k);
 
                     // this should be pre-set names for known sections 
                     //char *__placeholder_text = "(placeholder)";
