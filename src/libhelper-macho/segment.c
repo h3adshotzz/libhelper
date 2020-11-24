@@ -59,13 +59,14 @@ mach_segment_info_t *mach_segment_info_load (unsigned char *data, uint32_t offse
 
     // the section commands are placed directly after the segment command
     uint32_t sectoff = offset + sizeof (mach_segment_command_64_t);
-    debugf ("mach_segment_info_load(): seg->nsect: %d\n", seg->nsects);
+    //debugf ("mach_segment_info_load(): seg->nsect: %d\n", seg->nsects);
     for (int i = 0; i < seg->nsects; i++) {
         mach_section_64_t *sect = mach_section_load (data, sectoff);
         seg_inf->sects = h_slist_append (seg_inf->sects, sect);
         sectoff += sizeof (mach_section_64_t);
     }
 
+    seg_inf->offset = offset;
     seg_inf->segcmd = seg;
     return seg_inf;
 }

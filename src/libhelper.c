@@ -32,6 +32,21 @@ int libhelper_is_debug ()
 	return LIBHELPER_DEBUG;
 }
 
+char *libhelper_get_version_long ()
+{
+    return LIBHELPER_VERSION_LONG;
+}
+
+char *libhelper_get_version ()
+{
+    return LIBHELPER_VERSION;
+}
+
+char *libhelper_get_version_with_arch ()
+{
+    return LIBHELPER_VERS_WITH_ARCH;
+}
+
 char *libhelper_version_string ()
 {
     return BUILD_TARGET_CAP " Libhelper " LIBHELPER_VERSION "; " __TIMESTAMP__ "; " LIBHELPER_VERS_WITH_ARCH;

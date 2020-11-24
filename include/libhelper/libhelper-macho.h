@@ -127,6 +127,7 @@ typedef int                 cpu_threadtype_t;
 #ifdef __APPLE__
 #	define OSSwapInt32(x) 	 _OSSwapInt32(x)
 #else
+#   include <byteswap.h>
 #	define OSSwapInt32(x)	bswap_32(x)
 #endif
 
@@ -141,7 +142,7 @@ typedef int                 cpu_threadtype_t;
  */
 #define CPU_ARCH_MASK           0xff000000          /* mask for architecture bits */
 #define CPU_ARCH_ABI64          0x01000000          /* 64 bit ABI */
-#define CPU_ARCH_ABI64_32       0x02000000          /* ABI for 64-bit hardware with 32-bit types.
+#define CPU_ARCH_ABI64_32       0x02000000          /* ABI for 64-bit hardware with 32-bit types. */
 
 #define CPU_SUBTYPE_MASK        0xff000000          /* mask for feature flags */
 #define CPU_SUBTYPE_LIB64       0x80000000          /* 64 bit libraries */
@@ -374,7 +375,7 @@ extern mach_header_t            *mach_header_load                   (macho_t *ma
 extern mach_header_type_t        mach_header_verify                 (uint32_t magic);
 
 extern char                     *mach_header_read_cpu_type          (cpu_type_t type);
-extern char                     *mach_header_read_cpu_subtype       (cpu_subtype_t type);
+extern char                     *mach_header_read_cpu_subtype       (cpu_type_t type, cpu_subtype_t subtype);
 extern char                     *mach_header_read_file_type         (uint32_t type);
 extern char                     *mach_header_read_file_type_short   (uint32_t type);
 
@@ -385,7 +386,13 @@ extern macho_t                  *macho_create                       ();
 extern macho_t                  *macho_create_from_buffer           (unsigned char *data);
 
 extern macho_t                  *macho_load                         (const char *filename);
+#warning "mach_load_bytes is deprecated. Do not continue to use"
 extern void                     *macho_load_bytes                   (macho_t *macho, size_t size, uint32_t offset);
+
+extern void                      machp_dup_bytes                    (macho_t    *macho,
+                                                                     uint32_t    offset,
+                                                                     void       *buffer,
+                                                                     size_t      size);
 
 // TODO: NOTE: MUST MOVE TO SEPARATE HEADER
 #define FAT(p) ((*(unsigned int *)(p) & ~1) == 0xbebafeca)
@@ -425,7 +432,6 @@ typedef struct load_command         mach_load_command_t;
  *  and the offset of the command within the Mach-O.
  * 
  */
-#warning "The use of `type` within __libhelper_mach_command_info is deprecated and will soon be removed!"
 struct __libhelper_mach_command_info {
     mach_load_command_t     *lc;    /* load command */
 
@@ -446,10 +452,10 @@ extern mach_load_command_t      *mach_load_command_create           ();
 extern mach_load_command_info_t *mach_load_command_info_create      ();
 extern mach_load_command_info_t *mach_load_command_info_load        (const char *data, uint32_t offset);
 
-#warning "The use of mach_load_command_info_print() and mach_load_command_print() is deprecated and will soon be removed"
-extern void                      mach_load_command_info_print       (mach_load_command_info_t *cmd);
 extern void                      mach_load_command_print            (void *cmd, int flag);
 extern char                     *mach_load_command_get_string       (mach_load_command_t *lc);
+
+extern mach_load_command_info_t *mach_lc_find_given_cmd             (macho_t *macho, int cmd);  
 
 
 /***********************************************************************
@@ -511,6 +517,7 @@ typedef struct segment_command mach_segment_command_32_t;
  */
 struct __libhelper_mach_segment_info {
     mach_segment_command_64_t       *segcmd;            /* segment command */
+    uint32_t                         offset;            /* offset in Mach-O */
     uint64_t                         padding;
     HSList                          *sects;             /* list of sections */
 };
@@ -569,6 +576,10 @@ extern mach_section_64_t            *mach_section_load                  (unsigne
 extern mach_section_64_t            *mach_section_from_segment_info     (mach_segment_info_t *info, char *sectname);
 extern mach_section_64_t            *mach_find_section_command_at_index (HSList *segments, int index);
 
+extern mach_section_info_t          *mach_section_info_from_name        (macho_t *macho, char *segment, char *section);
+
+extern char                         *mach_lc_load_str                   (macho_t *macho, uint32_t cmdsize, uint32_t struct_size, 
+                                                                         off_t cmd_offset, off_t str_offset);
 
 /***********************************************************************
 * Mach-O Other Load Commands.
@@ -972,6 +983,29 @@ struct rpath_command {
 // libhelper-macho alias
 typedef struct rpath_command                mach_rpath_command_t;
 
+/////////////////////////////////////////////////////////////////////////////////
+
+/**
+ *  The LC_FILESET_ENTRY command describes constituent Mach-O files that are part
+ *  of what Apple calls a "fileset". Entries are their own Mach-O files, for example
+ *  dylibs, with their own headers nad text, data segments. Each entry is further
+ *  described by it's own header.
+ * 
+ */
+struct fileset_entry_command {
+    uint32_t        cmd;            /* LC_FILESET_ENTRY */
+    uint32_t        cmdsize;        /* size, including entry_id strings */
+    uint64_t        vmaddr;         /* memory address of the entry */
+    uint64_t        fileoff;        /* file offset of the entry */
+
+    uint32_t        offset;         /* contained entry_id */
+#ifndef __LP64__
+    char           *ptr;
+#endif  
+    uint32_t        reserved;       /* reserved */
+};
+// libhelper-macho alias
+typedef struct fileset_entry_command        mach_fileset_entry_t;
 
 /***********************************************************************
 * Mach-O Static Symbol Load Commands.
@@ -1049,6 +1083,9 @@ extern mach_symtab_command_t        *mach_symtab_command_load       (macho_t *ma
 extern mach_symbol_table_t          *mach_symtab_load_symbols       (macho_t *macho, mach_symtab_command_t *symbol_table);
 extern char                         *mach_symtab_find_symbol_name   (macho_t *macho, nlist *sym, mach_symtab_command_t *cmd);
 
+extern char                         *mach_symtab_find_symbol_name   (macho_t *macho, nlist *sym, mach_symtab_command_t *cmd);
+
+extern mach_symtab_command_t        *mach_lc_find_symtab_cmd        (macho_t *macho);
 
 /***********************************************************************
 * Mach-O Dynamic Symbol Load Commands.
@@ -1178,6 +1215,17 @@ struct dysymtab_command {
 };
 // libhelper-macho alias
 typedef struct dysymtab_command         mach_dysymtab_command_t;
+
+
+// Functions
+extern mach_dysymtab_command_t              *mach_lc_find_dysymtab_cmd      (macho_t *macho);
+
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
 
 #ifdef cplusplus
 }

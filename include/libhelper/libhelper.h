@@ -41,7 +41,11 @@ extern "C" {
 #include <sys/mman.h>
 
 
+extern char			*libhelper_get_version 		();
 extern char 		*libhelper_version_string 	();
+extern char			*libhelper_get_version_long ();
+extern char 		*libhelper_get_version_with_arch ();
+
 extern int			 libhelper_is_debug			();
 
 /***********************************************************************

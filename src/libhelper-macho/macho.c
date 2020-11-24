@@ -63,6 +63,11 @@ macho_t *macho_load (const char *filename)
         debugf ("macho.c: reading Mach-O from filename: %s\n", filename);
 
         file = file_load (filename);
+        if (!file) {
+            free (file);
+            return NULL;
+        }
+
         if (file->size <= 0) {
             errorf ("File could not be loaded properly: %d", file->size);
             macho_free (macho);
@@ -99,6 +104,21 @@ void *macho_load_bytes (macho_t *macho, size_t size, uint32_t offset)
     void *ret = malloc (size);
     memcpy (ret, macho->data + offset, size);
     return ret;
+}
+
+
+/**
+ *  Load bytes from a Mach-O for a given size from an offset
+ * 
+ *  @macho:         the #macho_t to load from.
+ *  @offset:        to start copying from.
+ *  @buffer:        (out caller-allocates): where to put the bytes
+ *  @size:          amount of bytes to copy.    
+ *    
+ */
+void macho_dup_bytes (macho_t *macho, uint32_t offset, void *buffer, size_t size)
+{
+    memcpy (buffer, macho->data + offset, size);
 }
 
 
@@ -173,7 +193,36 @@ macho_t *macho_create_from_buffer (unsigned char *data)
              *  means there are multiple LC_DYLIB-like commands, so it's easier that
              *  there is a sperate list for DYLIB-related commands.
              */
-            
+
+            // dylib info struct
+            mach_dylib_command_info_t *dylibinfo = malloc (sizeof (mach_dylib_command_info_t));
+            uint32_t cmdsize = lc->lc->cmdsize;
+
+            // create the raw command
+            mach_dylib_command_t *raw = malloc (sizeof (mach_dylib_command_t));
+            memset (raw, '\0', sizeof (mach_dylib_command_t));
+            memcpy (raw, macho->data + offset, sizeof (mach_dylib_command_t));
+
+            // laod the name of the dylib. This is located after the load command
+            //  and is included in the cmdsize.
+            uint32_t nsize = cmdsize - sizeof(mach_dylib_command_t);
+            uint32_t noff = offset + raw->dylib.offset;
+
+            char *name = malloc (nsize);
+            memset (name, '\0', nsize);
+            memcpy (name, macho->data + noff, nsize);
+
+            // set the name, raw cmd struct and type
+            dylibinfo->name = name;
+            dylibinfo->dylib = raw;
+            dylibinfo->type = lc->lc->cmd;
+
+            // add the offset to the load command
+            lc->offset = offset;
+
+            // add them to both lists
+            dylibs = h_slist_append (dylibs, dylibinfo);
+            lcmds = h_slist_append (lcmds, lc);            
 
         } else {
             // set the offset of the command so we can find it again
@@ -297,6 +346,8 @@ mach_header_t *mach_header_load (macho_t *macho)
  */
 char *mach_header_read_cpu_type (cpu_type_t type)
 {
+    debugf ("macho.c: mach_header_read_cpu_type: type: %d\n", type);
+
     char *cpu_type = "";
     switch (type) {
         case CPU_TYPE_X86:
@@ -325,26 +376,34 @@ char *mach_header_read_cpu_type (cpu_type_t type)
 /**
  *  Grab a human-readable cpu subtype for a given subtype
  * 
+ *  @param              cputype
  *  @param              cpusubtype
  * 
  *  @returns            string representing given subtype
  */
-char *mach_header_read_cpu_sub_type (cpu_subtype_t type)
+char *mach_header_read_cpu_subtype (cpu_type_t type, cpu_subtype_t subtype)
 {
     char *cpu_subtype = "";
-    switch (type) {
+    if (type == CPU_TYPE_X86_64) {
+        return "x86_64";
+    } else if (type == CPU_TYPE_ARM64) {
+        switch (subtype) {
         case CPU_SUBTYPE_ARM64_ALL:
-            cpu_subtype = "arm64";
+            cpu_subtype = "arm64_all";
             break;
         case CPU_SUBTYPE_ARM64_V8:
             cpu_subtype = "arm64_v8";
             break;
         case CPU_SUBTYPE_ARM64E:
+        case CPU_SUBTYPE_PTRAUTH_ABI | CPU_SUBTYPE_ARM64E:
             cpu_subtype = "arm64e";
             break;
         default:
-            cpu_subtype = "unknown";
+            cpu_subtype = "unknown_arm64";
             break;
+        }
+    } else {
+        cpu_subtype = "unknown_x86";
     }
     return cpu_subtype;
 }
@@ -373,8 +432,12 @@ char *mach_header_read_file_type (uint32_t type)
         case MACH_TYPE_KEXT_BUNDLE:
             ret = "Mach Kernel Extension Bundle (MH_KEXT_BUNDLE)";
             break;
+        case MACH_TYPE_FILESET:
+            ret = "Mach File Set (MH_FILESET)";
+            break;
         default:
             ret = "Unknown";
+            warningf ("mach_header_read_file_type(): Unknown mach-o type: %d\n", type);
             break;
     }
     return ret;
@@ -400,6 +463,9 @@ char *mach_header_read_file_type_short (uint32_t type)
             break;
         case MACH_TYPE_DYLIB:
             ret = "Dynamic Library";
+            break;
+        case MACH_TYPE_FILESET:
+            ret = "File set";
             break;
         default:
             ret = "Unknown";

@@ -159,6 +159,27 @@ lc_string_failed:
 //===-----------------------------------------------------------------------===//
 
 /**
+ *  The Symtab command can stay here, but handling symbols
+ *  should be in symbols.c
+ */
+
+mach_load_command_info_t *mach_lc_find_given_cmd (macho_t *macho, int cmd)
+{
+    uint32_t size = (uint32_t) h_slist_length (macho->lcmds);
+    debugf ("load-commands.c: mach_lc_find_given_cmd(): macho->lcmds size: %d\n", size);
+
+    for (int i = 0; i < h_slist_length (macho->lcmds); i++) {
+        mach_load_command_info_t *tmp = (mach_load_command_info_t *) h_slist_nth_data (macho->lcmds, i);
+        debugf ("load-commands.c: mach_lc_find_given_cmd(): check %d %d\n", tmp->lc->cmd, cmd);
+        if (tmp->lc->cmd == (uint32_t) cmd) {
+            return tmp;
+        }
+    }
+    return NULL;
+}
+
+
+/**
  *  Find the LC_SOURCE_VERSION command from a given macho and construct a
  *  mach_source_version_command_t and return it.
  * 
@@ -174,7 +195,7 @@ mach_source_version_command_t *mach_lc_find_source_version_cmd (macho_t *macho)
     HSList *cmds = macho->lcmds;
     for (int i = 0; i < h_slist_length (cmds); i++) {
         mach_load_command_info_t *tmp = (mach_load_command_info_t *) h_slist_nth_data (cmds, i);
-        if (tmp->type == LC_SOURCE_VERSION) {
+        if (tmp->lc->cmd == LC_SOURCE_VERSION) {
             ret = (mach_source_version_command_t *) macho_load_bytes (macho, size, tmp->offset);
             
             if (!ret) {
@@ -188,6 +209,15 @@ mach_source_version_command_t *mach_lc_find_source_version_cmd (macho_t *macho)
 
     return NULL;
 }
+
+/**
+ * 
+ */
+char *mach_lc_load_str (macho_t *macho, uint32_t cmdsize, uint32_t struct_size, off_t cmd_offset, off_t str_offset)
+{
+    return macho_load_bytes (macho, cmdsize - struct_size, cmd_offset + str_offset);
+}
+
 
 /**
  *  Take a LC_SOURCE_VERSION command and unpack the version string.
@@ -411,7 +441,7 @@ mach_uuid_command_t *mach_lc_find_uuid_cmd (macho_t *macho)
     HSList *cmds = macho->lcmds;
     for (int i = 0; i < h_slist_length (cmds); i++) {
         mach_load_command_info_t *tmp = (mach_load_command_info_t *) h_slist_nth_data (cmds, i);
-        if (tmp->type == LC_UUID) {
+        if (tmp->lc->cmd == LC_UUID) {
             ret = (mach_uuid_command_t *) macho_load_bytes (macho, size, tmp->offset);
             
             if (!ret) {
@@ -458,3 +488,40 @@ char *mach_lc_uuid_string (mach_uuid_command_t *uuid)
 
 /////////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * 
+ */
+mach_symtab_command_t *mach_lc_find_symtab_cmd (macho_t *macho)
+{
+    size_t size = sizeof (mach_symtab_command_t);
+    mach_symtab_command_t *ret = malloc (size);
+    
+    mach_load_command_info_t *cmdinfo = mach_lc_find_given_cmd (macho, LC_SYMTAB);
+    if (cmdinfo) {
+        ret = (mach_symtab_command_t *) macho_load_bytes (macho, size, cmdinfo->offset);
+    } else {
+        return NULL;
+    }
+
+    return ret;
+}
+
+
+/**
+ * 
+ */
+mach_dysymtab_command_t *mach_lc_find_dysymtab_cmd (macho_t *macho)
+{
+    size_t size = sizeof (mach_dysymtab_command_t);
+    mach_dysymtab_command_t *ret = malloc (size);
+    
+    mach_load_command_info_t *cmdinfo = mach_lc_find_given_cmd (macho, LC_SYMTAB);
+    ret = (mach_dysymtab_command_t *) macho_load_bytes (macho, size, cmdinfo->offset);
+
+    debugf ("LC_DYSYMTAB: %d\n", LC_DYSYMTAB);
+    debugf ("test symtab: 0x%llx\n", ret->cmdsize);
+
+    return ret;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
