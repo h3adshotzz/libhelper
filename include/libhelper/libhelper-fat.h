@@ -149,7 +149,6 @@ extern mach_header_t        *swap_mach_header_bytes (mach_header_t *header);
 extern struct fat_arch      *swap_fat_arch_bytes    (struct fat_arch *a);
 extern fat_header_t         *swap_fat_header_bytes  (fat_header_t *h);
 
-
 #ifdef cplusplus
 }
 #endif

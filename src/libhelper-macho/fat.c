@@ -122,17 +122,12 @@ fat_header_t *swap_fat_header_bytes (fat_header_t *h)
  */
 fat_header_info_t *mach_universal_load (file_t *file)
 {
-	uint32_t size = file->size;
-    unsigned char *data = (unsigned char *) file_get_data (file, 0);
 
     // Create the FAT header so we can read some data from
     // the file. The header starts at 0x0 in the file. It
     // is also in Little-Endian form, so we have to swap
     // the byte order.
-    fat_header_t *fat_header = malloc (sizeof (fat_header_t));
-    memset (fat_header, '\0', sizeof (fat_header_t));
-    memcpy (fat_header, &data[0], sizeof (fat_header_t));
-
+    fat_header_t *fat_header = file_dup_data (file, 0, sizeof (fat_header_t));
     fat_header = swap_header_bytes (fat_header);
 
     // Check the number of architectures
@@ -152,10 +147,7 @@ fat_header_info_t *mach_universal_load (file_t *file)
     for (uint32_t i = 0; i < fat_header->nfat_arch; i++) {
 
         // Current arch. Also needs to swap the bytes.
-        struct fat_arch *arch = (struct fat_arch *) malloc (sizeof (struct fat_arch));
-        memset (arch, '\0', sizeof (struct fat_arch));
-        memcpy (arch, data + offset, sizeof (struct fat_arch));
-        ///file_load_bytes (file, sizeof(struct fat_arch), offset);
+        struct fat_arch *arch = file_dup_data (file, offset, sizeof (struct fat_arch));
 
         arch = swap_fat_arch_bytes (arch);
 
@@ -164,11 +156,13 @@ fat_header_info_t *mach_universal_load (file_t *file)
 
         // Increment the offset
         offset += sizeof(struct fat_arch);
+        free (arch);
     }
 
     fat_header_info_t *ret = malloc (sizeof(fat_header_info_t));
     ret->header = fat_header;
     ret->archs = archs;
 
+    free (fat_header);
     return ret;
 }

@@ -94,7 +94,7 @@ int file_write_new (char *filename, unsigned char *buf, size_t size)
 const void *
 file_get_data (file_t *f, uint32_t offset)
 {
-	return (void *) f->data + offset;
+	return (void *) (f->data + offset);
 }
 
 

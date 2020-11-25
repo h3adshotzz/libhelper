@@ -76,12 +76,24 @@ extern void				 file_free		(file_t *file);
 
 extern const void *
 file_get_data (file_t *f, 
-			   uint32_t);
+			   uint32_t offset);
 
 extern int
 file_write_new (char *filename, 
 				unsigned char *buf, 
 				size_t size);
+
+extern void
+file_read_data (file_t *f, 
+				uint32_t offset, 
+				void *buf, 
+				size_t size);
+
+
+extern void *
+file_dup_data (file_t *f, 
+			   uint32_t offset, 
+			   size_t size);
 
 
 /**
