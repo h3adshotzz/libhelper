@@ -395,7 +395,7 @@ extern macho_t                  *macho_create                       ();
 extern macho_t                  *macho_create_from_buffer           (unsigned char *data);
 
 extern macho_t                  *macho_load                         (const char *filename);
-#warning "mach_load_bytes is deprecated. Do not continue to use"
+//#warning "mach_load_bytes is deprecated. Do not continue to use"
 extern void                     *macho_load_bytes                   (macho_t *macho, size_t size, uint32_t offset);
 
 extern void                      macho_dup_bytes                    (macho_t    *macho,

@@ -51,7 +51,7 @@ file_t *file_load (const char *path)
 	file->path = strdup (path);
 
 	/* create the file descriptor */
-	FILE *fd = open (file->path, O_RDONLY);
+	int fd = open (file->path, O_RDONLY);
 
 	/* calculate the file file */
 	struct stat st;

@@ -55,9 +55,7 @@ int _libhelper_macho_tests (const char *path)
 
     file_t *f = file_load (path);
 
-    unsigned char *test = (unsigned char *) file_get_data (f, 0);
-
-    macho_t *macho = macho_create_from_buffer (file_get_data (f, 0));
+    macho_t *macho = macho_create_from_buffer ((unsigned char *) file_get_data (f, 0));
 
 
     if (!macho)
@@ -100,7 +98,7 @@ int _libhelper_macho_tests (const char *path)
 					char *__placeholder_text = "";
 
                     printf ("\tOff: 0x%09llx-0x%09llx\t%d bytes\t\t%s.%s\t%s\n",
-                            sect64->addr, (sect64->addr + sect64->size), sect64->size,
+                            sect64->addr, (sect64->addr + sect64->size), (int) sect64->size,
                             sect64->segname, sect64->sectname,
                             __placeholder_text);
                 }
@@ -108,7 +106,7 @@ int _libhelper_macho_tests (const char *path)
                 printf ("\tNo Section 64 data\n");
             }
     }
-
+    return 1;
 }
 
 

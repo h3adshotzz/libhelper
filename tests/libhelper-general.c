@@ -60,7 +60,7 @@ int _libhelper_hslist_tests ()
 	
 	// add two element
 	test = h_slist_append (test, str_a);
-	test = h_slist_append (test, str_a);
+	test = h_slist_append (test, str_b);
 	
 	// print the current standing
 	_libhelper_hslist_test_print_list (test);
@@ -97,11 +97,11 @@ void _libhelper_hstring_tests ()
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
-void _libhelper_file_tests (unsigned char *path)
+void _libhelper_file_tests (char *path)
 {
-	file_t *test = file_load (path);
-	unsigned char *test_str = file_get_data (test, 0);
-	printf ("file: %s\n", test_str);
+	file_t *test = file_load ((const char *) path);
+	if (test)
+		printf ("success\n");
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////

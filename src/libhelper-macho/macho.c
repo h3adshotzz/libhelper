@@ -75,7 +75,7 @@ macho_t *macho_load (const char *filename)
         } 
 
         debugf ("macho.c: creating Mach-O struct\n");
-        macho = macho_create_from_buffer (file_get_data (file, 0));
+        macho = macho_create_from_buffer ((unsigned char *) file_get_data (file, 0));
 
         if (macho == NULL) {
             errorf ("Error creating Mach-O: NULL\n");
@@ -164,7 +164,7 @@ macho_t *macho_create_from_buffer (unsigned char *data)
 
     // we'll search through every load command and sort them
     for (int i = 0; i < (int) macho->header->ncmds; i++) {
-        mach_load_command_info_t *lc = mach_load_command_info_load (macho->data, offset);
+        mach_load_command_info_t *lc = mach_load_command_info_load ((const char *) macho->data, offset);
         uint32_t type = lc->lc->cmd;
 
         /**

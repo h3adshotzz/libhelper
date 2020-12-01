@@ -95,9 +95,7 @@ static struct __libhelper_lc_string lc_list[] =
     { LC_DYLD_EXPORTS_TRIE,             "LC_DYLD_EXPORTS_TRIE"          },
     { LC_DYLD_CHAINED_FIXUPS,           "LC_DYLD_CHAINED_FIXUPS"        },
 
-    { LC_FILESET_ENTRY,                 "LC_FILESET_ENTRY"              },
-
-    { NULL }
+    { LC_FILESET_ENTRY,                 "LC_FILESET_ENTRY"              }
 };
 
 #define LIBHELPER_LC_LIST_LEN              (sizeof (lc_list) / sizeof (lc_list[0])) - 1
@@ -144,7 +142,7 @@ char *mach_load_command_get_string (mach_load_command_t *lc)
         goto lc_string_failed;
     }
 
-    for (int i = 0; i < LIBHELPER_LC_LIST_LEN; i++) {
+    for (int i = 0; i < (int) LIBHELPER_LC_LIST_LEN; i++) {
         struct __libhelper_lc_string *cur = &lc_list[i];
         if (lc->cmd == cur->lc)
             return cur->str;
@@ -168,9 +166,9 @@ mach_load_command_info_t *mach_lc_find_given_cmd (macho_t *macho, int cmd)
     uint32_t size = (uint32_t) h_slist_length (macho->lcmds);
     debugf ("load-commands.c: mach_lc_find_given_cmd(): macho->lcmds size: %d\n", size);
 
-    for (int i = 0; i < size; i++) {
-        mach_load_command_info_t *tmp = (mach_load_command_info_t *) h_slist_nth_data (macho->lcmds, i);
-        if (tmp->lc->cmd == cmd)
+    for (uint32_t i = 0; i < size; i++) {
+        mach_load_command_info_t *tmp = (mach_load_command_info_t *) h_slist_nth_data (macho->lcmds, (int) i);
+        if (tmp->lc->cmd == (uint32_t) cmd)
             return tmp;
     }
     return NULL;
