@@ -51,6 +51,12 @@ mach_section_64_t *mach_section_from_segment_info (mach_segment_info_t *info, ch
         return NULL;
     }
 
+    // Check the segment info is valid
+    if (!info) {
+        debugf ("section.c: mach_section_form_segment_info(): segment info not valid\n");
+        return NULL;
+    }
+
     // Check the length of the sections
     int c = h_slist_length (info->sects);
     if (!c) {
@@ -97,7 +103,7 @@ mach_section_info_t *mach_section_info_from_name (macho_t *macho, char *segment,
     mach_section_64_t *sect = mach_section_from_segment_info (seginfo, section);
 
     if (sect == NULL) {
-        errorf ("Could not find %s.%s\n", segment, section);
+        debugf ("Could not find %s.%s\n", segment, section);
         return NULL;
     }
 

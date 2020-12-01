@@ -374,6 +374,43 @@ char *mach_header_read_cpu_type (cpu_type_t type)
 
 
 /**
+ * 
+ */
+char *mach_header_get_cpu_name (cpu_type_t type, cpu_subtype_t subtype)
+{
+    char *ret = NULL;
+    switch (type) {
+    case CPU_TYPE_X86:
+        ret = "x86";
+        break;
+    case CPU_TYPE_X86_64:
+        ret = "x86_64";
+        break;
+    case CPU_TYPE_ARM64:
+        switch (subtype) {
+            case CPU_SUBTYPE_ARM64E:
+            case CPU_SUBTYPE_PTRAUTH_ABI | CPU_SUBTYPE_ARM64E:
+                ret = "arm64e";
+                break;
+            case CPU_SUBTYPE_ARM64_V8:
+                ret = "arm64_v8";
+                break;
+            default:
+                ret = "arm64_unk";
+                break;
+        }
+    case CPU_TYPE_ARM:
+        ret = "arm";
+        break;
+    default:
+        ret = "cpu_unk";
+        break;
+    }
+    return ret;
+}
+
+
+/**
  *  Grab a human-readable cpu subtype for a given subtype
  * 
  *  @param              cputype
@@ -399,11 +436,11 @@ char *mach_header_read_cpu_subtype (cpu_type_t type, cpu_subtype_t subtype)
             cpu_subtype = "arm64e";
             break;
         default:
-            cpu_subtype = "unknown_arm64";
+            cpu_subtype = "arm64_unk";
             break;
         }
     } else {
-        cpu_subtype = "unknown_x86";
+        cpu_subtype = "x86_unk";
     }
     return cpu_subtype;
 }

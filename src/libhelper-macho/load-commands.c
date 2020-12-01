@@ -168,12 +168,10 @@ mach_load_command_info_t *mach_lc_find_given_cmd (macho_t *macho, int cmd)
     uint32_t size = (uint32_t) h_slist_length (macho->lcmds);
     debugf ("load-commands.c: mach_lc_find_given_cmd(): macho->lcmds size: %d\n", size);
 
-    for (int i = 0; i < h_slist_length (macho->lcmds); i++) {
+    for (int i = 0; i < size; i++) {
         mach_load_command_info_t *tmp = (mach_load_command_info_t *) h_slist_nth_data (macho->lcmds, i);
-        debugf ("load-commands.c: mach_lc_find_given_cmd(): check %d %d\n", tmp->lc->cmd, cmd);
-        if (tmp->lc->cmd == (uint32_t) cmd) {
+        if (tmp->lc->cmd == cmd)
             return tmp;
-        }
     }
     return NULL;
 }
