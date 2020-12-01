@@ -261,7 +261,7 @@ static int lzfse_decode_lmd(lzfse_decoder_state *s) {
       if (D >= 8 || D >= M)
         copy(dst, dst - D, M);
       else
-        for (size_t i = 0; i < M; i++)
+        for (size_t i = 0; i < (size_t) M; i++)
           dst[i] = dst[i - D];
       dst += M;
     }
@@ -277,7 +277,7 @@ static int lzfse_decode_lmd(lzfse_decoder_state *s) {
       //  or there isn't; if there is, we copy the whole thing and
       //  update all the pointers and lengths to reflect the copy.
       if (L <= remaining_bytes) {
-        for (size_t i = 0; i < L; i++)
+        for (size_t i = 0; i < (size_t) L; i++)
           dst[i] = lit[i];
         dst += L;
         lit += L;
@@ -289,7 +289,7 @@ static int lzfse_decode_lmd(lzfse_decoder_state *s) {
       //  L, and report that the destination buffer is full. Note that
       //  we always write right up to the end of the destination buffer.
       else {
-        for (size_t i = 0; i < remaining_bytes; i++)
+        for (size_t i = 0; i < (size_t) remaining_bytes; i++)
           dst[i] = lit[i];
         dst += remaining_bytes;
         lit += remaining_bytes;
@@ -301,7 +301,7 @@ static int lzfse_decode_lmd(lzfse_decoder_state *s) {
       //  before finishing, we return to the caller indicating that
       //  the buffer is full.
       if (M <= remaining_bytes) {
-        for (size_t i = 0; i < M; i++)
+        for (size_t i = 0; i < (size_t) M; i++)
           dst[i] = dst[i - D];
         dst += M;
         remaining_bytes -= M;
@@ -315,7 +315,7 @@ static int lzfse_decode_lmd(lzfse_decoder_state *s) {
                  //
                  // But we still set M = 0, to maintain the post-condition.
       } else {
-        for (size_t i = 0; i < remaining_bytes; i++)
+        for (size_t i = 0; i < (size_t) remaining_bytes; i++)
           dst[i] = dst[i - D];
         dst += remaining_bytes;
         M -= remaining_bytes;

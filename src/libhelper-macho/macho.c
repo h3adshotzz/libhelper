@@ -75,7 +75,7 @@ macho_t *macho_load (const char *filename)
         } 
 
         debugf ("macho.c: creating Mach-O struct\n");
-        macho = macho_create_from_buffer (file_get_data (file, 0));
+        macho = macho_create_from_buffer ((unsigned char *) file_get_data (file, 0));
 
         if (macho == NULL) {
             errorf ("Error creating Mach-O: NULL\n");
@@ -164,7 +164,7 @@ macho_t *macho_create_from_buffer (unsigned char *data)
 
     // we'll search through every load command and sort them
     for (int i = 0; i < (int) macho->header->ncmds; i++) {
-        mach_load_command_info_t *lc = mach_load_command_info_load (macho->data, offset);
+        mach_load_command_info_t *lc = mach_load_command_info_load ((const char *) macho->data, offset);
         uint32_t type = lc->lc->cmd;
 
         /**
@@ -374,6 +374,44 @@ char *mach_header_read_cpu_type (cpu_type_t type)
 
 
 /**
+ * 
+ */
+char *mach_header_get_cpu_name (cpu_type_t type, cpu_subtype_t subtype)
+{
+    char *ret = NULL;
+    switch (type) {
+    case CPU_TYPE_X86:
+        ret = "x86";
+        break;
+    case CPU_TYPE_X86_64:
+        ret = "x86_64";
+        break;
+    case CPU_TYPE_ARM64:
+        switch (subtype) {
+            case CPU_SUBTYPE_ARM64E:
+            case CPU_SUBTYPE_PTRAUTH_ABI | CPU_SUBTYPE_ARM64E:
+            case CPU_SUBTYPE_ARM64E_MTE_MASK | CPU_SUBTYPE_ARM64E:
+                ret = "arm64e";
+                break;
+            case CPU_SUBTYPE_ARM64_V8:
+                ret = "arm64_v8";
+                break;
+            default:
+                ret = "arm64_unk";
+                break;
+        }
+    case CPU_TYPE_ARM:
+        ret = "arm";
+        break;
+    default:
+        ret = "cpu_unk";
+        break;
+    }
+    return ret;
+}
+
+
+/**
  *  Grab a human-readable cpu subtype for a given subtype
  * 
  *  @param              cputype
@@ -398,12 +436,15 @@ char *mach_header_read_cpu_subtype (cpu_type_t type, cpu_subtype_t subtype)
         case CPU_SUBTYPE_PTRAUTH_ABI | CPU_SUBTYPE_ARM64E:
             cpu_subtype = "arm64e";
             break;
+        case CPU_SUBTYPE_ARM64E_MTE_MASK | CPU_SUBTYPE_ARM64E:
+            cpu_subtype = "arm64e_mte";
+            break;
         default:
-            cpu_subtype = "unknown_arm64";
+            cpu_subtype = "arm64_unk";
             break;
         }
     } else {
-        cpu_subtype = "unknown_x86";
+        cpu_subtype = "x86_unk";
     }
     return cpu_subtype;
 }

@@ -218,6 +218,13 @@ typedef int                 cpu_threadtype_t;
  */
 #define CPU_SUBTYPE_ARM64_PTR_AUTH_MASK 0x0f000000
 #define CPU_SUBTYPE_ARM64_PTR_AUTH_VERSION(x) (((x) & CPU_SUBTYPE_ARM64_PTR_AUTH_MASK) >> 24)
+
+/**
+ *  arm64 memory tagging mask.
+ * 
+ *  NOTE: This could be completely wrong, but i think its correct.
+ */
+#define CPU_SUBTYPE_ARM64E_MTE_MASK     0xc0000000
 	
 
 /***********************************************************************
@@ -374,6 +381,8 @@ extern mach_header_t            *mach_header_load                   (macho_t *ma
 
 extern mach_header_type_t        mach_header_verify                 (uint32_t magic);
 
+extern char                     *mach_header_get_cpu_name           (cpu_type_t type, cpu_subtype_t subtype);
+
 extern char                     *mach_header_read_cpu_type          (cpu_type_t type);
 extern char                     *mach_header_read_cpu_subtype       (cpu_type_t type, cpu_subtype_t subtype);
 extern char                     *mach_header_read_file_type         (uint32_t type);
@@ -386,10 +395,10 @@ extern macho_t                  *macho_create                       ();
 extern macho_t                  *macho_create_from_buffer           (unsigned char *data);
 
 extern macho_t                  *macho_load                         (const char *filename);
-#warning "mach_load_bytes is deprecated. Do not continue to use"
+//#warning "mach_load_bytes is deprecated. Do not continue to use"
 extern void                     *macho_load_bytes                   (macho_t *macho, size_t size, uint32_t offset);
 
-extern void                      machp_dup_bytes                    (macho_t    *macho,
+extern void                      macho_dup_bytes                    (macho_t    *macho,
                                                                      uint32_t    offset,
                                                                      void       *buffer,
                                                                      size_t      size);

@@ -62,8 +62,8 @@ dyld_cache_t *dyld_cache_load (const char *filename)
 {
     file_t          *file = NULL;
     dyld_cache_t    *dyld = NULL; 
-    uint32_t         size = 0;
-    unsigned char   *data = NULL;
+    //uint32_t         size = 0;
+    //unsigned char   *data = NULL;
 
     if (filename) {
 

@@ -51,11 +51,12 @@ extern "C" {
 //		warning: incompatible poiunter types returning 'char *' from a
 //			function with result type 'HString *' (aka 'struct _HString *')
 //
-#define h_return_val_if_fail(expr, val)  \
+/*#define h_return_val_if_fail(expr, val)  \
     if(!(#expr)) {                       \
         debugf ("bugger\n");             \
         return #val;                     \
-    }
+    }*/
+#define h_return_val_if_fail(expr, val)     0
 	
 /**
  *  Allocates a block of memory and initialises to 0.
