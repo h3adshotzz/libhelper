@@ -390,6 +390,7 @@ char *mach_header_get_cpu_name (cpu_type_t type, cpu_subtype_t subtype)
         switch (subtype) {
             case CPU_SUBTYPE_ARM64E:
             case CPU_SUBTYPE_PTRAUTH_ABI | CPU_SUBTYPE_ARM64E:
+            case CPU_SUBTYPE_ARM64E_MTE_MASK | CPU_SUBTYPE_ARM64E:
                 ret = "arm64e";
                 break;
             case CPU_SUBTYPE_ARM64_V8:
@@ -434,6 +435,9 @@ char *mach_header_read_cpu_subtype (cpu_type_t type, cpu_subtype_t subtype)
         case CPU_SUBTYPE_ARM64E:
         case CPU_SUBTYPE_PTRAUTH_ABI | CPU_SUBTYPE_ARM64E:
             cpu_subtype = "arm64e";
+            break;
+        case CPU_SUBTYPE_ARM64E_MTE_MASK | CPU_SUBTYPE_ARM64E:
+            cpu_subtype = "arm64e_mte";
             break;
         default:
             cpu_subtype = "arm64_unk";

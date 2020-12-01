@@ -218,6 +218,13 @@ typedef int                 cpu_threadtype_t;
  */
 #define CPU_SUBTYPE_ARM64_PTR_AUTH_MASK 0x0f000000
 #define CPU_SUBTYPE_ARM64_PTR_AUTH_VERSION(x) (((x) & CPU_SUBTYPE_ARM64_PTR_AUTH_MASK) >> 24)
+
+/**
+ *  arm64 memory tagging mask.
+ * 
+ *  NOTE: This could be completely wrong, but i think its correct.
+ */
+#define CPU_SUBTYPE_ARM64E_MTE_MASK     0xc0000000
 	
 
 /***********************************************************************
