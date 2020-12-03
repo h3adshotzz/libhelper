@@ -42,7 +42,7 @@ extern "C" {
 ***********************************************************************/
 
 #define LIBHELPER_VERSION			"2.0.0"
-#define LIBHELPER_VERSION_LONG		"libhelper-2000.43.6"
+#define LIBHELPER_VERSION_LONG		"libhelper-2000.53.21.1"
 #define LIBHELPER_VERSION_TYPE		"DEVELOPMENT"
 	
 char *libhelper_version_string ();

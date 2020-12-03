@@ -113,6 +113,10 @@ extern "C" {
 #include "macho/command-types.h"
 #include "macho/header-types.h"
 #include "libhelper.h"
+
+#ifdef TEST
+#   include <mach-o/loader.h>
+#endif
 	
 typedef int                 cpu_type_t;
 typedef int                 cpu_subtype_t;
@@ -211,20 +215,20 @@ typedef int                 cpu_threadtype_t;
 
 
 /**
- *  CPU subtype feature flags for ptrauth on arm64 platforms
- * 
- *  (I am unsure how these work, but they might be useful)
- * 
+ *  ARM64_32 subtypes
  */
-#define CPU_SUBTYPE_ARM64_PTR_AUTH_MASK 0x0f000000
-#define CPU_SUBTYPE_ARM64_PTR_AUTH_VERSION(x) (((x) & CPU_SUBTYPE_ARM64_PTR_AUTH_MASK) >> 24)
+#define CPU_SUBTYPE_ARM64_32_ALL        ((cpu_subtype_t) 0)
+#define CPU_SUBTYPE_ARM64_32_V8         ((cpu_subtype_t) 1)
+
 
 /**
- *  arm64 memory tagging mask.
+ *  CPU subtype feature flags for ptrauth on arm64 platforms, and
+ *  libhelper experimental MTE (Memory Tagging Extension) mask.
  * 
- *  NOTE: This could be completely wrong, but i think its correct.
  */
-#define CPU_SUBTYPE_ARM64E_MTE_MASK     0xc0000000
+#define CPU_SUBTYPE_ARM64E_MTE_MASK                 0xc0000000
+#define CPU_SUBTYPE_ARM64_PTR_AUTH_MASK             0x0f000000
+#define CPU_SUBTYPE_ARM64_PTR_AUTH_VERSION(x)       (((x) & CPU_SUBTYPE_ARM64_PTR_AUTH_MASK) >> 24)
 	
 
 /***********************************************************************
@@ -340,7 +344,6 @@ struct mach_header {
     uint32_t        ncmds;          /* number of load commands */
     uint32_t        sizeofcmds;     /* size of load command region */
     uint32_t        flags;          /* flags */
-    uint32_t        reserved;       /* *64 bit only* reserved */
 };
 // libhelper-macho alias
 typedef struct mach_header          mach_header_32_t;
@@ -350,16 +353,16 @@ typedef struct mach_header          mach_header_32_t;
  *  Mach-O file structure. Contains all parsed properties of a Mach-O file, and some
  *  other raw properties.
  * 
- *  There is no equiv for 32 bit yet, that is a TODO.
  */
 struct __libhelper_macho {
-    /* file data */
-    char            *path;          /* filepath */
 
     /* raw file properties */
-    uint8_t         *data;          /* pointer to mach-o in memory */
-    uint32_t         size;          /* size of mach-o */
-    uint32_t         offset;        /* base_addr + sizeof(mach_header) */
+    uint32_t             size;          /* size of mach-o */
+    uint32_t             offset;        /* start of data */
+    uint8_t             *data;          /* pointer to mach-o in memory */
+
+    /* file data */
+    char                *path;          /* filepath */
 
     /* mach-o parsed properties */
     mach_header_t   *header;        /* mach-o header */
@@ -373,35 +376,77 @@ typedef struct __libhelper_macho            macho_t;
 
 
 /**
- *  Mach-O Header functions
+ *  Mach-O 32 bit file structure. Contains all parsed properties of a Mach-O file, and
+ *  some other raw properties. The 32 bit structure is separate from the 64 bit.
+ * 
+ */
+struct __libhelper_macho_32 {
+
+    /* raw file properties */
+    uint32_t             size;          /* size of mach-o */
+    uint32_t             offset;        /* start of data */
+    uint8_t             *data;          /* pointer to mach-o in memory */
+
+    /* file data */
+    char                *path;          /* filepath */
+
+    /* mach-o parsed properties */
+    mach_header_32_t    *header;        /* mach-o 32bit header */
+    HSList              *lcmds;         /* list of all load commands (including LC_SEGMENT) */
+    HSList              *scmds;         /* list of segment commands */
+    HSList              *dylibs;        /* list of dynamic libraries */
+    HSList              *symbols;       /* list of symbols */
+    HSList              *strings;       /* list of strings */
+};
+typedef struct __libhelper_macho_32         macho_32_t;
+
+
+/**
+ *  Mach-O Header functions (64 bit)
  * 
  */
 extern mach_header_t            *mach_header_create                 ();
 extern mach_header_t            *mach_header_load                   (macho_t *macho);
 
+/**
+ *  Mach-O Header functions (32 bit)
+ * 
+ */
+extern mach_header_32_t         *mach_header_32_load                (macho_32_t *macho);
+
+/**
+ *  Mach-O Header functions (generic)
+ */
 extern mach_header_type_t        mach_header_verify                 (uint32_t magic);
 
 extern char                     *mach_header_get_cpu_name           (cpu_type_t type, cpu_subtype_t subtype);
-
-extern char                     *mach_header_read_cpu_type          (cpu_type_t type);
-extern char                     *mach_header_read_cpu_subtype       (cpu_type_t type, cpu_subtype_t subtype);
+extern char                     *mach_header_read_cpu_subtype       (cpu_type_t type, cpu_subtype_t subtype);       // these probably aren't
+extern char                     *mach_header_read_cpu_type          (cpu_type_t type);                              //  needed anymore.
 extern char                     *mach_header_read_file_type         (uint32_t type);
 extern char                     *mach_header_read_file_type_short   (uint32_t type);
 
+
 /**
- *  Mach-O Parser functions
+ *  Mach-O parser
+ * 
  */
-extern macho_t                  *macho_create                       ();
-extern macho_t                  *macho_create_from_buffer           (unsigned char *data);
+extern void                     *macho_load                         (const char *filename);
+extern void                     *macho_create_from_buffer           (unsigned char *data);
 
-extern macho_t                  *macho_load                         (const char *filename);
-//#warning "mach_load_bytes is deprecated. Do not continue to use"
-extern void                     *macho_load_bytes                   (macho_t *macho, size_t size, uint32_t offset);
+extern macho_t                  *macho_64_create_from_buffer        (unsigned char *data);
+extern macho_32_t               *macho_32_create_from_buffer        (unsigned char *data);
 
-extern void                      macho_dup_bytes                    (macho_t    *macho,
-                                                                     uint32_t    offset,
-                                                                     void       *buffer,
-                                                                     size_t      size);
+extern void                     *macho_load_bytes                   (void *macho, size_t size, uint32_t offset);
+extern void                      macho_dup_bytes                    (void *macho, uint32_t offset, void *buffer, size_t size);
+extern void                     *macho_get_bytes                    (void *macho, uint32_t offset);
+
+
+/**
+ *  Mach-O 32 bit parser
+ * 
+ */
+
+
 
 // TODO: NOTE: MUST MOVE TO SEPARATE HEADER
 #define FAT(p) ((*(unsigned int *)(p) & ~1) == 0xbebafeca)
@@ -532,6 +577,17 @@ struct __libhelper_mach_segment_info {
 };
 typedef struct __libhelper_mach_segment_info        mach_segment_info_t;
 
+/**
+ *  32 bit version of mach_segment_info_t;
+ */
+struct __libhelper_mach_segment_info_32 {
+    mach_segment_command_32_t       *segcmd;            /* segment command */
+    uint32_t                         offset;            /* offset in the mach-o */
+    uint64_t                         padding;
+    HSList                          *sects;             /* list of section commands */
+};
+typedef struct __libhelper_mach_segment_info_32     mach_segment_info_32_t;
+
 // VM protection types
 #define VM_PROT_READ            0x00000001
 #define VM_PROT_WRITE           0x00000002
@@ -560,6 +616,21 @@ struct section_64 {
 };
 typedef struct section_64 mach_section_64_t;
 
+struct section { /* for 32-bit architectures */
+	char		sectname[16];	/* name of this section */
+	char		segname[16];	/* segment this section goes in */
+	uint32_t	addr;		/* memory address of this section */
+	uint32_t	size;		/* size in bytes of this section */
+	uint32_t	offset;		/* file offset of this section */
+	uint32_t	align;		/* section alignment (power of 2) */
+	uint32_t	reloff;		/* file offset of relocation entries */
+	uint32_t	nreloc;		/* number of relocation entries */
+	uint32_t	flags;		/* flags (section type and attributes)*/
+	uint32_t	reserved1;	/* reserved (for offset or index) */
+	uint32_t	reserved2;	/* reserved (for count or sizeof) */
+};
+typedef struct section  mach_section_32_t;
+
 struct __libhelper_mach_section_info {
     mach_section_64_t       *section;
 
@@ -570,25 +641,61 @@ struct __libhelper_mach_section_info {
 };
 typedef struct __libhelper_mach_section_info                mach_section_info_t;
 
+struct __libhelper_mach_section_32_info {
+    mach_section_32_t       *section;
 
-// Functions
+    uint32_t                 addr;
+    uint32_t                 size;
+    char                    *segname;
+    char                    *sectname;
+}
+;
+typedef struct __libhelper_mach_section_32_info             mach_section_info_32_t;
+
+
+/**
+ *  64 bit Segment parsing
+ */
 extern mach_segment_command_64_t    *mach_segment_command_load          (unsigned char *data, uint32_t offset);
-extern mach_segment_command_64_t    *mach_segment_command_from_info     (mach_segment_info_t *info);
-
 extern mach_segment_info_t          *mach_segment_info_load             (unsigned char *data, uint32_t offset);
 extern mach_segment_info_t          *mach_segment_info_search           (HSList *segments, char *segname);
-
-extern char                         *mach_segment_vm_protection         (vm_prot_t prot);
-
-
-extern mach_section_64_t            *mach_section_load                  (unsigned char *data, uint32_t offset);
-extern mach_section_64_t            *mach_section_from_segment_info     (mach_segment_info_t *info, char *sectname);
-extern mach_section_64_t            *mach_find_section_command_at_index (HSList *segments, int index);
+extern mach_segment_command_64_t    *mach_segment_command_from_info     (mach_segment_info_t *info);
 
 extern mach_section_info_t          *mach_section_info_from_name        (macho_t *macho, char *segment, char *section);
+extern mach_section_64_t            *mach_section_from_segment_info     (mach_segment_info_t *info, char *sectname);
+extern mach_section_64_t            *mach_section_load                  (unsigned char *data, uint32_t offset);
+extern mach_section_64_t            *mach_find_section_command_at_index (HSList *segments, int index);
 
-extern char                         *mach_lc_load_str                   (macho_t *macho, uint32_t cmdsize, uint32_t struct_size, 
-                                                                         off_t cmd_offset, off_t str_offset);
+
+/**
+ *  32 bit Segment parsing
+ */
+extern mach_segment_command_32_t    *mach_segment_command_32_load          (unsigned char *data, uint32_t offset);
+extern mach_segment_info_32_t       *mach_segment_info_32_load             (unsigned char *data, uint32_t offset);
+extern mach_segment_command_32_t    *mach_segment_command_32_from_info     (mach_segment_info_32_t *info);
+extern mach_segment_info_32_t       *mach_segment_info_32_search           (HSList *segments, char *segname);
+
+extern mach_section_info_32_t       *mach_section_info_32_from_name             (macho_32_t *macho, char *segment, char *section);
+extern mach_section_32_t            *mach_section_32_from_segment_info_32       (mach_segment_info_32_t *info, char *sectname);
+extern mach_section_32_t            *mach_section_32_load                       (unsigned char *data, uint32_t offset);
+extern mach_section_32_t            *mach_find_section_command_32_at_index      (HSList *segments, int index);
+
+
+/**
+ *  Generic Segment parsing
+ */
+extern char                         *mach_segment_vm_protection         (vm_prot_t prot);
+extern char                         *mach_lc_load_str                   (macho_t *macho,
+                                                                         uint32_t cmdsize,
+                                                                         uint32_t struct_size,
+                                                                         off_t cmd_offset,
+                                                                         off_t str_offset);
+extern char                         *mach_lc_32_load_str                (macho_32_t *macho,
+                                                                         uint32_t cmdsize,
+                                                                         uint32_t struct_size,
+                                                                         off_t cmd_offset,
+                                                                         off_t str_offset);
+
 
 /***********************************************************************
 * Mach-O Other Load Commands.

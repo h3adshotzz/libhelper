@@ -34,19 +34,6 @@
 /*-- Mach-O                              									 --*/
 //===-----------------------------------------------------------------------===//
 
-
-/**
- *  Free a `macho_t` structure.
- * 
- *  @param          `macho_t` to free().
- */
-void macho_free (macho_t *macho)
-{
-    macho = NULL;
-    free (macho);
-}
-
-
 /**
  *  Load a Mach-O from a given filepath.
  * 
@@ -54,10 +41,10 @@ void macho_free (macho_t *macho)
  * 
  *  @returns        loaded and parsed `macho_t`.
  */
-macho_t *macho_load (const char *filename)
+void *macho_load (const char *filename)
 {
     file_t      *file = NULL;
-    macho_t     *macho = NULL;
+    void        *macho = NULL;
 
     if (filename) {
         debugf ("macho.c: reading Mach-O from filename: %s\n", filename);
@@ -69,8 +56,8 @@ macho_t *macho_load (const char *filename)
         }
 
         if (file->size <= 0) {
-            errorf ("File could not be loaded properly: %d", file->size);
-            macho_free (macho);
+            errorf ("macho_load(): file could not be loaded properly: %d", file->size);
+            free (macho);
             return NULL;
         } 
 
@@ -78,176 +65,85 @@ macho_t *macho_load (const char *filename)
         macho = macho_create_from_buffer ((unsigned char *) file_get_data (file, 0));
 
         if (macho == NULL) {
-            errorf ("Error creating Mach-O: NULL\n");
+            errorf ("macho_load(): error creating macho: macho == NULL\n");
             return NULL;
         }
 
         debugf ("macho.c: all is well\n");
     } else {
-        errorf ("No filename specified\n");
+        errorf ("macho_load(): no filename specified\n");
     }
     return macho;
 }
 
 
 /**
- *  Load bytes from a Mach-O for a given size from an offset.
- * 
- *  @param          `macho_t` to load from.
- *  @param          amount of bytes to copy.
- *  @param          offset to start copying from.
- * 
- *  @returns        pointer to the data loaded.     
+ *  Generic load a Mach-O from a given data buffer.
  */
-void *macho_load_bytes (macho_t *macho, size_t size, uint32_t offset)
+void *macho_create_from_buffer (unsigned char *data)
 {
+    // check the data is valid
+    if (!data) {
+        errorf ("macho_create_from_buffer(): invalid data\n");
+        return NULL;
+    }
+
+    // check if the data is a FAT file
+    if (FAT(data)) {
+        errorf ("macho_create_from_buffer(): cannot handle fat archive here\n");
+        return NULL;
+    }
+
+    // try to load the mach header here. Does not matter which one.
+    mach_header_t *hdr = (mach_header_t *) data;
+    mach_header_type_t type = mach_header_verify (hdr->magic);
+
+    if (type == MH_TYPE_MACHO64) {
+        return macho_64_create_from_buffer (data);
+    } else if (type == MH_TYPE_MACHO32) {
+        return macho_32_create_from_buffer (data);
+    } else {
+        errorf ("macho_create_from_buffer(): cannot handle mach-o magic: 0x%08x\n", data);
+        return NULL;
+    }
+}
+
+
+/**
+ *  Return the pointer to an offset within a Mach-O
+ * 
+ */
+void *macho_get_bytes (void *macho, uint32_t offset)
+{
+    macho_t *tmp = (macho_t *) macho;
+    return (void *) (tmp->data + offset);
+}
+
+
+/**
+ *  Duplicate `size` bytes from a given Mach-O into a given buffer.
+ * 
+ */
+void macho_read_bytes (void *macho, uint32_t offset, void *buffer, size_t size)
+{
+    macho_t *tmp = (macho_t *) macho;
+    memcpy (buffer, macho_get_bytes (tmp->data, offset), size);
+}
+
+
+
+/**
+ *  Load `size` bytes into a malloc()'d buffer and return.
+ * 
+ */
+void *macho_load_bytes (void *macho, size_t size, uint32_t offset)
+{
+    macho_t *tmp = (macho_t *) macho;
+
     void *ret = malloc (size);
-    memcpy (ret, macho->data + offset, size);
+    memcpy (ret, tmp->data + offset, size);
     return ret;
 }
-
-
-/**
- *  Load bytes from a Mach-O for a given size from an offset
- * 
- *  @macho:         the #macho_t to load from.
- *  @offset:        to start copying from.
- *  @buffer:        (out caller-allocates): where to put the bytes
- *  @size:          amount of bytes to copy.    
- *    
- */
-void macho_dup_bytes (macho_t *macho, uint32_t offset, void *buffer, size_t size)
-{
-    memcpy (buffer, macho->data + offset, size);
-}
-
-
-/**
- *  Loads a Mach-O from a given buffer into a `macho_t`
- * 
- *  @param          data to load.
- * 
- *  @returns        a `macho_t` from the given data.
- */
-macho_t *macho_create_from_buffer (unsigned char *data)
-{
-    // zero out some memory for macho.
-    macho_t *macho = calloc (1, sizeof (macho_t));
-
-    macho->data = (uint8_t *) data;
-    macho->offset = 0;
-
-    // check that valid bytes were given
-    if (!data) {
-        errorf ("macho_create_from_buffer: Invalid data\n");
-        macho_free (macho);
-        return NULL;
-    }
-
-    // try to detect if we are handling a FAT file.
-    if (FAT(macho->data)) {
-        errorf ("macho_create_from_buffer: Cannot handle a FAT archive here\n");
-        macho_free (macho);
-        return NULL;
-    }
-
-    // try to load the mach header, and handle any failure
-    macho->header = mach_header_load (macho);
-    if (macho->header == NULL) {
-        errorf ("macho_create_from_buffer: Mach header is NULL\n");
-        macho_free (macho);
-        return NULL;
-    }
-
-    uint32_t offset = sizeof (mach_header_t);
-    HSList *scmds = NULL, *lcmds = NULL, *dylibs = NULL;
-
-    // we'll search through every load command and sort them
-    for (int i = 0; i < (int) macho->header->ncmds; i++) {
-        mach_load_command_info_t *lc = mach_load_command_info_load ((const char *) macho->data, offset);
-        uint32_t type = lc->lc->cmd;
-
-        /**
-         *  Different types of Load Command are sorted into one of the three 
-         *  lists defined above: scmds, lcmds and dylibs.
-         */
-        if (type == LC_SEGMENT || type == LC_SEGMENT_64) {
-            if (type == LC_SEGMENT) {
-                warningf ("macho_create_from_buffer(): Found LC_SEGMENT, 32 bit Mach-O's are not supported for parsing\n");
-                continue;
-            }
-
-            // create a segment info struct, then add to the list
-            mach_segment_info_t *seginf = mach_segment_info_load (macho->data, offset);
-            if (seginf == NULL) {
-                warningf ("macho_create_from_buffer(): failed to load LC_SEGMENT_64 at offset: 0x%08x\n", offset);
-                continue;
-            }
-
-            // add to segments lists
-            scmds = h_slist_append (scmds, seginf);
-        } else if (type == LC_ID_DYLIB || type == LC_LOAD_DYLIB ||
-                   type == LC_LOAD_WEAK_DYLIB || type == LC_REEXPORT_DYLIB) {
-            /**
-             *  Because a Mach-O  can have multiple dynamically linked libraries which
-             *  means there are multiple LC_DYLIB-like commands, so it's easier that
-             *  there is a sperate list for DYLIB-related commands.
-             */
-
-            // dylib info struct
-            mach_dylib_command_info_t *dylibinfo = malloc (sizeof (mach_dylib_command_info_t));
-            uint32_t cmdsize = lc->lc->cmdsize;
-
-            // create the raw command
-            mach_dylib_command_t *raw = malloc (sizeof (mach_dylib_command_t));
-            memset (raw, '\0', sizeof (mach_dylib_command_t));
-            memcpy (raw, macho->data + offset, sizeof (mach_dylib_command_t));
-
-            // laod the name of the dylib. This is located after the load command
-            //  and is included in the cmdsize.
-            uint32_t nsize = cmdsize - sizeof(mach_dylib_command_t);
-            uint32_t noff = offset + raw->dylib.offset;
-
-            char *name = malloc (nsize);
-            memset (name, '\0', nsize);
-            memcpy (name, macho->data + noff, nsize);
-
-            // set the name, raw cmd struct and type
-            dylibinfo->name = name;
-            dylibinfo->dylib = raw;
-            dylibinfo->type = lc->lc->cmd;
-
-            // add the offset to the load command
-            lc->offset = offset;
-
-            // add them to both lists
-            dylibs = h_slist_append (dylibs, dylibinfo);
-            lcmds = h_slist_append (lcmds, lc);            
-
-        } else {
-            // set the offset of the command so we can find it again
-            lc->offset = offset;
-            lcmds = h_slist_append (lcmds, lc);
-        }
-
-        offset += lc->lc->cmdsize;
-    }
-
-    // set macho offset
-    macho->offset = offset;
-
-    // set LC lists
-    macho->lcmds = lcmds;
-    macho->scmds = scmds;
-    macho->dylibs = dylibs;
-
-    // fix size
-    mach_segment_info_t *last_seg = (mach_segment_info_t *) h_slist_last (macho->scmds);
-    macho->size = last_seg->segcmd->fileoff + last_seg->segcmd->filesize;
-
-    return macho;
-}
-
 
 //===-----------------------------------------------------------------------===//
 /*-- Mach-O Header functions         									 --*/
@@ -323,8 +219,10 @@ mach_header_t *mach_header_load (macho_t *macho)
 
         if (type == MH_TYPE_MACHO64) {
             debugf ("macho.c: mach_header_load(): Detected Mach-O 64 bit\n");
+            return hdr;
         } else if (type == MH_TYPE_MACHO32) {
             debugf ("macho.c: mach_header_load(): Detected Mach-O 32 bit\n");
+            return hdr;
         } else if (type == MH_TYPE_FAT) {
             debugf ("macho.c: mach_header_load(): Detected Universal Binary. Libhelper cannot load these.\n");
             hdr = NULL;
@@ -378,36 +276,48 @@ char *mach_header_read_cpu_type (cpu_type_t type)
  */
 char *mach_header_get_cpu_name (cpu_type_t type, cpu_subtype_t subtype)
 {
-    char *ret = NULL;
     switch (type) {
-    case CPU_TYPE_X86:
-        ret = "x86";
-        break;
-    case CPU_TYPE_X86_64:
-        ret = "x86_64";
-        break;
-    case CPU_TYPE_ARM64:
-        switch (subtype) {
-            case CPU_SUBTYPE_ARM64E:
-            case CPU_SUBTYPE_PTRAUTH_ABI | CPU_SUBTYPE_ARM64E:
-            case CPU_SUBTYPE_ARM64E_MTE_MASK | CPU_SUBTYPE_ARM64E:
-                ret = "arm64e";
-                break;
-            case CPU_SUBTYPE_ARM64_V8:
-                ret = "arm64_v8";
-                break;
-            default:
-                ret = "arm64_unk";
-                break;
-        }
-    case CPU_TYPE_ARM:
-        ret = "arm";
-        break;
-    default:
-        ret = "cpu_unk";
-        break;
+        /* Intel CPUs */
+        case CPU_TYPE_X86:
+            return "Intel x86";
+        case CPU_TYPE_X86_64:
+            return "Intel x86_64";
+        
+        /* ARM CPUs */
+        case CPU_TYPE_ARM:
+            switch (subtype) {
+                case CPU_SUBTYPE_ARM_V7:
+                    return "ARM armv7";         /* ARMv7-A and ARMv7-R */
+                case CPU_SUBTYPE_ARM_V7F:
+                    return "ARM armv7F";        /* Cortex A9 */
+                case CPU_SUBTYPE_ARM_V7S:
+                    return "ARM armv7S";        /* Swift */
+                case CPU_SUBTYPE_ARM_ALL:
+                default:
+                    return "ARM arm32";           /* Any other arm32 types */
+            }
+        case CPU_TYPE_ARM64:
+            switch (subtype) {
+                case CPU_SUBTYPE_ARM64_V8:
+                    return "ARM arm64_v8";      /* arm64-v8 */      
+                case CPU_SUBTYPE_ARM64E:
+                    return "ARM arm64e";
+                case CPU_SUBTYPE_ARM64E | CPU_SUBTYPE_ARM64_PTR_AUTH_MASK:
+                    return "ARM arm64e (PtrAuth)";
+                case CPU_SUBTYPE_ARM64E | CPU_SUBTYPE_ARM64E_MTE_MASK:
+                    return "ARM arm64e (MTE)";
+                case CPU_SUBTYPE_ARM64_ALL:
+                default:
+                    return "ARM arm64e";
+            }
+        case CPU_TYPE_ARM64_32:
+            return "ARM arm64_32";
+
+        /* default */
+        case CPU_TYPE_ANY:
+        default:
+            return "Unknown CPU";
     }
-    return ret;
 }
 
 

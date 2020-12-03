@@ -52,7 +52,7 @@ CFLAGS		= -Wall -Wextra -g -Iinclude -std=c11
 
 library: $(BUILD_DIR)/libhelper.1.dylib
 version: $(BUILD_DIR)/libhelper-version
-tests: $(BUILD_DIR)/libhelper-general $(BUILD_DIR)/libhelper-macho
+tests: $(BUILD_DIR)/libhelper-general $(BUILD_DIR)/libhelper-macho $(BUILD_DIR)/libhelper-macho-32
 #toolset: $(BUILD_DIR)/macho-toolset
 
 all: library version tests #toolset
@@ -110,6 +110,11 @@ $(BUILD_DIR)/libhelper-macho:
 	$(info [ TEST ] Building libhelper-macho)
 	$(CC) $(CFLAGS) tests/libhelper-macho.c -o $(BUILD_DIR)/test-libhelper-macho build/libhelper.a
 	#dsymutil $(BUILD_DIR)/test-libhelper-macho
+
+$(BUILD_DIR)/libhelper-macho-32:
+	@mkdir -p "$(@D)"
+	$(info [ TEST ] Building libhelper-macho-32)
+	$(CC) $(CFLAGS) tests/libhelper-macho-32.c -o $(BUILD_DIR)/test-libhelper-macho-32 build/libhelper.a
 
 #$(BUILD_DIR)/tests: $(TESTS_)#
 #	@mkdir -p "$(@D)"
