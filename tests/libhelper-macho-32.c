@@ -75,6 +75,22 @@ int _libhelper_macho_32_tests (const char *path)
 
     }
 
+    /**
+     *  Have not tested this to a great extent, but i think most load command handlers
+     *  can work with either macho_t or macho_32_t. Just cast the 32bit variant to the 
+     *  64 bit. The only difference between the two structures is the header so this
+     *  would make sense.
+     * 
+     *  The only load commands probably needing specific 64/32 functions are once that
+     *  handle command or segment info structs.
+     * 
+     */
+    mach_source_version_command_t *svc = mach_lc_find_source_version_cmd ((macho_t *) macho);
+    printf ("LC_SOURCE_VERSION: %s\n", mach_lc_source_version_string (svc));
+
+    mach_load_command_info_t *bv_inf = mach_lc_find_given_cmd ((macho_t *) macho, LC_BUILD_VERSION);
+    mach_build_version_info_t *bv = mach_lc_build_version_info (bv_inf->lc, bv_inf->offset, (macho_t *) macho);
+
     return 1;
 }
 
