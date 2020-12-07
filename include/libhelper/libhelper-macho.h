@@ -437,7 +437,7 @@ extern macho_t                  *macho_64_create_from_buffer        (unsigned ch
 extern macho_32_t               *macho_32_create_from_buffer        (unsigned char *data);
 
 extern void                     *macho_load_bytes                   (void *macho, size_t size, uint32_t offset);
-extern void                      macho_dup_bytes                    (void *macho, uint32_t offset, void *buffer, size_t size);
+extern void                      macho_read_bytes                   (void *macho, uint32_t offset, void *buffer, size_t size);
 extern void                     *macho_get_bytes                    (void *macho, uint32_t offset);
 
 

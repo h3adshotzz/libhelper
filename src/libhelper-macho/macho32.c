@@ -83,6 +83,36 @@ macho_32_t *macho_32_create_from_buffer (unsigned char *data)
             }
 
             scmds = h_slist_append (scmds, seginf);
+
+        } else if (type == LC_ID_DYLIB || type == LC_LOAD_DYLIB ||
+                   type == LC_LOAD_WEAK_DYLIB || type == LC_REEXPORT_DYLIB) {
+
+            /**
+             * 
+             */
+            uint32_t dylib_inf_size = sizeof (mach_dylib_command_info_t);
+            
+            mach_dylib_command_info_t *dylibinfo = malloc (dylib_inf_size);
+            uint32_t cmdsize = lc->lc->cmdsize;
+
+            mach_dylib_command_t *raw = malloc (dylib_inf_size);
+            memcpy (raw, macho->data + offset, dylib_inf_size);
+
+            uint32_t nsize = cmdsize - sizeof (mach_dylib_command_t);
+            uint32_t noff = offset + raw->dylib.offset;
+
+            char *name = malloc (nsize);
+            memcpy (name, macho->data + noff, nsize);
+            
+            // set name, raw cmd struct and type
+            dylibinfo->name = name;
+            dylibinfo->dylib = raw;
+            dylibinfo->type = lc->lc->cmd;
+
+            lc->offset = offset;
+
+            dylibs = h_slist_append (dylibs, dylibinfo);
+            lcmds = h_slist_append (lcmds, lc);
         } else {
             lc->offset = offset;
             lcmds = h_slist_append (lcmds, lc);

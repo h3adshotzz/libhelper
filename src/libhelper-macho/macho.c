@@ -61,7 +61,7 @@ void *macho_load (const char *filename)
             return NULL;
         } 
 
-        debugf ("macho.c: creating Mach-O struct\n");
+        debugf ("macho.c: macho_load(): creating Mach-O struct\n");
         macho = macho_create_from_buffer ((unsigned char *) file_get_data (file, 0));
 
         if (macho == NULL) {
@@ -69,7 +69,7 @@ void *macho_load (const char *filename)
             return NULL;
         }
 
-        debugf ("macho.c: all is well\n");
+        debugf ("macho.c: macho_load(): all is well\n");
     } else {
         errorf ("macho_load(): no filename specified\n");
     }
