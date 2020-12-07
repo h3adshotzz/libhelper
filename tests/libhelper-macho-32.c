@@ -90,6 +90,17 @@ int _libhelper_macho_32_tests (const char *path)
 
     mach_load_command_info_t *bv_inf = mach_lc_find_given_cmd ((macho_t *) macho, LC_BUILD_VERSION);
     mach_build_version_info_t *bv = mach_lc_build_version_info (bv_inf->lc, bv_inf->offset, (macho_t *) macho);
+    printf ("LC_BUILD_VERSION: platform: %s, minos: %s, sdk: %s\n",
+        bv->platform, bv->minos, bv->sdk);
+        
+    // tool list
+    if (bv->tools) {
+        for (int i = 0; i < (int) h_slist_length (bv->tools); i++) {
+            build_tool_info_t *b = (build_tool_info_t *) h_slist_nth_data (bv->tools, i);
+            printf ("too: %s (%d.%d.%d)\n", b->tool, 
+                    b->version >> 16, (b->version >> 8) & 0xf, b->version & 0xf);
+        }
+    }
 
     return 1;
 }
