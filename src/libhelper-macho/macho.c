@@ -386,6 +386,9 @@ char *mach_header_read_file_type (uint32_t type)
         case MACH_TYPE_FILESET:
             ret = "Mach File Set (MH_FILESET)";
             break;
+        case MACH_TYPE_DYLINKER:
+            ret = "Mach Dyanmic Linker (MH_DYLINKER)";
+            break;
         default:
             ret = "Unknown";
             warningf ("mach_header_read_file_type(): Unknown mach-o type: %d\n", type);
@@ -417,6 +420,9 @@ char *mach_header_read_file_type_short (uint32_t type)
             break;
         case MACH_TYPE_FILESET:
             ret = "File set";
+            break;
+        case MACH_TYPE_DYLINKER:
+            ret = "Dynamic Linker";
             break;
         default:
             ret = "Unknown";
