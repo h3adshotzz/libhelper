@@ -134,6 +134,7 @@ typedef struct dyld_cache_t {
 	/* raw file properties */
 	uint8_t		*data;		// ptr to the dyld in memory
 	uint32_t	 size;		// size of dyld
+	uint32_t	 vmbase;	// virtual memory base addr.
 	
 	/* Parsed DYLD Cache properties */
 	dyld_cache_header_t		*header;
@@ -142,16 +143,17 @@ typedef struct dyld_cache_t {
 
 
 // dyld cache file parser
-extern dyld_cache_t                *dyld_cache_create                   ();
-extern dyld_cache_t                *dyld_cache_load                     (const char *filename);
-extern dyld_cache_t                *dyld_cache_create_from_file         (file_t *file);
-extern void                        *dyld_load_bytes                     (dyld_cache_t *dyld, size_t size, uint32_t offset);
+extern dyld_cache_t 				*dyld_cache_load 					(const char *filename);
+extern dyld_cache_t                	*dyld_cache_create_from_file        (file_t *file);
 
-extern void                         dyld_cache_free                     (dyld_cache_t *dyld);
+extern void 						 dyld_read_bytes 					(dyld_cache_t *dyld, uint32_t offset, void *buffer, size_t size);
+extern void 						*dyld_load_bytes 					(dyld_cache_t *dyld, uint32_t size, uint32_t offset);
+extern void 						*dyld_get_bytes 					(dyld_cache_t *dyld, uint32_t offset);
+
 
 // dyld cache header
-extern dyld_cache_header_t         *dyld_cache_header_create            ();
-extern int                          dyld_shared_cache_verify_header     (unsigned char *dyld_ptr);
+extern dyld_cache_header_t         	*dyld_cache_header_create           ();
+extern int                           dyld_shared_cache_verify_header    (unsigned char *dyld_ptr);
 
 #ifdef cplusplus
 }

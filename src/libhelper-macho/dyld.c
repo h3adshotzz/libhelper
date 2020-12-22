@@ -32,97 +32,78 @@
 * DYLD Shared Cache Parser.
 ***********************************************************************/
 
-dyld_cache_t *dyld_cache_create ()
+/**
+ * 
+ */
+dyld_cache_t *dyld_cache_load (const char *filename)
 {
-    dyld_cache_t *ret = malloc (sizeof (dyld_cache_t));
-    memset (ret, '\0', sizeof (dyld_cache_t));
-    return ret;
+    file_t          *file = NULL;
+    dyld_cache_t    *dyld = NULL;
+
+    if (!filename) {
+        errorf ("dyld_cache_load(): no filename specified.\n");
+        return NULL;
+    }
+
+    debugf ("dyld_cache_load(): reading dyld_cache from filename: %s\n", filename);
+
+    // load the file
+    file = file_load (filename);
+    if (file->size == 0) {
+        errorf ("dyld_cache_load(): file could not be loaded.\n");
+        free (dyld);
+        return NULL;
+    }
+
+    // load the dyld cache from the file
+    debugf ("dyld_cache_load(): creating dyld cache struct.\n");
+    dyld = dyld_cache_create_from_file (file);
+
+    if (dyld == NULL)
+        return NULL;
+
+    debugf ("dyld_cache_load(): dyld_shared_cache loaded successfully (probably).\n");
+    return dyld;
 }
 
 dyld_cache_t *dyld_cache_create_from_file (file_t *file)
 {
-    dyld_cache_t *dyld = dyld_cache_create ();
+    dyld_cache_t *dyld = malloc (sizeof (dyld_cache_t));
 
     dyld->path = file->path;
-
     dyld->size = file->size;
     dyld->data = (uint8_t *) file_get_data (file, 0);
-    
-    // Check we are 100% using a dyld_shared_cache
 
-    // load the header
-    dyld_cache_header_t *dyld_hdr = dyld_cache_header_create ();
-    dyld_hdr = (dyld_cache_header_t *) dyld_load_bytes (dyld, sizeof (dyld_cache_header_t), 0);
-    dyld->header = dyld_hdr;
+    dyld->header = malloc (sizeof (dyld_cache_header_t));
+    memcpy (dyld->header, file->data, sizeof (dyld_cache_header_t));
 
     return dyld;
 }
 
-dyld_cache_t *dyld_cache_load (const char *filename)
+void *dyld_get_bytes (dyld_cache_t *dyld, uint32_t offset)
 {
-    file_t          *file = NULL;
-    dyld_cache_t    *dyld = NULL; 
-    //uint32_t         size = 0;
-    //unsigned char   *data = NULL;
-
-    if (filename) {
-
-        debugf ("Reading dyld_cache from filename: %s\n", filename);
-
-        file = file_load (filename);
-        if (file->size == 0) {
-            errorf ("File not loaded properly\n");
-            dyld_cache_free (dyld);
-            return NULL;
-        }
-
-        debugf ("Creating dyld shared cache struct\n");
-        dyld = dyld_cache_create_from_file (file);
-
-        if (dyld == NULL)
-            return NULL;
-
-        debugf ("all seems well (dyld)\n");
-    } else {
-        debugf ("No filename specified\n");
-    }
-
-    return dyld;
+    return (void *) (dyld->data + offset);
 }
 
-void *dyld_load_bytes (dyld_cache_t *dyld, size_t size, uint32_t offset)
+void dyld_read_bytes (dyld_cache_t *dyld, uint32_t offset, void *buffer, size_t size)
+{
+    memcpy (buffer, dyld_get_bytes (dyld, offset), size);
+}
+
+void *dyld_load_bytes (dyld_cache_t *dyld, uint32_t size, uint32_t offset)
 {
     void *ret = malloc (size);
-    memcpy (ret, dyld->data + offset, size);
+    memcpy (ret, (void *) (dyld->data + offset), size);
     return ret;
-}
-
-void dyld_cache_free (dyld_cache_t *dyld)
-{
-    dyld = NULL;
-    free (dyld);
 }
 
 /***********************************************************************
 * DYLD Shared Cache Header functions.
 ***********************************************************************/
 
-dyld_cache_header_t *dyld_cache_header_create ()
-{
-    dyld_cache_header_t *ret = malloc (sizeof (dyld_cache_header_t));
-    memset (ret, '\0', sizeof (dyld_cache_header_t));
-    return ret;
-}
-
 int dyld_shared_cache_verify_header (unsigned char *dyld_ptr)
 {
     if (!strncmp ((const char *) dyld_ptr, "dyld_", 5))
         return 1;
-    
     return 0;
 }
-
-/*dyld_cache_header_t *dyld_cache_header_load (dyld_cache_t *dyld)
-{
-
-}*/
