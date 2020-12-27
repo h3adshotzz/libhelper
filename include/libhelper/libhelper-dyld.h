@@ -119,6 +119,23 @@ struct dyld_cache_image_info {
 };
 typedef struct dyld_cache_image_info		dyld_cache_image_info_t;
 
+struct dyld_cache_slide_info {
+	uint32_t	version;			// currently 2
+	uint32_t	page_size;			// currently 4096 (may also be 16384)
+	uint32_t	page_starts_offset;
+	uint32_t	page_starts_count;
+	uint32_t	page_extras_offset;
+	uint32_t	page_extras_count;
+	uint64_t	delta_mask;		// which (contiguous) set of bits contains the delta to the next rebase location
+	uint64_t	value_add;
+};
+typedef struct dyld_cache_slide_info		dyld_cache_slide_info_t;
+
+#define DYLD_CACHE_SLIDE_PAGE_ATTRS				0xC000	// high bits of uint16_t are flags
+#define DYLD_CACHE_SLIDE_PAGE_ATTR_EXTRA		0x8000  // index is into extras array (not starts array)
+#define DYLD_CACHE_SLIDE_PAGE_ATTR_NO_REBASE	0x4000  // page has no rebasing
+#define DYLD_CACHE_SLIDE_PAGE_ATTR_END			0x8000  // last chain entry for page
+
 /***********************************************************************
 * DYLD Shared Cache Parser.
 ***********************************************************************/
