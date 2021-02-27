@@ -42,8 +42,8 @@ OBJ			= $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 
 
 # Compiler
-CC			= clang
-AR			= ar
+CC			= @clang
+AR			= @ar
 
 CFLAGS		= -Wall -Wextra -g -Iinclude -std=c11
 

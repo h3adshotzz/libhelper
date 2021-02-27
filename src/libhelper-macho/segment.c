@@ -258,7 +258,7 @@ mach_segment_info_32_t *mach_segment_info_32_search (HSList *segments, char *seg
 
         // Check if they match
         if (!strcmp(s->segname, segname)) {
-            return si;
+            return (mach_segment_info_32_t *) si;
         }
     }
 

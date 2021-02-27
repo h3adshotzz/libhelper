@@ -1123,6 +1123,8 @@ struct fileset_entry_command {
 // libhelper-macho alias
 typedef struct fileset_entry_command        mach_fileset_entry_t;
 
+extern char         *mach_lc_load_fileset_entry_name (macho_t *macho, mach_fileset_entry_t *fileset, off_t offset);
+
 /***********************************************************************
 * Mach-O Static Symbol Load Commands.
 *

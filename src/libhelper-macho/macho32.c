@@ -54,7 +54,7 @@ macho_32_t *macho_32_create_from_buffer (unsigned char *data)
     macho->offset = 0;
 
     // try to load the header
-    macho->header = (mach_header_32_t *) mach_header_load (macho);
+    macho->header = (mach_header_32_t *) mach_header_load ((macho_t *) macho);
     if (!macho->header) {
         errorf ("macho_32_create_from_buffer() mach header is NULL\n");
         return NULL;

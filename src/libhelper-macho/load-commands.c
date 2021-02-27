@@ -423,6 +423,22 @@ char *mach_lc_load_dylinker_name (macho_t *macho, mach_dylinker_command_t *dylin
 /////////////////////////////////////////////////////////////////////////////////////
 
 /**
+ *  Load the name of a given Fileset Entry
+ * 
+ *  @param          macho the command is contained in.
+ *  @param          filesetentry command
+ *  @param          offset
+ * 
+ *  @returns        the fileset entry command name.
+ */
+char *mach_lc_load_fileset_entry_name (macho_t *macho, mach_fileset_entry_t *fileset, off_t offset)
+{
+    return macho_load_bytes (macho, fileset->cmdsize - sizeof (mach_fileset_entry_t), offset + fileset->offset);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+/**
  *  Finds and creates a mach_uuid_command_t from a given mach-o.
  *  
  *  @param          macho containing LC_UUID command
