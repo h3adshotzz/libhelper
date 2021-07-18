@@ -334,6 +334,8 @@ char *mach_header_read_cpu_subtype (cpu_type_t type, cpu_subtype_t subtype)
     char *cpu_subtype = "";
     if (type == CPU_TYPE_X86_64) {
         return "x86_64";
+    } else if (type == CPU_TYPE_X86) {
+        return "x86";
     } else if (type == CPU_TYPE_ARM64) {
         switch (subtype) {
         case CPU_SUBTYPE_ARM64_ALL:
