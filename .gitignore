@@ -52,16 +52,12 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
-# Meson build directory and test directory
-.obj/
-build/
-arm64_build/
-test/
-kernel.*
-kernelcache.*
-
 # Fuck off DS Store
 .DS_Store
 
 # VSCode config
 .vscode/
+
+# Other
+build/
+test_files/
