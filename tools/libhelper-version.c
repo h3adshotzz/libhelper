@@ -24,14 +24,15 @@
 /* libhelper-version */
 
 #include <stdio.h>
-#include "libhelper-core/version.h"
+#include <libhelper.h>
 
 int main ()
 {
-	printf ("The Libhelper Project (%s)\n", LIBHELPER_VERS_WITH_ARCH);
+	printf ("Copyright (C) 2021, Is This On? Holdings\n\n");
+	printf ("The Libhelper Project (%s)\n", libhelper_get_version());
 	printf ("  Build Time:\t\t" __TIMESTAMP__ "\n");
-	printf ("  Default Target:\t%s-%s\n", BUILD_TARGET, BUILD_ARCH);
-	printf ("  Libhelper:\t\t%s\n", LIBHELPER_VERSION);
+	printf ("  Default Target:\t%s-%s\n", libhelper_get_build_target(), libhelper_get_build_arch());
+	printf ("  Libhelper:\t\t%s\n", libhelper_get_version_string());
 	
 	return 0;
 }

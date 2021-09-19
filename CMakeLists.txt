@@ -53,7 +53,7 @@ add_subdirectory(src/libhelper-core)
 add_subdirectory(src/libhelper-macho)
 
 # Add other subdirectories
-#add_subdirectory(tools)
+add_subdirectory(tools)
 add_subdirectory(tests)
 
 #include(config/install.cmake)
