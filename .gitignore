@@ -59,5 +59,6 @@ dkms.conf
 .vscode/
 
 # Other
+.obj/
 build/
 test_files/
