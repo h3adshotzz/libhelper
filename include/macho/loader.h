@@ -100,6 +100,9 @@ extern "C" {
 
 #include <stdint.h>
 
+#include "macho/header-types.h"
+#include "macho/command-types.h"
+
 /******************************************************************************
 * Libhelper Mach-O Machine Definitions.
 * 
@@ -113,20 +116,17 @@ extern "C" {
 *******************************************************************************/
 
 /**
- *  \brief      CPU type... type.
- * 
- *  These CPU type definitions are originally defined in machine.h, but for the
- *  sake of keeping things simple they are redefined here.
+ *  \brief      These CPU type definitions are originally defined in machine.h, 
+ * 				but for the sake of keeping things simple they are redefined here.
  */
 typedef int                             cpu_type_t;
 typedef int                             cpu_subtype_t;
 typedef int                             cpu_threadtype_t;
 
 /**
- *  \brief      Linux OSSwapInt32.
- * 
- *  Linux does not have OSSwapInt32(), instead it has bswap_32. If the build platform
- *  is linux we should redefine bswap_32 as OSSwapInt32 and include byteswap.h/
+ *  \brief      Linux does not have OSSwapInt32(), instead it has bswap_32. If 
+ * 				the build platform is linux we should redefine bswap_32 as 
+ * 				OSSwapInt32 and include byteswap.h/
  */
 #ifdef __APPLE__
 #   define OSSwapInt32(x)               _OSSwapInt32(x)
@@ -214,6 +214,30 @@ typedef int                             cpu_threadtype_t;
 #define CPU_SUBTYPE_ARM64_PTR_AUTH_MASK             0x0f000000
 #define CPU_SUBTYPE_ARM64_PTR_AUTH_VERSION(x)       (((x) & CPU_SUBTYPE_ARM64_PTR_AUTH_MASK) >> 24)
 
+/**
+ *  Mach-O type specifiers.
+ * 
+ *  These describe the type of Mach-O a particular file is, as the format
+ *  of each type varies slightly, as an executable will not need the same
+ *  structure as a dynamic library.
+ * 
+ *  NOTE: Not all of the types are defined here. As libhelper supports more,
+ *  they will be added here.
+ */
+#define MACH_TYPE_UNKNOWN       0x0             /* unknown Mach type */
+
+#define MACH_TYPE_OBJECT        0x1             /* object file */
+#define MACH_TYPE_EXECUTE       0x2             /* executable file */
+#define MACH_TYPE_FVMLIB        0x3             /* fixed vm shared library */
+#define MACH_TYPE_CORE          0x4             /* core file */
+#define MACH_TYPE_PRELOAD       0x5             /* preloaded executable file */
+#define MACH_TYPE_DYLIB         0x6             /* dynamic library */
+#define MACH_TYPE_DYLINKER      0x7             /* dynamic link editor */
+#define MACH_TYPE_BUNDLE        0x8             /* dynamic bundle file */
+#define MACH_TYPE_DYLIB_STUB    0x9             /* shared library stub for static linking */
+#define MACH_TYPE_DSYM          0xa             /* debugging companion file */
+#define MACH_TYPE_KEXT_BUNDLE   0xb             /* x86_64 KEXT */
+#define MACH_TYPE_FILESET       0xc             /* file composed of other Mach-O's */
 
 /******************************************************************************
 * Libhelper Mach-O Loader Definitions.
@@ -229,8 +253,8 @@ typedef int                             cpu_threadtype_t;
 *******************************************************************************/
 
 /**
- *  The 32-bit Mach header appears at the very beginning of the object file for
- *  32-bit architectures.
+ *  \brief		The 32-bit Mach header appears at the very beginning of the 
+ * 				object file for 32-bit architectures.
  */
 struct mach_header {
 	uint32_t	    magic;		    /* mach magic number identifier */
@@ -246,9 +270,9 @@ struct mach_header {
 #define MH_MAGIC            0xfeedface      /* the mach magic number */
 #define MH_CIGAM            0xcefaedfe      /* OSSwapInt(MH_MAGIC) */
 
-/*
- * The 64-bit mach header appears at the very beginning of object files for
- * 64-bit architectures.
+/**
+ * \brief		The 64-bit mach header appears at the very beginning of 
+ *				object files for 64-bit architectures.
  */
 struct mach_header_64 {
 	uint32_t	    magic;		    /* mach magic number identifier */

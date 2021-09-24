@@ -91,6 +91,7 @@ extern "C" {
 #endif
 
 #include <stdint.h>
+#include <libhelper-hlibc.h>
 
 /**
  *  If LIBHELPER_MACHO_USE_SYSTEM_HEADERS is defined, we can use the system
@@ -105,8 +106,188 @@ extern "C" {
 #   include "macho/loader.h"
 #endif
 
+/**
+ *  Mach-O Magic's
+ * 
+ *  There are three formats we need magics for: 64-, 32-bit and Universal files.
+ *  The magics for 64- and 32-bit are already defined in the loader.h, so just
+ *  redefine them.
+ * 
+ *  The magic for the Universal/FAT files is 0xcafebabe, so we define that here.
+ */
+#define MACH_MAGIC_UNIVERSAL            0xcafebabe
+#define MACH_MAGIC_64                   MH_MAGIC_64
+#define MACH_MAGIC_32                   MH_MAGIC
+
+#define MACH_CIGAM_UNIVERSAL            0xbebafeca
+#define MACH_CIGAM_64                   MH_CIGAM_64
+#define MACH_CIGAM_32                   MH_CIGAM
+
+/**
+ *  Mach-O Header Types.
+ * 
+ *  These are similar to the Mach magic's defined above, however they do not
+ *  take into account the byte order, and can be passed more easily as a data
+ *  type.
+ */
+typedef int                         mach_header_type_t;
+
+#define MH_TYPE_UNKNOWN             ((mach_header_type_t) -1)
+#define MH_TYPE_MACHO64             ((mach_header_type_t) 1)
+#define MH_TYPE_MACHO32             ((mach_header_type_t) 2)
+#define MH_TYPE_FAT                 ((mach_header_type_t) 3)
+
+/**
+ *  Libhelper definitions for mach_header_64 and mach_header.
+ */
+typedef struct mach_header			mach_header_32_t;
+typedef struct mach_header_64		mach_header_t;
+
+/**
+ *  \brief      Mach-O File Structure.
+ * 
+ *  Mach-O File Structure contains all parsed properties of a Mach-O file and
+ *  the raw file data. The Mach-O parser does not use the File API.
+ */ 
+struct __libhelper_macho {
+    /* Raw file properties */
+    uint32_t             size;          /* size of mach-o */
+    uint32_t             offset;        /* start of data */
+    uint8_t             *data;          /* pointer to mach-o in memory */
+
+    /* File properties */
+    const char          *path;          /* original filepath */
+
+    /* Parsed Mach-O properties */
+    mach_header_t       *header;        /* 64-bit mach-o header */
+    HSList              *lcmds;         /* list of all load commands (including LC_SEGMENT) */
+    HSList              *scmds;         /* list of segment commands */
+    HSList              *dylibs;        /* list of dynamic libraries */
+    HSList              *symbols;       /* list of symbols */
+    HSList              *strings;       /* list of strings */
+};
+typedef struct __libhelper_macho        macho_t;
+
+/* TODO: Implement 32-bit mach-o */  
+
+/******************************************************************************
+* Libhelper Mach-O Header Parser.
+*
+* Functions for parsing/handling the Header from a Mach-O.
+*******************************************************************************/
+
+/**
+ *  \brief      Create a new Mach-O header structure.
+ * 
+ *  \returns    An allocated \ref macho_header_t structure
+ */
+extern mach_header_t *
+mach_header_create ();
+
+/**
+ *  \brief      Load a Mach header from a parsed Mach-O structure.
+ * 
+ *  \param macho    Parsed Mach-O to fetch header from.
+ * 
+ *  \returns    Header from given Mach-O.
+ */
+extern mach_header_t *
+mach_header_load (macho_t                  *macho);
+
+/* mach_header_32_load () */
+
+/**
+ *  \brief      Verify a Mach header by it's magic bytes and return a mach header
+ *              type enum.
+ * 
+ *  \param magic    Magic bytes from a file/buffer.
+ * 
+ *  \returns    A mach_header_type_t describing the type of header (unknown, fat, mh64
+ *              or mh32).
+ */
+extern mach_header_type_t
+mach_header_verify (uint32_t                magic);
+
+/**
+ *  \brief      Generate a string to describe a given cpu type & subtype.
+ * 
+ *  \param cpu_type     Mach-O CPU type identifier.
+ *  \param cpu_subtype  Mach-O CPU subtype identifier.
+ * 
+ *  \returns    A "name" for a CPU type/subtype combination.
+ */
+extern char *
+mach_header_get_cpu_string (cpu_type_t      cpu_type,
+                            cpu_subtype_t   cpu_subtype);
+
+/**
+ *  \brief      Generate a string to describe the type of Mach-O given.
+ * 
+ *  \param type     Mach-O type flag.
+ * 
+ *  \returns    A "name" for the Mach-O type.
+ */
+extern char *
+mach_header_get_file_type_string (uint32_t  type);
+
+/**
+ *  \brief      Generate a short string to describe the type of Mach-O given.
+ * 
+ *  \param type     Mach-O type flag.
+ * 
+ *  \returns    A short "name" for the Mach-O type.
+ */
+extern char *
+mach_header_get_file_type_short (uint32_t   type);
+
+
+/******************************************************************************
+* Libhelper Mach-O General Parser.
+*
+* Functions for parsing/handling a Mach-O File.
+*******************************************************************************/
+
+/**
+ *  \brief      Load a Mach-O from a specified 
+ */
+extern char *
+macho_load (const char                     *filename);
+
+/**
+ * 
+ */
+extern char *
+macho_create_from_buffer (unsigned char    *data);
+
+/* macho_64_create_from_buffer & macho_32_create_from_buffer */
+
+/**
+ * 
+ */
+extern void *
+macho_load_bytes (void                     *macho,
+                  size_t                    size,
+                  uint32_t                  offset);
+
+/**
+ * 
+ */
+extern void
+macho_read_bytes (void                     *macho,
+                  uint32_t                  offset,
+                  void                     *buffer,
+                  size_t                    size);
+
+/**
+ * 
+ */
+extern void *
+macho_get_bytes (void                      *macho,
+                 uint32_t                   offset);
+
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* __libhelper_macho_h__
+#endif /* __libhelper_macho_h__ */
