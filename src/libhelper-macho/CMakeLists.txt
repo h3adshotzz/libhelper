@@ -37,5 +37,6 @@ target_include_directories(libhelper
 
 target_sources(libhelper
     PUBLIC
-        test.c
+        macho-header.c
+        macho.c
 )

@@ -24,6 +24,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "libhelper-macho.h"
+#include "libhelper-logger.h"
 
 mach_header_t *
 mach_header_create ()

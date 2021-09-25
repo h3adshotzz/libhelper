@@ -248,21 +248,34 @@ mach_header_get_file_type_short (uint32_t   type);
 *******************************************************************************/
 
 /**
- *  \brief      Load a Mach-O from a specified 
+ *  \brief      Load a Mach-O from a specified file name/path. This function is
+ *              a wrapper for macho_create_from_buffer, the file is loaded and
+ *              mapped into memory, and that pointer is passed to the create from
+ *              buffer function to parse the file.
+ * 
+ *  \param filename     Filename / path to load from.
+ * 
+ *  \returns    A parsed macho_t structure from the loaded file.
  */
-extern char *
+extern macho_t *
 macho_load (const char                     *filename);
 
 /**
+ *  \brief      Parse a Mach-O from a given data buffer into a macho_t structure.
+ *              This function is architecture-agnostic, meaning that it can load
+ *              either 32-bit or 64-bit Mach-O's. 
  * 
+ *  \param data         The data pointer to read & parse from.
+ * 
+ *  \returns    A parsed macho_t structure from the given buffer.
  */
-extern char *
+extern macho_t *
 macho_create_from_buffer (unsigned char    *data);
 
 /* macho_64_create_from_buffer & macho_32_create_from_buffer */
 
 /**
- * 
+ *  \brief      Return  
  */
 extern void *
 macho_load_bytes (void                     *macho,
@@ -279,7 +292,12 @@ macho_read_bytes (void                     *macho,
                   size_t                    size);
 
 /**
+ *  \brief      Return the pointer to an offset within a given macho.
  * 
+ *  \param offset       Offset from the base of the macho to get a pointer
+ *                      to.
+ * 
+ *  \returns    Pointer to base + offset.
  */
 extern void *
 macho_get_bytes (void                      *macho,
