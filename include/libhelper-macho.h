@@ -257,7 +257,7 @@ mach_header_get_file_type_short (uint32_t   type);
  * 
  *  \returns    A parsed macho_t structure from the loaded file.
  */
-extern macho_t *
+extern void *
 macho_load (const char                     *filename);
 
 /**
@@ -275,7 +275,15 @@ macho_create_from_buffer (unsigned char    *data);
 /* macho_64_create_from_buffer & macho_32_create_from_buffer */
 
 /**
- *  \brief      Return  
+ *  \brief      Allocate a new buffer and copy data from a given offset in the macho
+ *              to that new buffer. This should be used when needing to modify data,
+ *              or creating another structure.
+ * 
+ *  \param macho        The macho structure to copy from.
+ *  \param size         Amount of bytes to copy.
+ *  \param offset       Offset to copy from.
+ * 
+ *  \returns    An allocated buffer of size `size`, from macho base + offset.
  */
 extern void *
 macho_load_bytes (void                     *macho,
@@ -283,6 +291,14 @@ macho_load_bytes (void                     *macho,
                   uint32_t                  offset);
 
 /**
+ *  \brief      Copy data from a given offset in the macho into a given buffer. This
+ *              is similar to macho_load_bytes, but copies the data to an already 
+ *              (presumably) allocated buffer, rather than creating and allocating one.
+ * 
+ *  \param macho        The macho structure to copy from.
+ *  \param offset       Amount of bytes to copy.
+ *  \param buffer       Buffer/pointer to copy data to.
+ *  \param size         Amount of bytes to copy.
  * 
  */
 extern void
@@ -292,7 +308,9 @@ macho_read_bytes (void                     *macho,
                   size_t                    size);
 
 /**
- *  \brief      Return the pointer to an offset within a given macho.
+ *  \brief      Get the pointer to an offset within a given macho. This should be
+ *              used when just needed to get a pointer to an area within the allcoated
+ *              macho.
  * 
  *  \param offset       Offset from the base of the macho to get a pointer
  *                      to.

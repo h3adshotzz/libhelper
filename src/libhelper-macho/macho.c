@@ -28,7 +28,7 @@
 #include "libhelper-macho.h"
 #include "libhelper-file.h"
 
-char *
+void *
 macho_load (const char *filename)
 {
     file_t      *file = NULL;
@@ -98,6 +98,23 @@ macho_create_from_buffer (unsigned char *data)
         errorf ("macho_create_from_buffer(): Cannot handle file with magic: 0x%08x\n", hdr->magic);
         return NULL;
     }
+}
+
+void *
+macho_load_bytes (void *macho, size_t size, uint32_t offset)
+{
+    macho_t *tmp = (macho_t *) macho;
+    void *ret = malloc (size);
+
+    memcpy (ret, tmp->data + offset, size);
+    return ret;
+}
+
+void
+macho_read_bytes (void *macho, uint32_t offset, void *buffer, size_t size)
+{
+    macho_t *tmp = (macho_t *) macho;
+    memcpy (buffer, macho_get_bytes (tmp->data, offset), size);
 }
 
 void *
