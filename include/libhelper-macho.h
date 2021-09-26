@@ -92,6 +92,7 @@ extern "C" {
 
 #include <stdint.h>
 #include <libhelper-hlibc.h>
+#include <libhelper-fat.h>
 
 /**
  *  If LIBHELPER_MACHO_USE_SYSTEM_HEADERS is defined, we can use the system
@@ -115,11 +116,11 @@ extern "C" {
  * 
  *  The magic for the Universal/FAT files is 0xcafebabe, so we define that here.
  */
-#define MACH_MAGIC_UNIVERSAL            0xcafebabe
+#define MACH_MAGIC_UNIVERSAL            FAT_MAGIC
 #define MACH_MAGIC_64                   MH_MAGIC_64
 #define MACH_MAGIC_32                   MH_MAGIC
 
-#define MACH_CIGAM_UNIVERSAL            0xbebafeca
+#define MACH_CIGAM_UNIVERSAL            FAT_CIGAM
 #define MACH_CIGAM_64                   MH_CIGAM_64
 #define MACH_CIGAM_32                   MH_CIGAM
 
@@ -369,17 +370,63 @@ extern mach_load_command_info_t *
 mach_load_command_info_create ();
 
 /**
- *  \brief      
+ *  \brief      Parse a Load Command at a given offset and create an info struct
+ *              for that load command. 
+ * 
+ *  \param data     Pointer to the macho.
+ *  \param offset   Offset of the load command.
+ * 
+ *  \returns    A parsed load command info, or NULL.
  */
 extern mach_load_command_info_t *
 mach_load_command_info_load (const char         *data, 
                              uint32_t            offset);
 
 /**
+ *  \brief      Get the name of a given load command, e.g. LC_SEGMENT_64.
  * 
+ *  \param lc       Load command to fetch the name of.
+ * 
+ *  \returns    The name of the load command.
  */
 extern char *
 mach_load_command_get_name (mach_load_command_t *lc);
+
+/**
+ *  \brief      Find a Load Command Info within a macho by its command type. This
+ *              will find the first command in the list with this command type. This
+ *              does not include Segment command or Dylib commands, so it's unlikely
+ *              there would be duplicate commands here.
+ * 
+ *  \param macho    Macho to search through.
+ *  \param cmd      Command type of search for.
+ * 
+ *  \returns    The Load command info for the given type, or NULL.
+ */
+extern mach_load_command_info_t *
+mach_load_command_find_command_by_type (macho_t     *macho,
+                                        uint32_t     cmd);
+
+/**
+ *  \brief      Load a string from a load command. These strings are represented as
+ *              unions at the end of a load command structure, with an offset pointing
+ *              from the base of the load command. The command size includes the string
+ *              length. See `lc_str` in loader.h.
+ * 
+ *  \param macho            Macho containing the command and string.
+ *  \param cmdsize          Size of the load command.
+ *  \param struct_size      Size of the load command struct.
+ *  \param cmd_offset       Offset of the load command in the macho.
+ *  \param str_offset       Offset of the string in the load command.
+ * 
+ *  \returns    The string at the end of the load command.
+ */
+extern char *
+mach_load_command_load_string (macho_t              *macho,
+                               uint32_t              cmdsize,
+                               uint32_t              struct_size,
+                               uint32_t              cmd_offset,
+                               uint32_t              str_offset);
 
 
 

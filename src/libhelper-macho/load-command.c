@@ -139,3 +139,21 @@ mach_load_command_get_name (mach_load_command_t *lc)
 lc_find_name_fail:
     return "LC_UNKNOWN";
 }
+
+mach_load_command_info_t *
+mach_load_command_find_command_by_type (macho_t *macho, uint32_t cmd)
+{
+    uint32_t lc_count = (uint32_t) h_slist_length (macho->lcmds);
+    for (uint32_t i = 0; i < lc_count; i++) {
+        mach_load_command_info_t *tmp = (mach_load_command_info_t *) h_slist_nth_data (macho->lcmds, i);
+        if (tmp->lc->cmd == cmd) return tmp;
+    }
+    return NULL;
+}
+
+char *
+mach_load_command_load_string (macho_t *macho, uint32_t cmdsize, uint32_t struct_size, 
+                               uint32_t cmd_offset, uint32_t str_offset)
+{
+    return macho_load_bytes (macho, cmdsize - struct_size, cmd_offset + str_offset);
+}
