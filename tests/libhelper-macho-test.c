@@ -26,10 +26,16 @@
 #include <stdio.h>
 
 #include <libhelper.h>
+#include <libhelper-macho.h>
+#include <libhelper-logger.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 
 int main (int argc, char *argv[])
 {
+    macho_t *macho = (macho_t *) macho_load (argv[1]);
+    if (!macho)
+        errorf ("libhelper-macho-test: macho is NULL\n");
+
     return 0;
 }

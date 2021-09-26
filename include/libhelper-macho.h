@@ -179,7 +179,7 @@ typedef struct __libhelper_macho        macho_t;
 /**
  *  \brief      Create a new Mach-O header structure.
  * 
- *  \returns    An allocated \ref macho_header_t structure
+ *  \returns    An allocated `macho_header_t` structure
  */
 extern mach_header_t *
 mach_header_create ();
@@ -269,10 +269,23 @@ macho_load (const char                     *filename);
  * 
  *  \returns    A parsed macho_t structure from the given buffer.
  */
-extern macho_t *
+extern void *
 macho_create_from_buffer (unsigned char    *data);
 
 /* macho_64_create_from_buffer & macho_32_create_from_buffer */
+
+/**
+ *  \brief      Parse a 64-bit Mach-O. Take a given buffer and detect the Mach-O
+ *              type, verify and parse into a macho_t structure. It is not required
+ *              to pass a size as the size of the macho can be worked out from 
+ *              information in the header.
+ * 
+ *  \param data         Pointer to the macho in memory.
+ * 
+ *  \returns    A parsed 64-bit macho_t.
+ */
+extern macho_t *
+macho_64_create_from_buffer (unsigned char *data);
 
 /**
  *  \brief      Allocate a new buffer and copy data from a given offset in the macho
@@ -320,6 +333,54 @@ macho_read_bytes (void                     *macho,
 extern void *
 macho_get_bytes (void                      *macho,
                  uint32_t                   offset);
+
+
+/******************************************************************************
+* Libhelper Mach-O Load Command Parser.
+*
+* Functions for parsing/handling the Load Command's from a Mach-O.
+*******************************************************************************/
+
+/**
+ *  \brief      Redefine the load_command struct as a type.
+ */
+typedef struct load_command         mach_load_command_t;
+
+/**
+ *  \brief      Libhelper Mach-O Load Command Info struct. This is a wrapper
+ *              for the load_command structure defined in loader.h which also
+ *              includes the offset of the load command in the Mach-O, and the
+ *              index.
+ */
+struct __libhelper_mach_load_command_info {
+    mach_load_command_t     *lc;        /* load command */
+
+    uint32_t                 offset;    /* offset of the LC in the Mach-O */
+    uint32_t                 index;     /* index in the LC list */
+};
+typedef struct __libhelper_mach_load_command_info       mach_load_command_info_t;
+
+/**
+ *  \brief      Create a new Mach-O Load Command Info structure.
+ * 
+ *  \returns    An allocated `mach_load_command_info_t` structure
+ */
+extern mach_load_command_info_t *
+mach_load_command_info_create ();
+
+/**
+ *  \brief      
+ */
+extern mach_load_command_info_t *
+mach_load_command_info_load (const char         *data, 
+                             uint32_t            offset);
+
+/**
+ * 
+ */
+extern char *
+mach_load_command_get_name (mach_load_command_t *lc);
+
 
 
 #ifdef __cplusplus

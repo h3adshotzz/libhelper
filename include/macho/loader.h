@@ -289,6 +289,23 @@ struct mach_header_64 {
 #define MH_MAGIC_64        0xfeedfacf       /* the mach magic number */
 #define MH_CIGAM_64        0xcffaedfe       /* OSSwapInt(MH_MAGIC_64) */
 
+/**
+ * 	\brief		The Load Commands in a Mach-O file directly follow the Mach
+ * 				Header. The total size of the load commands section will be
+ * 				given as `sizeofcmds` in the header. This structure defines
+ * 				the base of the load commands, all of which must have a cmd
+ * 				identifier and a cmdsize. Each command type has it's own
+ * 				structure, but this allows for all cmds to be identified by
+ * 				having these common bytes at the start.
+ * 
+ * 				More documentation on the Load Commands can be found inside
+ * 				XNU loader.h.
+ */
+struct load_command {
+	uint32_t		cmd;			/* load command type */
+	uint32_t		cmdsize;		/* load command size */
+};
+
 
 
 #ifdef __cplusplus

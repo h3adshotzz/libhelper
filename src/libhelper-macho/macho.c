@@ -27,6 +27,7 @@
 #include "libhelper-logger.h"
 #include "libhelper-macho.h"
 #include "libhelper-file.h"
+#include "libhelper-fat.h"
 
 void *
 macho_load (const char *filename)
@@ -70,7 +71,7 @@ macho_load (const char *filename)
     return macho;
 }
 
-macho_t *
+void *
 macho_create_from_buffer (unsigned char *data)
 {
     /* Check that the data pointer is valid */
@@ -91,7 +92,7 @@ macho_create_from_buffer (unsigned char *data)
 
     /* Handle the file based on the architecture */
     if (type == MH_TYPE_MACHO64) {
-        /* return macho_64_create_from_buffer (data) */
+        return (void * ) macho_64_create_from_buffer (data);
     } else if (type == MH_TYPE_MACHO32) {
         /* return macho_32_create_from_buffer (data) */
     } else {
