@@ -102,6 +102,7 @@ extern "C" {
 
 #include "macho/header-types.h"
 #include "macho/command-types.h"
+#include "macho/segment-flags.h"
 
 /******************************************************************************
 * Libhelper Mach-O Machine Definitions.
@@ -122,6 +123,8 @@ extern "C" {
 typedef int                             cpu_type_t;
 typedef int                             cpu_subtype_t;
 typedef int                             cpu_threadtype_t;
+
+typedef int								vm_prot_t;
 
 /**
  *  \brief      Linux does not have OSSwapInt32(), instead it has bswap_32. If 
@@ -305,6 +308,53 @@ struct load_command {
 	uint32_t		cmd;			/* load command type */
 	uint32_t		cmdsize;		/* load command size */
 };
+
+/**
+ * 	\brief		Segment Load Commands indicate a part of the file to be mapped
+ * 				into the task's address space. The size of the segment in memory,
+ * 				represented by `vmsize`, can be equal to, or larger than, the
+ * 				amount of bytes to map from the file (`filesize`). 
+ * 
+ * 				The file is mapped from `fileoff` to `vmaddr`, any extra memory
+ * 				after mapping is filled with zeros. The initial and maximum
+ * 				memory protection is defined by `initprot` and `maxprot`. If the
+ * 				segment has any sections they will directly follow this structure
+ * 				and they are reflected in the `cmdsize`. 
+ */
+struct segment_command { /* for 32-bit architectures */
+	uint32_t		cmd;			/* LC_SEGMENT */
+	uint32_t		cmdsize;		/* includes sizeof section structs */
+	char			segname[16];	/* segment name */
+	uint32_t		vmaddr;			/* memory address of this segment */
+	uint32_t		vmsize;			/* memory size of this segment */
+	uint32_t		fileoff;		/* file offset of this segment */
+	uint32_t		filesize;		/* amount to map from the file */
+	vm_prot_t		maxprot;		/* maximum VM protection */
+	vm_prot_t		initprot;		/* initial VM protection */
+	uint32_t		nsects;			/* number of sections in segment */
+	uint32_t		flags;			/* flags */
+};
+
+/**
+ * 	\brief		Segment Load Command (64-bit) indicate a part of the file to be
+ * 				mapped into a 64-bit task's address space. If the 64-bit segment
+ * 				has sections, then section_64 structures directly follow this
+ * 				structure, with their size also represented in `cmdsize`.
+ */
+struct segment_command_64 {
+    uint32_t	cmd;			/* LC_SEGMENT_64 */
+    uint32_t	cmdsize;		/* includes sizeof section_64 structs */
+    char		segname[16];	/* segment name */
+    uint64_t	vmaddr;			/* memory address of this segment */
+    uint64_t	vmsize;			/* memory size of this segment */
+    uint64_t	fileoff;		/* file offset of this segment */
+    uint64_t	filesize;		/* amount to map from the file */
+    vm_prot_t	maxprot;		/* maximum VM protection */
+    vm_prot_t	initprot;		/* initial VM protection */
+    uint32_t	nsects;			/* number of sections in segment */
+    uint32_t	flags;			/* flags */   
+};
+
 
 
 

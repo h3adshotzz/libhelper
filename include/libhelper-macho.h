@@ -429,6 +429,59 @@ mach_load_command_load_string (macho_t              *macho,
                                uint32_t              str_offset);
 
 
+/******************************************************************************
+* Libhelper Mach-O Segment Command Parser.
+*
+* Functions for parsing/handling the Segment Command's from a Mach-O.
+*******************************************************************************/
+
+/**
+ *  Virtual memory protection types
+ */
+#define VM_PROT_READ                0x00000001
+#define VM_PROT_WRITE               0x00000002
+#define VM_PROT_EXEC                0x00000004
+
+/**
+ *  Segment command info type. (libhelper)
+ */
+typedef int                             segcmd_arch_t;
+
+#define MACH_SEGCMD_INFO_AARCH64        ((segcmd_arch_t) 1)
+#define MACH_SEGCMD_INFO_AARCH32        ((segcmd_arch_t) 2)
+
+/**
+ *  \brief      Redefine segment_command_64 as a libhelper type.
+ */
+typedef struct segment_command_64       mach_segment_command_64_t;
+
+/**
+ *  \brief      Redefine segment_command as a libhelper type.
+ */
+typedef struct segment_command          mach_segment_command_32_t;
+
+/**
+ *  \brief      Libhelper info wrapper for a Segment Command structure.
+ *              Contains the segment command, a virtual memory padding, the
+ *              offset of the segcmd in the mach-o, and a list of sections in
+ *              the segment.
+ * 
+ *              Whereas there is separate 64 and 32-bit structures for the
+ *              segment command, the info wrapper deals with the arch by
+ *              setting the `arch` property to either MACH_SEGCMD_INFO_AARCH64
+ *              or MACH_SEGCMD_INFO_AARCH32, rather than have the segment
+ *              API duplicated for the sake of 2 types.
+ */
+struct __libhelper_mach_segment_info {
+    void                    *segcmd;        /* segment command */
+    segcmd_arch_t            arch;
+    uint64_t                 vmpadding;     /* vm-address padding */
+    uint32_t                 offset;        /* segcmd offset in macho */
+
+    HSList                  *sections;      /* list of sections */
+};
+typedef struct __libhelper_mach_segment_info    mach_segment_info_t;
+
 
 #ifdef __cplusplus
 }
