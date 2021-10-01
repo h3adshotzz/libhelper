@@ -355,6 +355,49 @@ struct segment_command_64 {
     uint32_t	flags;			/* flags */   
 };
 
+/**
+ * 	\brief		A Segment Load Command will contain, at the end, zero or more
+ * 				sections. These "sections" split up the text and data inside 
+ * 				a segment and describe it. For example, the __TEXT segment may
+ * 				have a __text and __stubs section. 
+ * 
+ * 				When it comes to the actual section structure, it contains the
+ * 				name of the segment it belongs to, the name of itself (if two
+ * 				sections have the same name, they're linked together), address,
+ * 				size, alignment, offset, flags and reserved values.
+ */
+struct section_64 {
+	char		sectname[16];	/* name of this section */
+	char		segname[16];	/* segment this section goes in */
+	uint64_t	addr;			/* memory address of this section */
+	uint64_t	size;			/* size in bytes of this section */
+	uint32_t	offset;			/* file offset of this section */
+	uint32_t	align;			/* section alignment (power of 2) */
+	uint32_t	reloff;			/* file offset of relocation entries */
+	uint32_t	nreloc;			/* number of relocation entries */
+	uint32_t	flags;			/* flags (section type and attributes)*/
+	uint32_t	reserved1;		/* reserved (for offset or index) */
+	uint32_t	reserved2;		/* reserved (for count or sizeof) */
+	uint32_t	reserved3;		/* reserved */
+};
+
+/**
+ * 	\brief		Defines a 32-bit section structure. Same as section_64, but the 
+ * 				address and size values are 32-bits instead of 64-bits.
+ */
+struct section { /* for 32-bit architectures */
+	char		sectname[16];	/* name of this section */
+	char		segname[16];	/* segment this section goes in */
+	uint32_t	addr;			/* memory address of this section */
+	uint32_t	size;			/* size in bytes of this section */
+	uint32_t	offset;			/* file offset of this section */
+	uint32_t	align;			/* section alignment (power of 2) */
+	uint32_t	reloff;			/* file offset of relocation entries */
+	uint32_t	nreloc;			/* number of relocation entries */
+	uint32_t	flags;			/* flags (section type and attributes)*/
+	uint32_t	reserved1;		/* reserved (for offset or index) */
+	uint32_t	reserved2;		/* reserved (for count or sizeof) */
+};
 
 
 

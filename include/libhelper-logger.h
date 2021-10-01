@@ -70,7 +70,7 @@ __libhelper_printf (log_type     msg_type,
  */
 #define errorf(fmt, ...)            __libhelper_printf (LOG_ERROR, fmt, ##__VA_ARGS__)
 #define debugf(fmt, ...)            __libhelper_printf (LOG_DEBUG, fmt, ##__VA_ARGS__)
-#define warningf(fmt, ...)          __libhelper_pritnf (LOG_WARNING, fmt, ##__VA_ARGS__)
+#define warningf(fmt, ...)          __libhelper_printf (LOG_WARNING, fmt, ##__VA_ARGS__)
 
 
 #ifdef __cplusplus

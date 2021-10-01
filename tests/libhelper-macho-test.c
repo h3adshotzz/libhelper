@@ -28,14 +28,40 @@
 #include <libhelper.h>
 #include <libhelper-macho.h>
 #include <libhelper-logger.h>
+#include <libhelper-file.h>
 
 ///////////////////////////////////////////////////////////////////////////////
+
+void print_header (mach_header_t *mh)
+{
+    printf ("magic: 0x%08x\n", mh->magic);
+    printf ("cputype: 0x%08x\n", mh->cputype);
+    printf ("cpusubtype: 0x%08x\n", mh->cpusubtype);
+    printf ("filetype: 0x%08x\n", mh->filetype);
+    printf ("ncmds: 0x%08x\n", mh->ncmds);
+    printf ("sizeofcmds: 0x%08x\n", mh->sizeofcmds);
+    printf ("flags: 0x%08x\n", mh->flags);
+}
 
 int main (int argc, char *argv[])
 {
     macho_t *macho = (macho_t *) macho_load (argv[1]);
     if (!macho)
         errorf ("libhelper-macho-test: macho is NULL\n");
+
+
+    for (int i = 0; i < h_slist_length (macho->scmds); i++) {
+        mach_segment_info_64_t *s = (mach_segment_info_64_t *) h_slist_nth_data (macho->scmds, i);
+        printf ("segment: %s\n", (char *) s->segcmd->segname);
+
+        for (int a = 0; a < h_slist_length (s->sections); a++) {
+            mach_section_64_t *sect = (mach_section_64_t *) h_slist_nth_data (s->sections, a);
+            printf ("\tsectname: %s\n", (char *) sect->sectname);
+        }
+
+    }
+
+    print_header (macho->header);
 
     return 0;
 }

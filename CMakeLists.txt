@@ -41,6 +41,8 @@ set(LIBHELPER_VERSION "3.0.0")
 project("The Libhelper Project" VERSION ${LIBHELPER_VERSION} LANGUAGES C)
 add_library(libhelper SHARED)
 
+set_property(TARGET libhelper PROPERTY C_STANDARD 11)
+
 # Libhelper public headers.
 target_include_directories(libhelper
     PUBLIC

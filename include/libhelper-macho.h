@@ -443,14 +443,6 @@ mach_load_command_load_string (macho_t              *macho,
 #define VM_PROT_EXEC                0x00000004
 
 /**
- *  Segment command info type. (libhelper)
- */
-typedef int                             segcmd_arch_t;
-
-#define MACH_SEGCMD_INFO_AARCH64        ((segcmd_arch_t) 1)
-#define MACH_SEGCMD_INFO_AARCH32        ((segcmd_arch_t) 2)
-
-/**
  *  \brief      Redefine segment_command_64 as a libhelper type.
  */
 typedef struct segment_command_64       mach_segment_command_64_t;
@@ -464,24 +456,75 @@ typedef struct segment_command          mach_segment_command_32_t;
  *  \brief      Libhelper info wrapper for a Segment Command structure.
  *              Contains the segment command, a virtual memory padding, the
  *              offset of the segcmd in the mach-o, and a list of sections in
- *              the segment.
- * 
- *              Whereas there is separate 64 and 32-bit structures for the
- *              segment command, the info wrapper deals with the arch by
- *              setting the `arch` property to either MACH_SEGCMD_INFO_AARCH64
- *              or MACH_SEGCMD_INFO_AARCH32, rather than have the segment
- *              API duplicated for the sake of 2 types.
+ *              the segment. This structure applies to 64-bit segment commands.
  */
-struct __libhelper_mach_segment_info {
-    void                    *segcmd;        /* segment command */
-    segcmd_arch_t            arch;
-    uint64_t                 vmpadding;     /* vm-address padding */
-    uint32_t                 offset;        /* segcmd offset in macho */
+struct __libhelper_mach_segment_info_64 {
+    mach_segment_command_64_t   *segcmd;        /* segment command */
+    uint64_t                     vmpadding;     /* vm-address padding */
+    uint32_t                     offset;        /* segcmd offset in macho */
 
-    HSList                  *sections;      /* list of sections */
+    HSList                      *sections;      /* list of sections */
 };
-typedef struct __libhelper_mach_segment_info    mach_segment_info_t;
+typedef struct __libhelper_mach_segment_info_64    mach_segment_info_64_t;
 
+/**
+ *  \brief      The 32-bit variant of the mach_segment_info_64_t struct. The
+ *              segment_command structure is slightly different for 32-bit, 
+ *              as all values have to be no larger than uint32_t.
+ */
+struct __libhelper_mach_segment_info_32 {
+    mach_segment_command_32_t   *segcmd;        /* segment command 32 */
+    uint32_t                     vmpadding;     /* ideally the padding should 
+                                                    also be 32bit */
+    uint32_t                     offset;        /* segcmd offset in macho */
+
+    HSList                      *sections;      /* list of sections */
+};
+typedef struct __libhelper_mach_segment_info_32     mach_segment_info_32_t;
+
+/**
+ *  NOTE:       Libhelper does not have wrappers for the section structures as
+ *              there isn't any additional metadata to add to make parsing
+ *              them easier. 
+ * 
+ *              In terms of documentation, the `section` struct is already
+ *              well-documented inside loader.h and also on my own blog:
+ *              
+ *              https://h3adsh0tzz.com/2020/01/macho-file-format/#segment-commands
+ */
+
+/**
+ *  \brief      Redefine section_64 as a libhelper type.
+ */
+typedef struct section_64               mach_section_64_t;
+
+/**
+ *  \brief      Redefine section as a libhelper type.
+ */
+typedef struct section                  mach_section_t;
+
+/**
+ *  \brief      
+ */
+extern mach_segment_command_64_t *
+mach_segment_command_64_load (unsigned char    *data,
+                              uint32_t          offset);
+
+/**
+ * 
+ */
+extern mach_segment_info_64_t *
+mach_segment_info_64_load (unsigned char       *data,
+                           uint32_t             offset);
+
+
+
+/**
+ * 
+ */
+extern mach_section_64_t *
+mach_section_64_load (unsigned char             *data,
+                      uint32_t                   offset);
 
 #ifdef __cplusplus
 }

@@ -38,6 +38,8 @@ target_include_directories(libhelper
 target_sources(libhelper
     PUBLIC
         load-command.c
+        segment.c
+        section.c
 
         macho-header.c
         macho64.c
