@@ -54,7 +54,9 @@ int main (int argc, char *argv[])
         mach_segment_info_t *s = (mach_segment_info_t *) h_slist_nth_data (macho->scmds, i);
         mach_segment_command_64_t *segcmd = (mach_segment_command_64_t *) s->segcmd;
 
-        printf ("segment: %s\n", (char *) segcmd->segname);
+        printf ("segment: %s, initprot: %s, maxprot: %s\n", (char *) segcmd->segname,
+            mach_segment_read_vm_protection (segcmd->initprot),
+            mach_segment_read_vm_protection (segcmd->maxprot));
 
         for (int a = 0; a < h_slist_length (s->sections); a++) {
             mach_section_64_t *sect = (mach_section_64_t *) h_slist_nth_data (s->sections, a);
@@ -63,6 +65,7 @@ int main (int argc, char *argv[])
 
     }
 
+    mach_segment_info_t *seg_test = mach_segment_info_search (macho->scmds, "__TEXT");
     print_header (macho->header);
 
     return 0;

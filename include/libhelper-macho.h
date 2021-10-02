@@ -124,7 +124,7 @@ extern "C" {
 #define MACH_CIGAM_64                   MH_CIGAM_64
 #define MACH_CIGAM_32                   MH_CIGAM
 
-/**
+/** 
  *  Mach-O Header Types.
  * 
  *  These are similar to the Mach magic's defined above, however they do not
@@ -516,6 +516,44 @@ mach_segment_info_load (unsigned char          *data,
                            uint32_t             offset);
 
 /**
+ *  \brief      Search for a segment command within a given list that matches
+ *              a given segment name.
+ * 
+ *  \param segments List of segments.
+ *  \param segname  Segment name to search for.
+ * 
+ *  \returns    Segment command info structure.
+ */
+extern mach_segment_info_t *
+mach_segment_info_search (HSList                *segments,
+                          char                  *segname);
+
+/**
+ *  \brief      Return a 32-bit segment command structure from a given segment
+ *              info. Will return NULL if a 32-bit segment command cannot be
+ *              found.
+ * 
+ *  \param info Segment command info structure to search.
+ * 
+ *  \returns    32-bit segment command, or NULL.
+ */
+extern mach_segment_command_32_t *
+mach_segment_command_32_from_info (mach_segment_info_t *info);
+
+/**
+ *  \brief      Return a 64-bit segment command structure from a given segment
+ *              info. Will return NULL if a 64-bit segment command cannot be
+ *              found.
+ * 
+ *  \param info Segment command info structure to search.
+ * 
+ *  \returns    64-bit segment command, or NULL.
+ */
+extern mach_segment_command_64_t *
+mach_segment_command_64_from_info (mach_segment_info_t *info);
+
+
+/**
  *  \brief      Load a 64-bit segment command structure from a specified offset
  *              within a given macho data pointer.
  * 
@@ -542,18 +580,128 @@ mach_segment_command_32_load (unsigned char    *data,
                               uint32_t          offset);
 
 /**
+ *  \brief      Load a 64-bit section structure from a specified offset within a 
+ *              given macho data pointer.
  * 
+ *  \param data     Pointer to the macho.
+ *  \param offset   Offset of the section.
+ * 
+ *  \returns    64-bit section structure.
  */
 extern mach_section_64_t *
 mach_section_64_load (unsigned char             *data,
                       uint32_t                   offset);
 
 /**
+ *  \brief      Return a string representing the memory protection for a given
+ *              vm_prot_t flag.
  * 
+ *  \param prot     Memory protection flag.
+ * 
+ *  \returns    Memory protection description string.
+ */
+extern char *
+mach_segment_read_vm_protection (vm_prot_t prot);
+
+/**
+ *  \brief      Load a 32-bit section structure from a specified offset within a 
+ *              given macho data pointer.
+ * 
+ *  \param data     Pointer to the macho.
+ *  \param offset   Offset of the section.
+ * 
+ *  \returns    32-bit section structure.
  */
 extern mach_section_32_t *
 mach_section_32_load (unsigned char             *data,
                       uint32_t                   offset);
+
+/**
+ *  \brief      Search for a 64-bit section with a given name in a given segment
+ *              info structure.
+ * 
+ *  \param info     Segment info structure to search.
+ *  \param sectname Section name to search for.
+ * 
+ *  \returns    Returns a `mach_section_64_t` with a matching section name to the
+ *              provided `sectname`, or NULL if a match could not be found.
+ */
+extern mach_section_64_t *
+mach_section_64_search_in_segment (mach_segment_info_t  *info, 
+                                   char                 *sectname);
+
+/**
+ *  \brief      Search for a 32-bit section with a given name in a given segment
+ *              info structure.
+ * 
+ *  \param info     Segment info structure to search.
+ *  \param sectname Section name to search for.
+ * 
+ *  \returns    Returns a `mach_section_32_t` with a matching section name to the
+ *              provided `sectname`, or NULL if a match could not be found.
+ */
+extern mach_section_32_t *
+mach_section_32_search_in_segment (mach_segment_info_t  *info, 
+                                   char                 *sectname); 
+
+/**
+ *  \brief      Search for a 32-bit section structure within a given list of segments
+ *              by a given segment and section name.
+ *
+ *              NOTE:   The architecture of sections is the same as that of the parent
+ *                      segment, therefore you would not get a 32-bit section in a 
+ *                      64-bit segment, and vice versa.
+ * 
+ *  \param segments List of segments.
+ *  \param segname  Segment name to search for.
+ *  \param section  Section name to search for.
+ * 
+ *  \returns    Returns a `mach_section_32_t` structure matching the search criteria,
+ *              or NULL if a match could not be found.
+ */
+extern mach_section_32_t *
+mach_section_32_search (HSList                  *segments,
+                        char                    *segname,
+                        char                    *sectname);
+
+/**
+ *  \brief      Search for a 64-bit section structure within a given list of segments
+ *              by a given segment and section name.
+ *
+ *              NOTE:   The architecture of sections is the same as that of the parent
+ *                      segment, therefore you would not get a 64-bit section in a 
+ *                      32-bit segment, and vice versa.
+ * 
+ *  \param segments List of segments.
+ *  \param segname  Segment name to search for.
+ *  \param section  Section name to search for.
+ * 
+ *  \returns    Returns a `mach_section_64_t` structure matching the search criteria,
+ *              or NULL if a match could not be found.
+ */
+extern mach_section_64_t *
+mach_section_64_search (HSList                  *segments,
+                        char                    *segname,
+                        char                    *sectname);
+
+/**
+ *  \brief      Search for a section (architecture-agnostic) at a given index by treating
+ *              the sections as one giant list. 
+ * 
+ *  \param segments List of segment commands.
+ *  \param index    Index for section.
+ * 
+ *  \returns    Returns the section structure, as a `void *`, at the given index by treating
+ *              all the sections as a single list. This is not architecture-specific, so
+ *              return value must be cast to appropriate type. If the result is not value,
+ *              the return value will be NULL. 
+ */
+extern void *
+mach_section_find_at_index (HSList              *segments, 
+                            int                  index);
+
+
+
 
 #ifdef __cplusplus
 }

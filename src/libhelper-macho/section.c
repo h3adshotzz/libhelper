@@ -51,3 +51,105 @@ mach_section_32_load (unsigned char *data, uint32_t offset)
     }
     return s;
 }
+
+mach_section_64_t *
+mach_section_64_search_in_segment (mach_segment_info_t *info, char *sectname) 
+{
+    /* check the given section name is valid */
+    if (!sectname || strlen(sectname) > 16) {
+        errorf ("mach_section_64_search_in_segment: could not find section with invalid sectname.\n");
+        return NULL;
+    }
+
+    /* check the length of the section list */
+    int c = h_slist_length (info->sections);
+    if (!c) {
+        errorf ("mach_section_64_search_in_segment: section list invalid.\n");
+        return NULL;
+    }
+
+    /* search for the section */
+    for (int i = 0; i < c; i++) {
+        mach_section_64_t *sect = (mach_section_64_t *) h_slist_nth_data (info->sections, i);
+        if (!strcmp (sect->sectname, sectname)) return sect;
+    }
+    return NULL;
+}
+
+mach_section_32_t *
+mach_section_32_search_in_segment (mach_segment_info_t *info, char *sectname) 
+{
+    /* check the given section name is valid */
+    if (!sectname || strlen(sectname) > 16) {
+        errorf ("mach_section_32_search_in_segment: could not find section with invalid sectname.\n");
+        return NULL;
+    }
+
+    /* check the length of the section list */
+    int c = h_slist_length (info->sections);
+    if (!c) {
+        errorf ("mach_section_32_search_in_segment: section list invalid.\n");
+        return NULL;
+    }
+
+    /* search for the section */
+    for (int i = 0; i < c; i++) {
+        mach_section_32_t *sect = (mach_section_64_t *) h_slist_nth_data (info->sections, i);
+        if (!strcmp (sect->sectname, sectname)) return sect;
+    }
+    return NULL;
+}
+
+mach_section_64_t *
+mach_section_64_search (HSList *segments, char *segname, char *sectname)
+{
+    /* find the segment first */
+    mach_segment_info_t *seg = mach_segment_info_search (segments, segname);
+    if (!seg) {
+        errorf ("mach_section_64_search: could not find segment: %s\n", segname);
+        return NULL;
+    }
+
+    /* now look for the section */
+    mach_section_64_t *sect = mach_section_64_search_in_segment (seg, sectname);
+
+    /* check if the section is valid */
+    return (sect) ? sect : NULL;
+}
+
+mach_section_32_t *
+mach_section_32_search (HSList *segments, char *segname, char *sectname)
+{
+    /* find the segment first */
+    mach_segment_info_t *seg = mach_segment_info_search (segments, segname);
+    if (!seg) {
+        errorf ("mach_section_64_search: could not find segment: %s\n", segname);
+        return NULL;
+    }
+
+    /* now look for the section */
+    mach_section_32_t *sect = mach_section_32_search_in_segment (seg, sectname);
+
+    /* check if the section is valid */
+    return (sect) ? sect : NULL;
+
+}
+
+void *
+mach_section_find_at_index (HSList *segments, int index)
+{
+    void *sect = NULL;
+    int count = 0;
+
+    for (int i = 0; i < h_slist_length (segments); i++) {
+        mach_segment_info_t *inf = (mach_segment_info_t *) h_slist_nth_data (segments, i);
+        for (int k = 0; k < h_slist_length (inf->sections); k++) {
+            count++;
+            if (count == index) {
+                sect = (void *) h_slist_nth_data (inf->sections, k);
+                break;
+            }
+        }
+    }
+    return (sect) ? sect : NULL;
+}
