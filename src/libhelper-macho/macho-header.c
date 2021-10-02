@@ -55,7 +55,6 @@ mach_header_load (macho_t *macho)
 
         /* Check the magic value */
         mach_header_type_t mh_type = mach_header_verify (hdr->magic);
-        free (hdr);
 
         if (mh_type == MH_TYPE_MACHO64) {
             debugf ("mach_header_load(): detected mach-o 64-bit.\n");
