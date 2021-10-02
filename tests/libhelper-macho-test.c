@@ -51,8 +51,10 @@ int main (int argc, char *argv[])
 
 
     for (int i = 0; i < h_slist_length (macho->scmds); i++) {
-        mach_segment_info_64_t *s = (mach_segment_info_64_t *) h_slist_nth_data (macho->scmds, i);
-        printf ("segment: %s\n", (char *) s->segcmd->segname);
+        mach_segment_info_t *s = (mach_segment_info_t *) h_slist_nth_data (macho->scmds, i);
+        mach_segment_command_64_t *segcmd = (mach_segment_command_64_t *) s->segcmd;
+
+        printf ("segment: %s\n", (char *) segcmd->segname);
 
         for (int a = 0; a < h_slist_length (s->sections); a++) {
             mach_section_64_t *sect = (mach_section_64_t *) h_slist_nth_data (s->sections, a);

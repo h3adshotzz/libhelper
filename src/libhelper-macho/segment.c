@@ -41,27 +41,76 @@ mach_segment_command_64_load (unsigned char *data, uint32_t offset)
     return sc;
 }
 
-mach_segment_info_64_t *
-mach_segment_info_64_load (unsigned char *data, uint32_t offset)
+mach_segment_command_32_t *
+mach_segment_command_32_load (unsigned char *data, uint32_t offset)
 {
-    mach_segment_info_64_t *seg_inf = calloc (1, sizeof (mach_segment_info_64_t));
-    mach_segment_command_64_t *seg = mach_segment_command_64_load (data, offset);
-
-    /* check the segment command was parsed correctly */
-    if (!seg) {
-        errorf ("mach_segment_info_load(): Could not load Segment Command at offset: 0x%08x\n", offset);
+    mach_segment_command_32_t *sc = (mach_segment_command_32_t *) (data + offset);
+    if (!sc) {
+        errorf ("mach_segment_command_32_load: could not load segment command at offset: 0x%08x\n", offset);
         return NULL;
     }
+    return sc;
+}
 
-    uint32_t sectoff = offset + sizeof (mach_segment_command_64_t);
-    for (uint32_t i = 0; i < seg->nsects; i++) {
-        mach_section_64_t *sect = mach_section_64_load (data, sectoff);
-        seg_inf->sections = h_slist_append (seg_inf->sections, sect);
-        sectoff += sizeof (mach_section_64_t);
+mach_segment_info_t *
+mach_segment_info_load (unsigned char *data, uint32_t offset)
+{
+    mach_segment_info_t *inf = calloc (1, sizeof (mach_segment_info_t));
+
+    /* check the architecture */
+    mach_load_command_t *lc = (mach_load_command_t *) (data + offset);
+    if (lc->cmd == LC_SEGMENT_64) {
+
+        /* handle a 64-bit segment */
+        mach_segment_command_64_t *seg = mach_segment_command_64_load (data, offset);
+
+        /* check seg was loaded properly */
+        if (!seg) goto segment_load_error;
+
+        /* assign other info properties */
+        inf->arch = LIBHELPER_ARCH_64;
+        inf->offset = offset;
+        inf->segcmd = seg;
+
+        /* parse sections */
+        uint32_t soff = offset + sizeof (mach_segment_command_64_t);
+        for (int i = 0; i < (int) seg->nsects; i++) {
+            mach_section_64_t *sect = mach_section_64_load (data, soff);
+
+            inf->sections = h_slist_append (inf->sections, sect);
+            soff += sizeof (mach_section_64_t);
+        }
+
+    } else if (lc->cmd == LC_SEGMENT) {
+
+        /* handle a 32-bit segment */
+        mach_segment_command_32_t *seg = mach_segment_command_32_load (data, offset);
+
+        /* check seg was loaded properly */
+        if (!seg) goto segment_load_error;
+
+        /* assign other info properties */
+        inf->arch = LIBHELPER_ARCH_32;
+        inf->offset = offset;
+        inf->segcmd = seg;
+
+        /* parse sections */
+        uint32_t soff = offset + sizeof (mach_segment_command_32_t);
+        for (int i = 0; i < (int) seg->nsects; i++) {
+            mach_section_32_t *sect = mach_section_32_load (data, offset);
+
+            inf->sections = h_slist_append (inf->sections, sect);
+            soff += sizeof (mach_section_32_t);
+        }
+
+    } else {
+        goto segment_load_error;
     }
 
-    /* set the segment info */
-    seg_inf->offset = offset;
-    seg_inf->segcmd = seg;
-    return seg_inf;
+    /* return the segment info */
+    return inf;
+
+segment_load_error:
+    errorf ("mach_segment_info_load: could not load segment at offset: 0x%08x\n", offset);
+    return NULL;
 }

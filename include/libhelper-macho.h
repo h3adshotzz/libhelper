@@ -139,7 +139,17 @@ typedef int                         mach_header_type_t;
 #define MH_TYPE_FAT                 ((mach_header_type_t) 3)
 
 /**
- *  Libhelper definitions for mach_header_64 and mach_header.
+ *  \brief      Architecture types for libhelper wrapper structures that can
+ *              represent both 64-bit and 32-bit types.
+ */
+typedef int                             arch_t;
+
+#define LIBHELPER_ARCH_UNKNOWN      ((arch_t) -1)
+#define LIBHELPER_ARCH_64           ((arch_t) 1)
+#define LIBHELPER_ARCH_32           ((arch_t) 2)
+
+/**
+ *  \brief      Libhelper definitions for mach_header_64 and mach_header.
  */
 typedef struct mach_header			mach_header_32_t;
 typedef struct mach_header_64		mach_header_t;
@@ -456,31 +466,18 @@ typedef struct segment_command          mach_segment_command_32_t;
  *  \brief      Libhelper info wrapper for a Segment Command structure.
  *              Contains the segment command, a virtual memory padding, the
  *              offset of the segcmd in the mach-o, and a list of sections in
- *              the segment. This structure applies to 64-bit segment commands.
+ *              the segment. This structure can represent both 32-bit and
+ *              64-bit segment commands by setting the arch flag.
  */
-struct __libhelper_mach_segment_info_64 {
-    mach_segment_command_64_t   *segcmd;        /* segment command */
+struct __libhelper_mach_segment_info {
+    void                        *segcmd;        /* segment command */
     uint64_t                     vmpadding;     /* vm-address padding */
     uint32_t                     offset;        /* segcmd offset in macho */
+    arch_t                       arch;          /* architecture of segment command */
 
     HSList                      *sections;      /* list of sections */
 };
-typedef struct __libhelper_mach_segment_info_64    mach_segment_info_64_t;
-
-/**
- *  \brief      The 32-bit variant of the mach_segment_info_64_t struct. The
- *              segment_command structure is slightly different for 32-bit, 
- *              as all values have to be no larger than uint32_t.
- */
-struct __libhelper_mach_segment_info_32 {
-    mach_segment_command_32_t   *segcmd;        /* segment command 32 */
-    uint32_t                     vmpadding;     /* ideally the padding should 
-                                                    also be 32bit */
-    uint32_t                     offset;        /* segcmd offset in macho */
-
-    HSList                      *sections;      /* list of sections */
-};
-typedef struct __libhelper_mach_segment_info_32     mach_segment_info_32_t;
+typedef struct __libhelper_mach_segment_info    mach_segment_info_t;
 
 /**
  *  NOTE:       Libhelper does not have wrappers for the section structures as
@@ -501,29 +498,61 @@ typedef struct section_64               mach_section_64_t;
 /**
  *  \brief      Redefine section as a libhelper type.
  */
-typedef struct section                  mach_section_t;
+typedef struct section                  mach_section_32_t;
 
 /**
- *  \brief      
+ *  \brief      Load a segment info structure from a specified offset within
+ *              given macho data pointer. As the structure is describe, it is
+ *              architecture-agnostic, so the `arch` flag needs to be checked
+ *              before accessing segcmd.
+ * 
+ *  \param data     Pointer to the macho.
+ *  \param offset   Offset of the load command.
+ * 
+ *  \returns    Segment command info structure.
+ */
+extern mach_segment_info_t *
+mach_segment_info_load (unsigned char          *data,
+                           uint32_t             offset);
+
+/**
+ *  \brief      Load a 64-bit segment command structure from a specified offset
+ *              within a given macho data pointer.
+ * 
+ *  \param data     Pointer to the macho.
+ *  \param offset   Offset of the load command.
+ * 
+ *  \returns    64-bit segment command structure.
  */
 extern mach_segment_command_64_t *
 mach_segment_command_64_load (unsigned char    *data,
                               uint32_t          offset);
 
 /**
+ *  \brief      Load a 32-bit segment command structure from a specified offset
+ *              within a given macho data pointer.
  * 
+ *  \param data     Pointer to the macho.
+ *  \param offset   Offset of the load command.
+ * 
+ *  \returns    32-bit segment command structure.
  */
-extern mach_segment_info_64_t *
-mach_segment_info_64_load (unsigned char       *data,
-                           uint32_t             offset);
-
-
+extern mach_segment_command_32_t *
+mach_segment_command_32_load (unsigned char    *data,
+                              uint32_t          offset);
 
 /**
  * 
  */
 extern mach_section_64_t *
 mach_section_64_load (unsigned char             *data,
+                      uint32_t                   offset);
+
+/**
+ * 
+ */
+extern mach_section_32_t *
+mach_section_32_load (unsigned char             *data,
                       uint32_t                   offset);
 
 #ifdef __cplusplus

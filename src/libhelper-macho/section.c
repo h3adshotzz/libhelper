@@ -40,3 +40,14 @@ mach_section_64_load (unsigned char *data, uint32_t offset)
     }
     return s;
 }
+
+mach_section_32_t *
+mach_section_32_load (unsigned char *data, uint32_t offset)
+{
+    mach_section_32_t *s = (mach_section_32_t *) (data + offset);
+    if (!s) {
+        errorf ("mach_section_64_load: could not load segment command at offset: 0x%08x\n", offset);
+        return NULL;
+    }
+    return s;
+}

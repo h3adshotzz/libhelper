@@ -52,8 +52,6 @@ macho_64_create_from_buffer (unsigned char *data)
     HSList *scmds = NULL, *lcmds = NULL, *dylibs = NULL;
     uint32_t offset = sizeof (mach_header_t);
 
-    printf ("ptr: %p\n", (void *) &macho->header);
-
     /* parse and load each load command */
     for (int i = 0; i < macho->header->ncmds; i++) {
 
@@ -67,12 +65,11 @@ macho_64_create_from_buffer (unsigned char *data)
         if (lc->cmd == LC_SEGMENT_64) {
 
             /* create segment info struct */
-            mach_segment_info_64_t *seginf = mach_segment_info_64_load ((unsigned char *) macho->data, offset);
+            mach_segment_info_t *seginf = mach_segment_info_load ((unsigned char *) macho->data, offset);
             if (seginf == NULL) {
                 warningf ("macho_create_from_buffer(): failed to load LC_SEGMENT_64 at offset: 0x%08x\n", offset);
                 continue;
             }
-            printf ("parsed: %s\n", (char *) seginf->segcmd->segname);
 
             /* add to segments list */
             scmds = h_slist_append (scmds, seginf);
@@ -86,11 +83,9 @@ macho_64_create_from_buffer (unsigned char *data)
             lcmds = h_slist_append (lcmds, inf);        
         }
 
-        printf ("lc_type[%d]: %s\n", i, mach_load_command_get_name (lc));
+        debugf ("lc_type[%d]: %s\n", i, mach_load_command_get_name (lc));
         offset += lc->cmdsize;
     }
-
-    printf ("ptr: %p\n", (void *) &macho->header);
 
     /* set macho offset */
     macho->offset = offset;
@@ -101,8 +96,14 @@ macho_64_create_from_buffer (unsigned char *data)
     macho->dylibs = dylibs;
 
     /* fix size */
-    mach_segment_info_64_t *last_seg = (mach_segment_info_64_t *) h_slist_last (macho->scmds);
-    macho->size = last_seg->segcmd->fileoff + last_seg->segcmd->filesize;
+    mach_segment_info_t *last_seg = (mach_segment_info_t *) h_slist_last (macho->scmds);
+    if (last_seg->arch == LIBHELPER_ARCH_64) {
+        mach_segment_command_64_t *segcmd = last_seg->segcmd;
+        macho->size = segcmd->fileoff + segcmd->filesize;
+    } else {
+        mach_segment_command_32_t *segcmd = last_seg->segcmd;
+        macho->size = segcmd->fileoff + segcmd->filesize;
+    }
    
     return macho;
 }

@@ -57,8 +57,8 @@ macho_load (const char *filename)
     }
 
     /* We use macho_create_from_buffer() to reuse more code */
-    debugf ("macho_load(): creating mach-o struct.\n");
-    macho = macho_create_from_buffer ((unsigned char *) file_get_data (file, 0));
+    unsigned char *data = (unsigned char *) file_dup_data (file, 0, file->size);
+    macho = macho_create_from_buffer (data);
 
     /* Verify the Mach-O */
     if (macho == NULL) {
@@ -66,6 +66,9 @@ macho_load (const char *filename)
         free (file);
         return NULL;
     }
+
+    /* the file structure is no longer needed, as the data is copied to the macho */
+    free (file);
 
     debugf ("macho_load(): all is well.\n");
     return macho;

@@ -313,6 +313,8 @@ char *mstrappend(char *toap, ...) {
         
 }
 
+#define LIBHELPER_DEBUG 1
+
 int __libhelper_printf(log_type msg_type, char *fmt, ...) {
     // Create arg and done vars
     va_list arg;
