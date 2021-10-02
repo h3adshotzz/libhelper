@@ -29,7 +29,7 @@
 /**
  *  Load Command translation table.
  */
-static struct __libhelper_lc_string {
+struct __libhelper_lc_string {
     uint32_t         lc;        /* Load command ID */
     char            *str;       /* Load command name */;
 };
@@ -100,15 +100,9 @@ static struct __libhelper_lc_string lc_list[] =
 
 
 mach_load_command_info_t *
-mach_load_command_info_create ()
-{
-    return (mach_load_command_info_t *) calloc (1, sizeof (mach_load_command_info_t));
-}
-
-mach_load_command_info_t *
 mach_load_command_info_load (const char *data, uint32_t offset)
 {
-    mach_load_command_info_t *lc_inf = mach_load_command_info_create ();
+    mach_load_command_info_t *lc_inf = calloc (1, sizeof (mach_load_command_info_t));
 
     /* Load bytes from data + offset */
     lc_inf->lc = (mach_load_command_t *) (data + offset);

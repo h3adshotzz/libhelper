@@ -45,7 +45,14 @@ void print_header (mach_header_t *mh)
 
 int main (int argc, char *argv[])
 {
-    macho_t *macho = (macho_t *) macho_load (argv[1]);
+    const char *filename = argv[1];
+    mach_header_type_t type = macho_check_arch (filename);
+    if (type != MH_TYPE_MACHO64) {
+        printf ("macho is not 64-bit: type: %d, filename: %s\n", type, filename);
+        return 0;
+    }
+
+    macho_t *macho = macho_64_load (argv[1]);
     if (!macho)
         errorf ("libhelper-macho-test: macho is NULL\n");
 

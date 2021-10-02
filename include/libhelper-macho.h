@@ -139,7 +139,7 @@ typedef int                         mach_header_type_t;
 #define MH_TYPE_FAT                 ((mach_header_type_t) 3)
 
 /**
- *  \brief      Architecture types for libhelper wrapper structures that can
+ *  \brief      Architecture type for libhelper wrapper structures that can
  *              represent both 64-bit and 32-bit types.
  */
 typedef int                             arch_t;
@@ -155,11 +155,10 @@ typedef struct mach_header			mach_header_32_t;
 typedef struct mach_header_64		mach_header_t;
 
 /**
- *  \brief      Mach-O File Structure.
- * 
- *  Mach-O File Structure contains all parsed properties of a Mach-O file and
- *  the raw file data. The Mach-O parser does not use the File API.
+ *  \brief      High-level Mach-O File Structure containing all raw file data
+ *              and parsed properties of a Mach-O file. 
  */ 
+typedef struct __libhelper_macho        macho_t;
 struct __libhelper_macho {
     /* Raw file properties */
     uint32_t             size;          /* size of mach-o */
@@ -177,7 +176,6 @@ struct __libhelper_macho {
     HSList              *symbols;       /* list of symbols */
     HSList              *strings;       /* list of strings */
 };
-typedef struct __libhelper_macho        macho_t;
 
 /* TODO: Implement 32-bit mach-o */  
 
@@ -188,19 +186,13 @@ typedef struct __libhelper_macho        macho_t;
 *******************************************************************************/
 
 /**
- *  \brief      Create a new Mach-O header structure.
+ *  \brief      Copy and verify the header bytes from a given `macho_t`'s raw data
+ *              property into a new `mach_header_t` structure. 
  * 
- *  \returns    An allocated `macho_header_t` structure
- */
-extern mach_header_t *
-mach_header_create ();
-
-/**
- *  \brief      Load a Mach header from a parsed Mach-O structure.
+ *  \param macho    A parsed `macho_t` to work from.
  * 
- *  \param macho    Parsed Mach-O to fetch header from.
- * 
- *  \returns    Header from given Mach-O.
+ *  \returns    Returns a new `mach_header_t` structure with the header bytes
+ *              copied.
  */
 extern mach_header_t *
 mach_header_load (macho_t                  *macho);
@@ -208,45 +200,66 @@ mach_header_load (macho_t                  *macho);
 /* mach_header_32_load () */
 
 /**
- *  \brief      Verify a Mach header by it's magic bytes and return a mach header
- *              type enum.
+ *  \brief      Verify a Mach Headers magic bytes.
  * 
  *  \param magic    Magic bytes from a file/buffer.
  * 
- *  \returns    A mach_header_type_t describing the type of header (unknown, fat, mh64
- *              or mh32).
+ *  \returns    Returns a `mach_header_type_t` that matches the magic value that
+ *              was passed. This ignores endianness, so whether the magic is a
+ *              FEEDFACE or CEFAEDFE, the result would be a 64-bit macho, etc.
+ * 
+ *              If the magic is unrecognised, the `MH_TYPE_UNKNOWN` result is 
+ *              returned.
  */
 extern mach_header_type_t
 mach_header_verify (uint32_t                magic);
 
 /**
- *  \brief      Generate a string to describe a given cpu type & subtype.
+ *  \brief      Generate a human-readable string to describe the CPU type and
+ *              subtype. 32-bit ARM CPUs are collectively referred to as "arm32", 
+ *              64-bit ARM CPUs are referred to either as "arm64" for basic, or 
+ *              "arm64e" for SoC's with extensions such as Pointer Authentication 
+ *              or Memory Tagging Extension (MTE). "arm64_32" refers to arm64
+ *              CPUs running in 32-bit mode, and Mac Intel chips are x86_64.
  * 
- *  \param cpu_type     Mach-O CPU type identifier.
- *  \param cpu_subtype  Mach-O CPU subtype identifier.
+ *              Future additons to arm64 that do not yet have support in libhelper
+ *              would be identified as "arm64_unknown", so it is advised you add
+ *              some sort of handling for this event.
  * 
- *  \returns    A "name" for a CPU type/subtype combination.
+ *  \param cpu_type     CPU type identifier.
+ *  \param cpu_subtype  CPU subtype identifier.
+ * 
+ *  \returns    Returns a string descriptor for the combined CPU type and subtype,
+ *              assuming that they were both originally paired together. If the
+ *              combination was unrecognised, the string "unknown_cpu" is returned.
  */
 extern char *
 mach_header_get_cpu_string (cpu_type_t      cpu_type,
                             cpu_subtype_t   cpu_subtype);
 
 /**
- *  \brief      Generate a string to describe the type of Mach-O given.
+ *  \brief      Generate a human-readable string to describe a Mach-O file's
+ *              format/type. These types are defined in header-types.h or the
+ *              system loader.h. The format for these strings is "Mach <file type>
+ *              (<macro_type>)".
  * 
- *  \param type     Mach-O type flag.
+ *  \param type     Type flag.
  * 
- *  \returns    A "name" for the Mach-O type.
+ *  \returns    Returns a string descriptor for the type flag. If the type is 
+ *              not recognised, the string "Mach Unknown" will be returned instead.
  */
 extern char *
 mach_header_get_file_type_string (uint32_t  type);
 
 /**
- *  \brief      Generate a short string to describe the type of Mach-O given.
+ *  \brief      Generate a short human-readable string to describe a Mach-O's file
+ *              format/type. The format for these shortened strings is, using the
+ *              MACH_TYPE_OBJECT as an example, simply "Object".
  * 
  *  \param type     Mach-O type flag.
  * 
- *  \returns    A short "name" for the Mach-O type.
+ *  \returns    Returns a short string descriptor for the type flag. If the type
+ *              is not recognised, the string "Unknown" will be returned instead.
  */
 extern char *
 mach_header_get_file_type_short (uint32_t   type);
@@ -255,48 +268,56 @@ mach_header_get_file_type_short (uint32_t   type);
 /******************************************************************************
 * Libhelper Mach-O General Parser.
 *
-* Functions for parsing/handling a Mach-O File.
+* These functions define the API for parsing an entire Mach-O file. Parsing for
+* other elements, like Load & Segment commands, libraries and code-signing is
+* defined further down.
 *******************************************************************************/
 
 /**
- *  \brief      Load a Mach-O from a specified file name/path. This function is
- *              a wrapper for macho_create_from_buffer, the file is loaded and
- *              mapped into memory, and that pointer is passed to the create from
- *              buffer function to parse the file.
+ *  \brief      Check the architecture of a presumed Mach-O file before loading,
+ *              so as to know whether to call `macho_64_load()` or `macho_32_load()`.
  * 
  *  \param filename     Filename / path to load from.
  * 
- *  \returns    A parsed macho_t structure from the loaded file.
+ *  \returns    Returns a `mach_header_type_t` to identify what architecture the
+ *              file is, or whether to use the FAT/Universal binary loading API
+ *              instead.
  */
-extern void *
-macho_load (const char                     *filename);
+extern mach_header_type_t
+macho_check_arch (const char *filename);
 
 /**
- *  \brief      Parse a Mach-O from a given data buffer into a macho_t structure.
- *              This function is architecture-agnostic, meaning that it can load
- *              either 32-bit or 64-bit Mach-O's. 
+ *  \brief      Load a Mach-O from a given filename / filepath. This function acts
+ *              as a wrapper for `macho_64_create_from_buffer()`. The entire file
+ *              is parsed and all `macho_t` fields populated.
  * 
- *  \param data         The data pointer to read & parse from.
+ *              It is assumed that you check the architecture of the file before
+ *              using this to load it. Please use `macho_check_arch()` to verify
+ *              that a file is indeed a 64-bit Mach-O. 
  * 
- *  \returns    A parsed macho_t structure from the given buffer.
+ *  \param filename     Filename / path to load from.
+ * 
+ *  \returns    Returns a `macho_t` struct for the parsed 64-bit Mach-O, or NULL
+ *              if there was an error.
  */
-extern void *
-macho_create_from_buffer (unsigned char    *data);
-
-/* macho_64_create_from_buffer & macho_32_create_from_buffer */
+extern macho_t *
+macho_64_load (const char                     *filename);
 
 /**
  *  \brief      Parse a 64-bit Mach-O. Take a given buffer and detect the Mach-O
- *              type, verify and parse into a macho_t structure. It is not required
+ *              type, verify and parse into a `macho_t` structure. It is not required
  *              to pass a size as the size of the macho can be worked out from 
  *              information in the header.
  * 
  *  \param data         Pointer to the macho in memory.
  * 
- *  \returns    A parsed 64-bit macho_t.
+ *  \returns    Returns a `macho_t` struct for the parsed 64-bit Mach-O, or NULL
+ *              if there was an error.
  */
 extern macho_t *
 macho_64_create_from_buffer (unsigned char *data);
+
+/* macho_32_create_from_buffer */
 
 /**
  *  \brief      Allocate a new buffer and copy data from a given offset in the macho
@@ -307,7 +328,7 @@ macho_64_create_from_buffer (unsigned char *data);
  *  \param size         Amount of bytes to copy.
  *  \param offset       Offset to copy from.
  * 
- *  \returns    An allocated buffer of size `size`, from macho base + offset.
+ *  \returns    Returns an allocated buffer of size `size`, from macho base + offset.
  */
 extern void *
 macho_load_bytes (void                     *macho,
@@ -323,7 +344,6 @@ macho_load_bytes (void                     *macho,
  *  \param offset       Amount of bytes to copy.
  *  \param buffer       Buffer/pointer to copy data to.
  *  \param size         Amount of bytes to copy.
- * 
  */
 extern void
 macho_read_bytes (void                     *macho,
@@ -339,7 +359,7 @@ macho_read_bytes (void                     *macho,
  *  \param offset       Offset from the base of the macho to get a pointer
  *                      to.
  * 
- *  \returns    Pointer to base + offset.
+ *  \returns    Returns a pointer to `(macho->data + offset)`.
  */
 extern void *
 macho_get_bytes (void                      *macho,
@@ -353,7 +373,7 @@ macho_get_bytes (void                      *macho,
 *******************************************************************************/
 
 /**
- *  \brief      Redefine the load_command struct as a type.
+ *  \brief      Redefinition of `load_command` structure as a Libhelper type.
  */
 typedef struct load_command         mach_load_command_t;
 
@@ -363,41 +383,37 @@ typedef struct load_command         mach_load_command_t;
  *              includes the offset of the load command in the Mach-O, and the
  *              index.
  */
+typedef struct __libhelper_mach_load_command_info       mach_load_command_info_t;
 struct __libhelper_mach_load_command_info {
     mach_load_command_t     *lc;        /* load command */
 
     uint32_t                 offset;    /* offset of the LC in the Mach-O */
     uint32_t                 index;     /* index in the LC list */
 };
-typedef struct __libhelper_mach_load_command_info       mach_load_command_info_t;
 
 /**
- *  \brief      Create a new Mach-O Load Command Info structure.
- * 
- *  \returns    An allocated `mach_load_command_info_t` structure
- */
-extern mach_load_command_info_t *
-mach_load_command_info_create ();
-
-/**
- *  \brief      Parse a Load Command at a given offset and create an info struct
- *              for that load command. 
+ *  \brief      Parse a Load Command from the pointer to `(data + offset)` and
+ *              create a `mach_load_command_info_t` structure.
  * 
  *  \param data     Pointer to the macho.
  *  \param offset   Offset of the load command.
  * 
- *  \returns    A parsed load command info, or NULL.
+ *  \returns    Returns a `mach_load_command_info_t` structure, or NULL if
+ *              parsing was unsuccessful.
  */
 extern mach_load_command_info_t *
 mach_load_command_info_load (const char         *data, 
                              uint32_t            offset);
 
 /**
- *  \brief      Get the name of a given load command, e.g. LC_SEGMENT_64.
+ *  \brief      Fetch the human-readable name for a Load command identifier.
+ *              For example, the load command `0x19` is an `LC_SEGMENT_64`, so
+ *              the string "LC_SEGMENT_64" would be returned.
  * 
  *  \param lc       Load command to fetch the name of.
  * 
- *  \returns    The name of the load command.
+ *  \returns    Returns the name of the Load command, or "LC_UNKNOWN" is the name
+ *              could not be determined.
  */
 extern char *
 mach_load_command_get_name (mach_load_command_t *lc);
@@ -411,7 +427,7 @@ mach_load_command_get_name (mach_load_command_t *lc);
  *  \param macho    Macho to search through.
  *  \param cmd      Command type of search for.
  * 
- *  \returns    The Load command info for the given type, or NULL.
+ *  \returns    Returns the Load command info for the given type, or NULL.
  */
 extern mach_load_command_info_t *
 mach_load_command_find_command_by_type (macho_t     *macho,
@@ -429,7 +445,7 @@ mach_load_command_find_command_by_type (macho_t     *macho,
  *  \param cmd_offset       Offset of the load command in the macho.
  *  \param str_offset       Offset of the string in the load command.
  * 
- *  \returns    The string at the end of the load command.
+ *  \returns    Returns the string at the end of the load command.
  */
 extern char *
 mach_load_command_load_string (macho_t              *macho,
@@ -469,6 +485,7 @@ typedef struct segment_command          mach_segment_command_32_t;
  *              the segment. This structure can represent both 32-bit and
  *              64-bit segment commands by setting the arch flag.
  */
+typedef struct __libhelper_mach_segment_info    mach_segment_info_t;
 struct __libhelper_mach_segment_info {
     void                        *segcmd;        /* segment command */
     uint64_t                     vmpadding;     /* vm-address padding */
@@ -477,7 +494,6 @@ struct __libhelper_mach_segment_info {
 
     HSList                      *sections;      /* list of sections */
 };
-typedef struct __libhelper_mach_segment_info    mach_segment_info_t;
 
 /**
  *  NOTE:       Libhelper does not have wrappers for the section structures as
@@ -502,52 +518,53 @@ typedef struct section                  mach_section_32_t;
 
 /**
  *  \brief      Load a segment info structure from a specified offset within
- *              given macho data pointer. As the structure is describe, it is
+ *              given macho data pointer. As the structure is described, it is
  *              architecture-agnostic, so the `arch` flag needs to be checked
  *              before accessing segcmd.
  * 
  *  \param data     Pointer to the macho.
  *  \param offset   Offset of the load command.
  * 
- *  \returns    Segment command info structure.
+ *  \returns    The segment command info structure, or NULL.
  */
 extern mach_segment_info_t *
 mach_segment_info_load (unsigned char          *data,
                            uint32_t             offset);
 
 /**
- *  \brief      Search for a segment command within a given list that matches
- *              a given segment name.
+ *  \brief      Search, in a list of Segment command info's, for a Segment command
+ *              that matches the provided `segname` and return it.
  * 
  *  \param segments List of segments.
  *  \param segname  Segment name to search for.
  * 
- *  \returns    Segment command info structure.
+ *  \returns    The segment command info structure, or NULL.
  */
 extern mach_segment_info_t *
 mach_segment_info_search (HSList                *segments,
                           char                  *segname);
 
 /**
- *  \brief      Return a 32-bit segment command structure from a given segment
- *              info. Will return NULL if a 32-bit segment command cannot be
- *              found.
+ *  \brief      Fetch a 32-bit segment command structure from a given segment
+ *              info.
  * 
  *  \param info Segment command info structure to search.
  * 
- *  \returns    32-bit segment command, or NULL.
+ *  \returns    A 32-bit segment command, or NULL if `info` was invalid or if the
+ *              command was not 32-bit.
  */
 extern mach_segment_command_32_t *
 mach_segment_command_32_from_info (mach_segment_info_t *info);
 
 /**
- *  \brief      Return a 64-bit segment command structure from a given segment
+ *  \brief      Fetch a 64-bit segment command structure from a given segment
  *              info. Will return NULL if a 64-bit segment command cannot be
  *              found.
  * 
  *  \param info Segment command info structure to search.
  * 
- *  \returns    64-bit segment command, or NULL.
+ *  \returns    A 64-bit segment command, or NULL if `info` was invalid or if the
+ *              command was not 64-bit.
  */
 extern mach_segment_command_64_t *
 mach_segment_command_64_from_info (mach_segment_info_t *info);
@@ -560,7 +577,7 @@ mach_segment_command_64_from_info (mach_segment_info_t *info);
  *  \param data     Pointer to the macho.
  *  \param offset   Offset of the load command.
  * 
- *  \returns    64-bit segment command structure.
+ *  \returns    A 64-bit segment command structure.
  */
 extern mach_segment_command_64_t *
 mach_segment_command_64_load (unsigned char    *data,
@@ -573,7 +590,7 @@ mach_segment_command_64_load (unsigned char    *data,
  *  \param data     Pointer to the macho.
  *  \param offset   Offset of the load command.
  * 
- *  \returns    32-bit segment command structure.
+ *  \returns    A 32-bit segment command structure.
  */
 extern mach_segment_command_32_t *
 mach_segment_command_32_load (unsigned char    *data,
@@ -586,7 +603,7 @@ mach_segment_command_32_load (unsigned char    *data,
  *  \param data     Pointer to the macho.
  *  \param offset   Offset of the section.
  * 
- *  \returns    64-bit section structure.
+ *  \returns    A 64-bit section structure.
  */
 extern mach_section_64_t *
 mach_section_64_load (unsigned char             *data,
@@ -598,7 +615,8 @@ mach_section_64_load (unsigned char             *data,
  * 
  *  \param prot     Memory protection flag.
  * 
- *  \returns    Memory protection description string.
+ *  \returns    A string representing the memory protection specified by `prot`.
+ *              For example, a read, execute protection would generated "r-x".
  */
 extern char *
 mach_segment_read_vm_protection (vm_prot_t prot);
@@ -610,7 +628,7 @@ mach_segment_read_vm_protection (vm_prot_t prot);
  *  \param data     Pointer to the macho.
  *  \param offset   Offset of the section.
  * 
- *  \returns    32-bit section structure.
+ *  \returns    A 32-bit section structure.
  */
 extern mach_section_32_t *
 mach_section_32_load (unsigned char             *data,

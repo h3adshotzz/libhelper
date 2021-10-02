@@ -76,7 +76,7 @@ macho_64_create_from_buffer (unsigned char *data)
         } else {
 
             /* any other commands are stored as load command info structs */
-            mach_load_command_info_t *inf = mach_load_command_info_create ();
+            mach_load_command_info_t *inf = calloc (1, sizeof (mach_load_command_info_t));
             inf->lc = lc;
             inf->offset = offset;
 

@@ -27,14 +27,6 @@
 #include "libhelper-logger.h"
 
 mach_header_t *
-mach_header_create ()
-{
-    mach_header_t *ret = malloc (sizeof (mach_header_t));
-    memset (ret, '\0', sizeof (mach_header_t));
-    return ret;
-}
-
-mach_header_t *
 mach_header_load (macho_t *macho)
 {
     mach_header_t *hdr;
@@ -42,7 +34,7 @@ mach_header_load (macho_t *macho)
     /* Check that the macho_t given was initialised properly */
     if (macho) {
         unsigned char *data = macho->data;
-        hdr = mach_header_create ();
+        hdr = calloc(1, sizeof (mach_header_t));
 
         /* Copy bytes from data to hdr */
         memcpy (hdr, &data[0], sizeof (mach_header_t));
@@ -76,6 +68,7 @@ mach_header_load (macho_t *macho)
 mach_header_type_t
 mach_header_verify (uint32_t magic)
 {
+    debugf("magic: 0x%08x\n", magic);
     switch (magic) {
         case MACH_MAGIC_64:
         case MACH_CIGAM_64:
@@ -107,6 +100,8 @@ mach_header_get_cpu_string (cpu_type_t      cpu_type,
                     return "arm64";     /* ARMv8-A */
                 case CPU_SUBTYPE_ARM64E:
                     return "arm64e";
+                default:
+                    return "arm64_unknown";
             }
 
         /* ARM64_32 CPUs */

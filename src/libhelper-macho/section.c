@@ -94,7 +94,7 @@ mach_section_32_search_in_segment (mach_segment_info_t *info, char *sectname)
 
     /* search for the section */
     for (int i = 0; i < c; i++) {
-        mach_section_32_t *sect = (mach_section_64_t *) h_slist_nth_data (info->sections, i);
+        mach_section_32_t *sect = (mach_section_32_t *) h_slist_nth_data (info->sections, i);
         if (!strcmp (sect->sectname, sectname)) return sect;
     }
     return NULL;
