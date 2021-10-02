@@ -137,8 +137,10 @@ lc_find_name_fail:
 mach_load_command_info_t *
 mach_load_command_find_command_by_type (macho_t *macho, uint32_t cmd)
 {
-    uint32_t lc_count = (uint32_t) h_slist_length (macho->lcmds);
-    for (uint32_t i = 0; i < lc_count; i++) {
+    HSList *lcmds = macho->lcmds;
+    int c = h_slist_length (lcmds);
+
+    for (int i = 0; i < c; i++) {
         mach_load_command_info_t *tmp = (mach_load_command_info_t *) h_slist_nth_data (macho->lcmds, i);
         if (tmp->lc->cmd == cmd) return tmp;
     }

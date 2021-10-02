@@ -597,6 +597,18 @@ mach_segment_command_32_load (unsigned char    *data,
                               uint32_t          offset);
 
 /**
+ *  \brief      Return a string representing the memory protection for a given
+ *              vm_prot_t flag.
+ * 
+ *  \param prot     Memory protection flag.
+ * 
+ *  \returns    A string representing the memory protection specified by `prot`.
+ *              For example, a read, execute protection would generated "r-x".
+ */
+extern char *
+mach_segment_read_vm_protection (vm_prot_t prot);
+
+/**
  *  \brief      Load a 64-bit section structure from a specified offset within a 
  *              given macho data pointer.
  * 
@@ -608,18 +620,6 @@ mach_segment_command_32_load (unsigned char    *data,
 extern mach_section_64_t *
 mach_section_64_load (unsigned char             *data,
                       uint32_t                   offset);
-
-/**
- *  \brief      Return a string representing the memory protection for a given
- *              vm_prot_t flag.
- * 
- *  \param prot     Memory protection flag.
- * 
- *  \returns    A string representing the memory protection specified by `prot`.
- *              For example, a read, execute protection would generated "r-x".
- */
-extern char *
-mach_segment_read_vm_protection (vm_prot_t prot);
 
 /**
  *  \brief      Load a 32-bit section structure from a specified offset within a 

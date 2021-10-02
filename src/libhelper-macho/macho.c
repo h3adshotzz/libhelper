@@ -116,7 +116,7 @@ void
 macho_read_bytes (void *macho, uint32_t offset, void *buffer, size_t size)
 {
     macho_t *tmp = (macho_t *) macho;
-    memcpy (buffer, macho_get_bytes (tmp->data, offset), size);
+    memcpy (buffer, (tmp->data + offset), size);
 }
 
 void *

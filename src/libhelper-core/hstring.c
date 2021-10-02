@@ -313,7 +313,7 @@ char *mstrappend(char *toap, ...) {
         
 }
 
-#define LIBHELPER_DEBUG 1
+//#define LIBHELPER_DEBUG 1
 
 int __libhelper_printf(log_type msg_type, char *fmt, ...) {
     // Create arg and done vars
@@ -331,6 +331,10 @@ int __libhelper_printf(log_type msg_type, char *fmt, ...) {
 #else
         return 1;
 #endif      
+    } else if (msg_type == LOG_TEST_SUCCESS) {
+        fmt = mstrappend("%s%s%s", ANSI_COLOR_GREEN "[TEST_SUCCESS] ", fmt, ANSI_COLOR_GREEN ANSI_COLOR_RESET);
+    } else if (msg_type == LOG_TEST_FAIL) {
+        fmt = mstrappend("%s%s%s", ANSI_COLOR_RED "[ TEST_FAILED] ", fmt, ANSI_COLOR_RED ANSI_COLOR_RESET);
     }
 
     // Initialize a variable argument list with arg & fmt
