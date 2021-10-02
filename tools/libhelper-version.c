@@ -15,7 +15,7 @@
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-//  Copyright (C) 2021, Is This On? Holdings
+//  Copyright (C) 2021, Is This On? Holdings Limited
 //  
 //  Harry Moulton <me@h3adsh0tzz.com>
 //
@@ -28,7 +28,7 @@
 
 int main ()
 {
-	printf ("Copyright (C) 2021, Is This On? Holdings\n\n");
+	printf ("Copyright (C) 2021, Is This On? Holdings Limited\n\n");
 	printf ("The Libhelper Project (%s)\n", libhelper_get_version());
 	printf ("  Build Time:\t\t" __TIMESTAMP__ "\n");
 	printf ("  Default Target:\t%s-%s\n", libhelper_get_build_target(), libhelper_get_build_arch());
