@@ -24,6 +24,17 @@
 # This script just compares which structs are present in the XNU loader.h compared
 # to the libhelper one so i can get a quick list of whats implemented.
 
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
 def parse_header_file(fn):
     struct_list = []
     data = None
@@ -57,6 +68,26 @@ if __name__ == "__main__":
     # Gather list of all structs
     all_structs = get_loader_h_structs ()
 
+    yes = []
+    no = []
+
     for struct in all_structs:
         if struct not in implemented:
-            print("[NOT IMPLEMENTED]: " + struct)
+            no.append(struct)
+        else:
+            yes.append(struct)
+
+    for a in yes:
+        print(f"{bcolors.OKGREEN}[IMPLEMENTED]: {a}{bcolors.ENDC}")
+
+    print("\n")
+
+    for a in no:
+        print(f"{bcolors.FAIL}[NOT IMPLEMENTED]: {a}{bcolors.ENDC}")
+
+
+
+
+
+
+
