@@ -94,7 +94,7 @@ void _libhelper_file_tests (char *path)
 {
 	file_t *test = file_load ((const char *) path);
 	if (test)
-		printf ("success: %d\n", test->size);
+		printf ("success: %zu\n", test->size);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

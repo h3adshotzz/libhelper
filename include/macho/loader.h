@@ -293,6 +293,21 @@ struct mach_header_64 {
 #define MH_CIGAM_64        0xcffaedfe       /* OSSwapInt(MH_MAGIC_64) */
 
 /**
+ * \brief       A variable length string in a load command is represented by
+ *              an lc_str union. The strings are stored just after the load
+ *              command structure and the offset is from the start of the load
+ *              command structure. The size of the string is reflected in the
+ *              cmdsize field of the load command. Once again any padded bytes
+ *              to bring the cmdsize field to a multiple of 4 bytes must be zero.
+ */
+union lc_str {
+	uint32_t	  offset;	      /* offset to the string */
+#ifndef __LP64__
+	char		 *ptr;	          /* pointer to the string */
+#endif
+};
+
+/**
  * 	\brief		The Load Commands in a Mach-O file directly follow the Mach
  * 				Header. The total size of the load commands section will be
  * 				given as `sizeofcmds` in the header. This structure defines
@@ -399,6 +414,65 @@ struct section { /* for 32-bit architectures */
 	uint32_t	reserved2;		/* reserved (for count or sizeof) */
 };
 
+/**
+ *  \brief      Fixed Virtual Memory shared library load command.
+ *
+ *              NOTE: This command is marked obsolete by Apple.
+ */
+struct fvmlib {
+    union lc_str        name;           /* library's target pathname */
+    uint32_t            minor_version;  /* library's minor version number */
+    uint32_t            header_addr;    /* library's header address */
+};
+
+/**
+ *  \brief      Fixed Virtual Memory command implementation.
+ *
+ *              NOTE: This command is marked obsolete by Apple.
+ */
+struct fvmlib_command {
+    uint32_t            cmd;            /* LC_IDFVMLIB or LC_LOADFVMLIB */
+    uint32_t            cmdsize;        /* includes pathname string */
+    struct fvmlib       fvmlib;         /* the library identification */
+};
+
+
+/**
+ *  \brief      The source_version_command is an optional load command containing
+ *              the version of the sources used to build the binary.
+ */
+struct source_version_command {
+    uint32_t    cmd;            /* LC_SOURCE_VERSION */
+    uint32_t    cmdsize;        /* 16 */
+    uint64_t    version;        /* A.B.C.D.E packed as a24.b10.c10.d10.e10 */
+};
+
+/**
+ *  \brief      Dynamicly Linked Shared Libraries are identified by their pathname
+ *              and the compatibility number. The pathname must match and the
+ *              compatibility number in the user of the library must be greater than
+ *              or equal to the library being used. The timestamp is to record the
+ *              time at which the library was built and copied, so it can be determined
+ *              at runtime if this was the library used to build the binary.
+ */
+struct dylib {
+    union lc_str    name;                   /* library's path name */
+    uint32_t        timestamp;              /* library's build timestamp */
+    uint32_t        current_version;        /* library's current version number */
+    uint32_t        compatibility_version;  /* library's compatibility vers number */
+};
+
+/**
+ *  \brief      A Dynamicly Linked Shared Library Load Command. An object that uses
+ *              a dynamically linked shared library also contains a dylib_command,
+ *              LC_LOAD_DYLIB, LC_LOAD_WEAK_DYLIB, or LC_REEXPORT_DYLIB for each library
+ *              it uses.
+ */
+struct dylib_command {
+    uint32_t        cmd;        /* LC_ID_DYLIB, LC_LOAD_WEAK_DYLIB, LC_REEXPORT_DYLIB */
+    uint32_t        cmdsize;    /* includes pathname string */
+    struct dylib    dylib;      /* the library identification */
+};
 
 
 #ifdef __cplusplus

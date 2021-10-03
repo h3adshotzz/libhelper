@@ -145,7 +145,7 @@ int main (int argc, char *argv[])
 
 
     /* mach_load_command_info_load && mach_load_command_get_name*/
-    mach_load_command_info_t *cmd_inf = mach_load_command_info_load (macho->data, sizeof(mach_header_t));
+    mach_load_command_info_t *cmd_inf = mach_load_command_info_load ((const char *) macho->data, sizeof(mach_header_t));
     char *cmd_inf_test = mach_load_command_get_name (cmd_inf->lc);
     if (!strcmp (cmd_inf_test, "LC_UNKNOWN")) {
         test_failuref ("mach_load_command_info_load\n");
@@ -215,7 +215,7 @@ int main (int argc, char *argv[])
 
     /* mach_section_64_load */
     mach_section_64_t *sect = mach_section_64_load (macho->data, seg_inf_2->offset + sizeof (mach_segment_command_64_t));
-    if (!sect->sectname) {
+    if (!sect) {
         test_failuref ("mach_section_64_load\n");
     } else {
         test_successf ("mach_section_64_load\n");
@@ -260,6 +260,34 @@ int main (int argc, char *argv[])
         test_successf ("mach_section_find_at_index\n");
     }
 
+
+    /* mach_load_command_find_source_version_command */
+    mach_source_version_command_t *svc = mach_load_command_find_source_version_command (macho);
+    if (!svc) {
+        test_failuref ("mach_load_command_find_source_version_command\n");
+    } else {
+        test_successf ("mach_load_command_find_source_version_command\n");
+    }
+
+
+    /* mach_load_command_get_source_version_string */
+    char *svc_str = mach_load_command_get_source_version_string (svc);
+    if (!svc_str) {
+        test_failuref ("mach_load_command_get_source_version_string\n");
+    } else {
+        test_successf ("mach_load_command_get_source_version_string\n");
+    }
+
+
+    /* mach_load_command_dylib_format_version */
+    test_failuref ("mach_load_command_dylib_format_version\n");
+
+
+    /* mach_load_command_dylib_get_type_string */
+    test_failuref ("mach_load_command_dylib_get_type_string\n");
+
+
+
     ///////////////////////////////////////////////////////////////////////////
 
     printf ("\n**Running Example Tool**\n");
@@ -278,6 +306,11 @@ int main (int argc, char *argv[])
             mach_section_64_t *sect = (mach_section_64_t *) h_slist_nth_data (s->sections, a);
             printf ("\tsectname: %s\n", (char *) sect->sectname);
         }
+    }
+
+    for (int i = 0; i < h_slist_length (macho->dylibs); i++) {
+        mach_dylib_command_info_t *dylib = (mach_dylib_command_info_t *) h_slist_nth_data (macho->dylibs, i);
+        printf ("dylib[%d]: %s, type: %d\n", i, dylib->name, dylib->type);
     }
 
     return 0;

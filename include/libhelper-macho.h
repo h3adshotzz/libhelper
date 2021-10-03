@@ -94,6 +94,7 @@ extern "C" {
 #include <libhelper-hlibc.h>
 #include <libhelper-fat.h>
 
+
 /**
  *  If LIBHELPER_MACHO_USE_SYSTEM_HEADERS is defined, we can use the system
  *  loader.h and any other required headers. 
@@ -717,6 +718,82 @@ mach_section_64_search (HSList                  *segments,
 extern void *
 mach_section_find_at_index (HSList              *segments, 
                             int                  index);
+
+
+/******************************************************************************
+* Libhelper Mach-O additional load command parsing.
+*
+* Functions for parsing/handling the Additional Load Command's from a Mach-O.
+*******************************************************************************/
+
+/**
+ *  \brief      Redefinition of source command as a libhelper type.
+ */
+typedef struct source_version_command           mach_source_version_command_t;
+
+/**
+ *  \brief      Search a Mach-O for the `LC_SOURCE_VERSION` Load Command, load it into
+ *              a structure and return it back.
+ *
+ *  \param macho    The Mach-O to search.
+ *
+ *  \returns    Returns a `mach_source_version_command_t` structure, or NULL if the
+ *              operation failed.
+ */
+extern mach_source_version_command_t *
+mach_load_command_find_source_version_command (macho_t  *macho);
+
+/**
+ *  \brief      Unpack a version string from an `LC_SOURCE_VERSION` Load Command and
+ *              return the result as a formatted string.
+ *
+ *  \param svc      The Source Version Load Command.
+ *
+ *  \returns    Returns a formatted string for the unpacked source version, or NULL
+ *              if the operation failed.
+ */
+extern char *
+mach_load_command_get_source_version_string (mach_source_version_command_t      *svc);
+
+/////////////////////////////////////////////////////////////////////////////////
+
+/**
+ *  \brief      Redefinition of fvmlib load command as a libhelper type.
+ *
+ *              NOTE:   This Load Command is marked obsolete by Apple, therefore is
+ *                      not supported by the libhelper-macho parser.
+ */
+typedef struct fvmlib_command                       mach_fvmlib_command_t;
+
+/////////////////////////////////////////////////////////////////////////////////
+
+/**
+ *  \brief      Redefinition of dylib_command as a libhelper type.
+ */
+typedef struct dylib_command                        mach_dylib_command_t;
+
+/**
+ *  \brief      A Dylib Load Command Info struct containing the parsed library path
+ *              name and the type of dylib it is.
+ */
+typedef struct __libhelper_mach_dylib_command_info  mach_dylib_command_info_t;
+struct __libhelper_mach_dylib_command_info {
+    mach_dylib_command_t    *dylib;     /* dylib load command */
+    uint32_t                 type;      /* dylib type */
+    char                    *name;      /* dylib path name (parsed) */
+};
+
+/**
+ *
+ */
+extern char *
+mach_load_command_dylib_format_version (uint32_t                vers);
+
+/**
+ *
+ */
+extern char *
+mach_load_command_dylib_get_type_string (mach_dylib_command_t   *dylib);
 
 
 
