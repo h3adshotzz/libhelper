@@ -97,12 +97,10 @@ mach_header_get_cpu_string (cpu_type_t      cpu_type,
         /* ARM64 CPUs */
         case CPU_TYPE_ARM64:
 
-            if (cpu_subtype == CPU_SUBTYPE_ARM64_V8 ||
-                cpu_subtype == (CPU_SUBTYPE_ARM64_V8 & CPU_SUBTYPE_ARM64E_MTE_MASK))
+            if (cpu_subtype & CPU_SUBTYPE_ARM64_V8)
                 return "arm64";
 
-            if (cpu_subtype == CPU_SUBTYPE_ARM64E ||
-                cpu_subtype == (CPU_SUBTYPE_ARM64E & CPU_SUBTYPE_ARM64E_MTE_MASK))
+            if (cpu_subtype & CPU_SUBTYPE_ARM64E)
                 return "arm64e";
 
             return "arm64_unknown";
