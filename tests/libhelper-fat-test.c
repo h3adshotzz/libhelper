@@ -47,6 +47,13 @@ int main (int argc, char *argv[])
 
     /* macho_universal_load */
     fat_info_t *fat = macho_universal_load (filename);
+    printf ("File %s contains %d Architecture[s]: \n", filename, fat->header->nfat_arch);
+    for (int i = 0; i < fat->header->nfat_arch; i++) {
+        fat_arch_t *arch = (fat_arch_t *) h_slist_nth_data (fat->archs, i);
+        printf ("arch[%d]: %s (%s)\n", i, 
+                mach_header_get_cpu_string (arch->cputype, arch->cpusubtype),
+                mach_header_get_cpu_descriptor (arch->cputype, arch->cpusubtype));
+    }
 
     return 0;
 }

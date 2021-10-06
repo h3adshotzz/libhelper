@@ -38,8 +38,8 @@ swap_fat_header_bytes (fat_header_t *hdr)
     return hdr;
 }
 
-struct fat_arch *
-swap_fat_arch_bytes (struct fat_arch *fa)
+fat_arch_t *
+swap_fat_arch_bytes (fat_arch_t *fa)
 {
     fa->cputype = OSSwapInt32(fa->cputype);
     fa->cpusubtype = OSSwapInt32(fa->cpusubtype);
@@ -93,18 +93,26 @@ macho_universal_load (const char *filename)
     
     /* list of archs */
     HSList *archs = NULL;
-    uint32_t off = 0;
+    uint32_t off = sizeof (fat_header_t);
     
     for (int i = 0; i < hdr->nfat_arch; i++) {
-        struct fat_arch *arch = (struct fat_arch *) (f->data + (sizeof (fat_header_t) + off));
+        
+        /* dup the data, we can't modify *file->data */
+        fat_arch_t *arch = (fat_arch_t *) file_dup_data (f, off, sizeof (fat_arch_t));
         arch = swap_fat_arch_bytes (arch);
         
-        printf ("arch->cputype: %s\n", mach_header_get_cpu_string (arch->cputype, arch->cpusubtype));
+        /* add the arch to the list */
+        archs = h_slist_append (archs, arch);
         
-        off += sizeof (struct fat_arch);
+        /* increment offset */
+        off += sizeof (fat_arch_t);
     }
     
-    return NULL;
+    fat_info_t *fat = calloc (1, sizeof (fat_info_t));
+    fat->header = hdr;
+    fat->archs = archs;
+    
+    return fat;
 }
 
 
