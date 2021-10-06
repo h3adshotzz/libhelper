@@ -474,9 +474,98 @@ struct dylib_command {
     struct dylib    dylib;      /* the library identification */
 };
 
+/**
+ *  \brief      A Dynamically Linked Shared Library can be a "subframework" or an
+ *              "umbrella" framework. These are linked with "-umbrella umbrella_name".
+ *              A "subframework" can only be linked against by its umbrella framework
+ *              or other subframeworks that are part of that umbrella. Otherwise an
+ *              error is thrown at compile-time.
+ */
+struct sub_framework_command {
+    uint32_t        cmd;        /* LC_SUB_FRAMEWORK */
+    uint32_t        cmdsize;    /* includes umbrella string */
+    union lc_str    umbrella;   /* the subframework name */
+};
+
+/**
+ *  \brief      A Dynamically Linked Shared Library that is already a subframework of
+ *              an umbrella framework can allow clients other than the umbrella framework
+ *              or other subframeworks in the same umbrella.
+ */
+struct sub_client_command {
+    uint32_t        cmd;        /* LC_SUB_CLIENT */
+    uint32_t        cmdsize;    /* includes client string */
+    union lc_str    client;     /* the sub client name */
+};
+
+/**
+ *  \brief      A Dynamically Linked Shared Library may be a sub umbrella of an umbrella
+ *              framework. More information on linking available in the system loader.h
+ *              file.
+ */
+struct sub_umbrella_command {
+    uint32_t        cmd;            /* LC_SUB_UMBRELLA */
+    uint32_t        cmdsize;        /* includes sub_umbrella string */
+    union lc_str    sub_umbrella;   /* the sub umbrella name */
+};
+
+/**
+ *  \brief      A Dynamically Linked Shared Library may be a sub library of another
+ *              shared library. More information on linking available in the system loader.h
+ *              file.
+ */
+struct sub_library_command {
+    uint32_t        cmd;            /* LC_SUB_LIBRARY */
+    uint32_t        cmdsize;        /* includes sub_library string */
+    union lc_str    sub_library;    /* the sub library name */
+};
+
+/**
+ *  \brief      A Mach-O of the type MH_EXECUTE that is prebound to its Dynamic Libraries
+ *              will have an LC_PREBOUND_DYLIB command for each prebound dylib. It contains
+ *              a bit vector for the modules in the library.
+ *
+ *              The bits indicate which modules are bound (1) and which are not (0) from
+ *              the library. The bit for module 0 is the low bit of the first byte, so
+ *              the bit for the Nth module is: (linked_modules[N/8] >> N % 8) & 1.
+ */
+struct prebound_dylib_command {
+    uint32_t        cmd;            /* LC_PREBOUND_DYLIB */
+    uint32_t        cmdsize;        /* includes strings */
+    union lc_str    name;           /* library's path name */
+    uint32_t        nmodules;       /* number of modules in the library */
+    union lc_str    linked_modules; /* bit vector of linked modules */
+};
+
+/**
+ *  \brief      The Dynamic Linker used by a program is declared by this dylinker load
+ *              command.
+ */
+struct dylinker_command {
+    uint32_t        cmd;        /* LC_ID_DYLINKER, LC_LOAD_DYLINKER, LC_DYLD_ENVIRONMENT */
+    uint32_t        cmdsize;    /* includes pathname string */
+    union lc_str    name;       /* dynamic linkers path name */
+};
+
+
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* __libhelper_macho_xnu_loader_h__ */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

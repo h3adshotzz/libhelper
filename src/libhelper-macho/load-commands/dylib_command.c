@@ -33,25 +33,3 @@ mach_load_command_dylib_format_version (uint32_t vers)
     snprintf (buf, 10, "%d.%d.%d", vers >> 16, (vers >> 8) & 0xf, vers & 0xf);
     return (buf) ? buf : NULL;
 }
-
-char *
-mach_load_command_dylib_get_type_string (mach_dylib_command_t *dylib)
-{
-    switch (dylib->cmd) {
-        case LC_ID_DYLIB:
-            return "LC_ID_DYLIB";
-            break;
-        case LC_LOAD_DYLIB:
-            return "LC_LOAD_DYLIB";
-            break;
-        case LC_LOAD_WEAK_DYLIB:
-            return "LC_LOAD_WEAK_DYLIB";
-            break;
-        case LC_REEXPORT_DYLIB:
-            return "LC_REEXPORT_DYLIB";
-            break;
-        default:
-            return "(null)";
-            break;
-    }
-}

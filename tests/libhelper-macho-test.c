@@ -283,11 +283,6 @@ int main (int argc, char *argv[])
     test_failuref ("mach_load_command_dylib_format_version\n");
 
 
-    /* mach_load_command_dylib_get_type_string */
-    test_failuref ("mach_load_command_dylib_get_type_string\n");
-
-
-
     ///////////////////////////////////////////////////////////////////////////
 
     printf ("\n**Running Example Tool**\n");

@@ -784,22 +784,97 @@ struct __libhelper_mach_dylib_command_info {
 };
 
 /**
+ *  \brief      Get a formatted string representing a Dynamic Libraries version
+ *              number.
  *
+ *  \param vers     Version number.
+ *
+ *  \returns    Returns a string representing the version number in the format a.b.c.d.e,
+ *              or NULL if the operation failed.
  */
 extern char *
 mach_load_command_dylib_format_version (uint32_t                vers);
 
+/////////////////////////////////////////////////////////////////////////////////
+
 /**
+ *  \brief      Redefinition of sub_framework_command as a libhelper type.
  *
+ *              There are no helper functions for this load command as the only
+ *              additional property is the subframeworks name, and this can be
+ *              fetched with `mach_load_command_get_name()`.
  */
-extern char *
-mach_load_command_dylib_get_type_string (mach_dylib_command_t   *dylib);
+typedef struct sub_framework_command                mach_sub_framework_command_t;
+
+/**
+ *  \brief      Redefinition of sub_client_command as a libhelper type.
+ *
+ *              There are no helper functions for this load command as the only
+ *              additional property is the subclients name, and this can be
+ *              fetched with `mach_load_command_get_name()`.
+ */
+typedef struct sub_client_command                   mach_sub_client_command_t;
+
+/**
+ *  \brief      Redefinition of sub_umbrella_command as a libhelper type.
+ *
+ *              There are no helper functions for this load command as the only
+ *              additional property is the subumbrella name, and this can be
+ *              fetched with `mach_load_command_get_name()`.
+ */
+typedef struct sub_umbrella_command                 mach_sub_umbrella_command_t;
+
+/**
+ *  \brief      Redefinition of sub_library_command as a libhelper type.
+ *
+ *              There are no helper functions for this load command as the only
+ *              additional property is the sublibrary name, and this can be
+ *              fetched with `mach_load_command_get_name()`.
+ */
+typedef struct sub_library_command                  mach_sub_library_command_t;
 
 
+/////////////////////////////////////////////////////////////////////////////////
 
+/**
+ *  \brief      Redefinition of prebound_dylib_command as a libhelper type.
+ *
+ *              TODO:   This Load Command needs more investigation into how it
+ *                      works and a helper/info struct implemented if required.
+ */
+typedef struct prebound_dylib_command               mach_prebound_dylib_command_t;
+
+/////////////////////////////////////////////////////////////////////////////////
+
+/**
+ *  \brief      Redefinition of dylinker_command as a libhelper type.
+ *
+ *              There are no helper functions for this load command as the only
+ *              additional property is the dynamic linkers pathname, and this can
+ *              be fetched with `mach_load_command_get_name()`.
+ */
+typedef struct dylinker_command                     mach_dylinker_command_t;
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* __libhelper_macho_h__ */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
