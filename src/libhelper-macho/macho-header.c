@@ -24,6 +24,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "libhelper-macho.h"
+#include "libhelper-hlibc.h"
 #include "libhelper-logger.h"
 
 mach_header_t *
@@ -95,14 +96,16 @@ mach_header_get_cpu_string (cpu_type_t      cpu_type,
 
         /* ARM64 CPUs */
         case CPU_TYPE_ARM64:
-            switch (cpu_subtype) {
-                case CPU_SUBTYPE_ARM64_V8:
-                    return "arm64";     /* ARMv8-A */
-                case CPU_SUBTYPE_ARM64E:
-                    return "arm64e";
-                default:
-                    return "arm64_unknown";
-            }
+
+            if (cpu_subtype == CPU_SUBTYPE_ARM64_V8 ||
+                cpu_subtype == (CPU_SUBTYPE_ARM64_V8 & CPU_SUBTYPE_ARM64E_MTE_MASK))
+                return "arm64";
+
+            if (cpu_subtype == CPU_SUBTYPE_ARM64E ||
+                cpu_subtype == (CPU_SUBTYPE_ARM64E & CPU_SUBTYPE_ARM64E_MTE_MASK))
+                return "arm64e";
+
+            return "arm64_unknown";
 
         /* ARM64_32 CPUs */
         case CPU_TYPE_ARM64_32:
@@ -115,6 +118,44 @@ mach_header_get_cpu_string (cpu_type_t      cpu_type,
         /* Any other unknown CPU type */
         default:
             return "unknown_cpu";
+    }
+}
+
+char *
+mach_header_get_cpu_descriptor (cpu_type_t      cpu_type,
+                                cpu_subtype_t   cpu_subtype)
+{
+    HString *str = NULL;
+    switch (cpu_type) {
+
+        /* ARM64 */
+        case CPU_TYPE_ARM64:
+
+            /* All ARM64 CPUs are ARMv8 */
+            str = h_string_new ("ARMv8");
+
+            /* Check if this is arm64e or not */
+            if (cpu_subtype & CPU_SUBTYPE_ARM64E)
+                str = h_string_append_len (str, ".5-A", 4);
+            else
+                str = h_string_append_len (str, "-A", 2);
+
+            /* Check for CPU extensions */
+            if (cpu_subtype & CPU_SUBTYPE_ARM64E_MTE_MASK)
+                str = h_string_append_len (str, ", MTE", 5);
+
+            if (cpu_subtype & CPU_SUBTYPE_ARM64_PTR_AUTH_MASK)
+                str = h_string_append_len (str, ", PAC", 5);
+
+            /* CPU extensions display as "ARMv8-A, <ext>, <ext>" */
+            return str->str;
+
+
+        /* Anything other than ARM64 */
+        case CPU_TYPE_ARM64_32:
+        case CPU_TYPE_X86_64:
+        default:
+            return mach_header_get_cpu_string (cpu_type, cpu_subtype);
     }
 }
 

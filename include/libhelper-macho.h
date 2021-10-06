@@ -239,6 +239,30 @@ mach_header_get_cpu_string (cpu_type_t      cpu_type,
                             cpu_subtype_t   cpu_subtype);
 
 /**
+ *  \brief      Generate a human-readable descriptor for the CPU type and subtype.
+ *              This differs from `mach_header_get_cpu_string` as it generates a
+ *              string with the CPU architecture and extension names. For example,
+ *              a binary built for, what Apple calls, arm64e with Pointer Authentication
+ *              and Memory Tagging Extension (MTE), the resulting string would be:
+ *
+ *                  "ARMv8.5-A, MTE, PAC"
+ *
+ *              Whereas a simple arm64 binary would have a string of:
+ *
+ *                  "ARMv8-A"
+ *
+ *  \param cpu_type     CPU type identifier
+ *  \param cpu_subtype  CPU subtype identifier
+ *
+ *  \returns    Returns a string descriptor for the CPU architecture and architecture
+ *              extensions, assuming they were both originally paired together. If
+ *              the combination was unrecognised, the string "unknown_cpu" is returned.
+ */
+extern char *
+mach_header_get_cpu_descriptor (cpu_type_t      cpu_type,
+                                cpu_subtype_t   cpu_subtype);
+
+/**
  *  \brief      Generate a human-readable string to describe a Mach-O file's
  *              format/type. These types are defined in header-types.h or the
  *              system loader.h. The format for these strings is "Mach <file type>
