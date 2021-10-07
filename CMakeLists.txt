@@ -46,7 +46,7 @@ set_property(TARGET libhelper PROPERTY C_STANDARD 11)
 # Libhelper public headers.
 target_include_directories(libhelper
     PUBLIC
-        ${CMAKE_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
 # Libhelper-core is actually the direct source files for libhelper, it's not
