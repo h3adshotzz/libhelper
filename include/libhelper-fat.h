@@ -92,13 +92,14 @@ extern "C" {
 
 #include <stdint.h>
 #include <libhelper-hlibc.h>
+#include <libhelper-macho.h>
 
 /**
  *  If LIBHELPER_MACHO_USE_SYSTEM_HEADERS is defined, we can use the system
- *  loader.h and any other required headers. 
- * 
+ *  loader.h and any other required headers.
+ *
  *  This is not advised as changes made to system headers could affect libhelper
- *  if certain changes are made to structures and definitions. 
+ *  if certain changes are made to structures and definitions.
  */
 #ifdef LIBHELPER_MACHO_USE_SYSTEM_HEADERS
 #   include <mach/loader.h>
@@ -164,6 +165,12 @@ struct __libhelper_fat_info {
 
 fat_info_t *
 macho_universal_load (const char *filename);
+
+fat_header_t *
+swap_fat_header_bytes (fat_header_t *hdr);
+
+fat_arch_t *
+swap_fat_arch_bytes (fat_arch_t *fa);
 
 /* redefine funcs from libhelper-2.0.0 */
 

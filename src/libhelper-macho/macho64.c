@@ -95,7 +95,6 @@ macho_64_create_from_buffer (unsigned char *data)
              *  included in the cmdsize
              */
             char *name = mach_load_command_load_string (macho, cmdsize, sizeof (mach_dylib_command_t), offset, raw->dylib.name.offset);
-            printf ("dylib_name: %s\n", name);
 
             /* set the name, raw cmd struct and type */
             dylib_inf->name = name;
@@ -122,7 +121,6 @@ macho_64_create_from_buffer (unsigned char *data)
             lcmds = h_slist_append (lcmds, inf);        
         }
 
-        debugf ("lc_type[%d]: %s\n", i, mach_load_command_get_name (lc));
         offset += lc->cmdsize;
     }
 
