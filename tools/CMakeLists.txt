@@ -31,3 +31,9 @@ add_executable(libhelper-version)
 target_sources(libhelper-version PUBLIC libhelper-version.c)
 target_include_directories(libhelper-version PUBLIC ${CMAKE_SOURCE_DIR}/include)
 target_link_libraries(libhelper-version libhelper)
+
+add_executable(arch-test)
+target_sources(arch-test PUBLIC arch-test.c)
+target_include_directories(arch-test PUBLIC ${CMAKE_SOURCE_DIR}/include)
+target_link_libraries(arch-test libhelper)
+

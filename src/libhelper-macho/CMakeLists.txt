@@ -47,4 +47,5 @@ target_sources(libhelper
         macho-header.c
         macho64.c
         macho.c
+	fat.c
 )

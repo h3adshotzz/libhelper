@@ -29,36 +29,33 @@
 #include "libhelper-file.h"
 #include "libhelper-fat.h"
 
-/**
- *  \brief
- */
-static file_t *
+#include "macho.h"
+
+file_t *
 macho_load_file_from_filename (const char *filename)
 {
     /* Check the filename is set */
     if (!filename) {
-        errorf ("macho_load(): No filename specified.\n");
+        errorf ("macho_load_file_from_filename(): No filename specified.\n");
         return NULL;
     }
 
     /* Load the file */
     file_t *file = file_load (filename);
     if (!file) {
-        errorf ("macho_load(): Filename invalid. Could not load the file.\n");
+        errorf ("macho_load_file_from_filename(): Filename invalid. Could not load the file.\n");
         free (file);
         return NULL;
     }
 
     /* Verify the file loaded correctly */
     if (file->size <= 0) {
-        errorf ("macho_load(): File could not be loaded properly. Filesize invalid.\n");
+        errorf ("macho_load_file_from_filename(): File could not be loaded properly. Filesize invalid.\n");
         free (file);
         return NULL;
     }
     return file;
 }
-
-///////////////////////////////////////////////////////////////////////////////
 
 mach_header_type_t
 macho_check_arch (const char *filename)

@@ -131,6 +131,7 @@ extern "C" {
  *              Binaries. This appears at the top of a universal file, with a summary 
  *              of all the architectures contained within it.
  */
+typedef struct fat_header               fat_header_t;
 struct fat_header {
     uint32_t        magic;          /* FAT_MAGIC */
     uint32_t        nfat_arch;      /* number of fat_arch structs that follow */
@@ -141,6 +142,7 @@ struct fat_header {
  *              contained within a FAT archive, these follow directly after the fat 
  *              header in a file.
  */
+typedef struct fat_arch                 fat_arch_t;
 struct fat_arch {
     cpu_type_t      cputype;        /* cpu specifier for this architecture */
     cpu_subtype_t   cpusubtype;     /* cpu subtype specifier for this architecture */
@@ -149,19 +151,19 @@ struct fat_arch {
     uint32_t        align;          /* byte align */
 };
 
-/* libhelper-fat alias */
-typedef struct fat_header               fat_header_t;
-typedef struct fat_arch                 fat_arch_t;
-
 /**
  *  \brief      FAT Archive Info. This libhelper wrapper contains the FAT/Universal
  *              Binaries Header & architecture descriptors.
  */
+typedef struct __libhelper_fat_info     fat_info_t;
 struct __libhelper_fat_info {
     fat_header_t    *header;        /* FAT/Universal Binary Header */
     HSList          *archs;         /* list of contained architectures (fat_arch_t) */
 };
-typedef struct __libhelper_fat_info     fat_info_t;
+
+
+fat_info_t *
+macho_universal_load (const char *filename);
 
 /* redefine funcs from libhelper-2.0.0 */
 
