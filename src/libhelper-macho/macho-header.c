@@ -71,12 +71,12 @@ mach_header_verify (uint32_t magic)
 {
     debugf("magic: 0x%08x\n", magic);
     switch (magic) {
-        case MACH_MAGIC_64:
-        case MACH_CIGAM_64:
-            return MH_TYPE_MACHO64;
         case MACH_MAGIC_32:
         case MACH_CIGAM_32:
             return MH_TYPE_MACHO32;
+        case MACH_MAGIC_64:
+        case MACH_CIGAM_64:
+            return MH_TYPE_MACHO64;
         case MACH_MAGIC_UNIVERSAL:
         case MACH_CIGAM_UNIVERSAL:
             return MH_TYPE_FAT;
@@ -97,11 +97,14 @@ mach_header_get_cpu_string (cpu_type_t      cpu_type,
         /* ARM64 CPUs */
         case CPU_TYPE_ARM64:
 
-            if (cpu_subtype & CPU_SUBTYPE_ARM64_V8)
+            if ((cpu_subtype & CPU_SUBTYPE_ARM64_V8) == CPU_SUBTYPE_ARM64_V8)
                 return "arm64";
 
-            if (cpu_subtype & CPU_SUBTYPE_ARM64E)
+            if ((cpu_subtype & CPU_SUBTYPE_ARM64E) == CPU_SUBTYPE_ARM64E)
                 return "arm64e";
+
+            if ((cpu_subtype & CPU_SUBTYPE_ARM64_ALL) == CPU_SUBTYPE_ARM64_ALL)
+                return "arm64";
 
             return "arm64_unknown";
 
