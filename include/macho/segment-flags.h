@@ -115,7 +115,7 @@ extern "C" {
  */
 #define SG_READ_ONLY                    0x10
 
-
+/* TODO: Implemment section and segment flags */
 
 
 #ifdef cplusplus

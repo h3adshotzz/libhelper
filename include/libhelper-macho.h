@@ -168,9 +168,10 @@ struct __libhelper_macho {
 
     /* File properties */
     const char          *path;          /* original filepath */
+    arch_t               arch;          /* file arch */
 
     /* Parsed Mach-O properties */
-    mach_header_t       *header;        /* 64-bit mach-o header */
+    mach_header_t       *header;        /* mach-o header */
     HSList              *lcmds;         /* list of all load commands (including LC_SEGMENT) */
     HSList              *scmds;         /* list of segment commands */
     HSList              *dylibs;        /* list of dynamic libraries */
@@ -878,6 +879,84 @@ typedef struct prebound_dylib_command               mach_prebound_dylib_command_
  *              be fetched with `mach_load_command_get_name()`.
  */
 typedef struct dylinker_command                     mach_dylinker_command_t;
+
+/////////////////////////////////////////////////////////////////////////////////
+
+/**
+ *  \brief      Redefinition of symtab_command as a libhelper type.
+ *
+ *              There are no helper functions for this load command.
+ */
+typedef struct symtab_command                       mach_symtab_command_t;
+
+/////////////////////////////////////////////////////////////////////////////////
+
+/**
+ *  \brief      Redefinition of dysymtab_command as a libhelper type.
+ *
+ *              There are no helper functions for this load command.
+ */
+typedef struct dysymtab_command                     mach_dysymtab_command_t;
+
+/////////////////////////////////////////////////////////////////////////////////
+
+/**
+ *  \brief      Redefinition of uuid_command as a libhelper type.
+ *
+ */
+typedef struct uuid_command                         mach_uuid_command_t;
+
+extern char *
+mach_load_command_uuid_parse_string (mach_uuid_command_t        *uuid);
+
+/////////////////////////////////////////////////////////////////////////////////
+
+/**
+ *  \brief      Redefinition of rpath_command as a libhelper type.
+ *
+ *              There are no helper functions for this load command.
+ */
+typedef struct rpath_command                        mach_rpath_command_t;
+
+/////////////////////////////////////////////////////////////////////////////////
+
+/**
+ *  \brief      Redefinition of build_version_command as a libhelper type.
+ *
+ */
+typedef struct build_version_command                mach_build_version_command_t;
+
+/**
+ *
+ */
+typedef struct __libhelper_build_version_info       mach_build_version_info_t;
+struct __libhelper_build_version_info {
+    mach_build_version_command_t        *cmd;
+
+    char        *platform;
+    char        *minos;
+    char        *sdk;
+
+    uint32_t     ntools;
+    HSList      *tools;
+};
+
+/**
+ * 	This is a neater version of build_tool_version that has an actual char *
+ * 	for the tool name, and then the build version as is found in build_tool_version.
+ *
+ */
+typedef struct __libhelper_build_tool_info          build_tool_info_t;
+struct __libhelper_build_tool_info {
+    char        *tool;
+    uint32_t     version;
+};
+
+extern mach_build_version_info_t *
+mach_load_command_build_version_info (mach_build_version_command_t *bvc, uint32_t offset, macho_t *macho);
+
+
+
 
 #ifdef __cplusplus
 }

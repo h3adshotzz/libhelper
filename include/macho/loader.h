@@ -547,6 +547,133 @@ struct dylinker_command {
     union lc_str    name;       /* dynamic linkers path name */
 };
 
+/**
+ *  \brief      The Symbol Table Command contains the offsets and sizes of the link-edit
+ *              4.3BSD "stab" style symbol table information as described in the header
+ *              files nlist.h and stab.h.
+ */
+struct symtab_command {
+    uint32_t        cmd;        /* LC_SYMTAB */
+    uint32_t        cmdsize;    /* sizeof (struct symtab_command) */
+    uint32_t        symoff;     /* symbol table offset */
+    uint32_t        nsyms;      /* number of symbol table entries */
+    uint32_t        stroff;     /* string table offset */
+    uint32_t        strsize;    /* number of string table entries */
+};
+
+/**
+ *  \brief      The Dynamic Symbol Table Command has a *very* long description that I
+ *              am not going to rewrite here, it can be found in the xnu loader.h.
+ */
+struct dysymtab_command {
+    uint32_t        cmd;            /* LC_DYSYMTAB */
+    uint32_t        cmdsize;        /* sizeof (struct dysymtab_command) */
+
+    uint32_t        ilocalsym;      /* index to local symbols */
+    uint32_t        nlocalsym;	    /* number of local symbols */
+
+    uint32_t        iextdefsym;     /* index to externally defined symbols */
+    uint32_t        nextdefsym;     /* number of externally defined symbols */
+
+    uint32_t        iundefsym;      /* index to undefined symbols */
+    uint32_t        nundefsym;      /* number of undefined symbols */
+
+    uint32_t        tocoff;         /* file offset to table of contents */
+    uint32_t        ntoc;           /* number of entries in table of contents */
+
+    uint32_t        modtaboff;      /* file offset to module table */
+    uint32_t        nmodtab;        /* number of module table entries */
+
+    uint32_t        extrefsymoff;   /* offset to referenced symbol table */
+    uint32_t        nextrefsyms;    /* number of referenced symbol table entries */
+
+    uint32_t        indirectsymoff; /* file offset to the indirect symbol table */
+    uint32_t        nindirectsyms;  /* number of indirect symbol table entries */
+
+    uint32_t        extreloff;      /* offset to external relocation entries */
+    uint32_t        nextrel;        /* number of external relocation entries */
+
+    uint32_t        locreloff;      /* offset to local relocation entries */
+    uint32_t        nlocrel;        /* number of local relocation entries */
+};
+
+/**
+ * \brief       The twolevel_hints_command contains the offset and number of hints
+ *              in the two-level namespace lookup hints table.
+ */
+struct twolevel_hints_command {
+    uint32_t        cmd;            /* LC_TWOLEVEL_HINTS */
+    uint32_t        cmdsize;        /* sizeof(struct twolevel_hints_command) */
+    uint32_t        offset;	        /* offset to the hint table */
+    uint32_t        nhints;         /* number of hints in the hint table */
+};
+
+/**
+ *  \brief      Add desc.
+ */
+struct prebind_cksum_command {
+    uint32_t        cmd;            /* LC_PREBIND_CKSUM */
+    uint32_t        cmdsize;        /* sizeof(struct prebind_cksum_command) */
+    uint32_t        cksum;          /* the check sum or zero */
+};
+
+/**
+ * \brief       The uuid load command contains a single 128-bit unique random number
+ *              that identifies an object produced by the static link editor.
+ */
+struct uuid_command {
+    uint32_t        cmd;            /* LC_UUID */
+    uint32_t        cmdsize;        /* sizeof(struct uuid_command) */
+    uint8_t         uuid[16];       /* the 128-bit uuid */
+};
+
+/**
+ * \brief       The rpath_command contains a path which at runtime should be added to
+ *              the current run path used to find @rpath prefixed dylibs.
+ */
+struct rpath_command {
+    uint32_t        cmd;            /* LC_RPATH */
+    uint32_t        cmdsize;        /* includes string */
+    union lc_str    path;           /* path to add to run path */
+};
+
+/**
+ * \brief       The build_version_command contains the min OS version on which this
+ *              binary was built to run for its platform.  The list of known platforms and
+ *              tool values following it.
+ */
+struct build_version_command {
+    uint32_t        cmd;            /* LC_BUILD_VERSION */
+    uint32_t        cmdsize;        /* sizeof(struct build_version_command) plus */
+                                    /* ntools * sizeof(struct build_tool_version) */
+    uint32_t        platform;       /* platform */
+    uint32_t        minos;          /* X.Y.Z is encoded in nibbles xxxx.yy.zz */
+    uint32_t        sdk;            /* X.Y.Z is encoded in nibbles xxxx.yy.zz */
+    uint32_t        ntools;         /* number of tool entries following this */
+};
+
+struct build_tool_version {
+    uint32_t        tool;           /* enum for the tool */
+    uint32_t        version;        /* version number of the tool */
+};
+
+/* values for the platform field */
+#define PLATFORM_MACOS                  1
+#define PLATFORM_IOS                    2
+#define PLATFORM_TVOS                   3
+#define PLATFORM_WATCHOS                4
+#define PLATFORM_BRIDGEOS               5
+#define PLATFORM_MACCATALYST            6
+#define PLATFORM_IOSSIMULATOR           7
+#define PLATFORM_TVOSSIMULATOR          8
+#define PLATFORM_WATCHOSSIMULATOR       9
+#define PLATFORM_DRIVERKIT              10
+
+/* values for tools */
+#define TOOL_CLANG                      1
+#define TOOL_SWIFT                      2
+#define TOOL_LD                         3
+
 
 
 #ifdef __cplusplus

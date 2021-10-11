@@ -42,7 +42,9 @@ target_sources(libhelper
         section.c
 
         load-commands/source_version_command.c
+        load-commands/build_version_command.c
         load-commands/dylib_command.c
+        load-commands/uuid.c
 
         macho-header.c
         macho64.c

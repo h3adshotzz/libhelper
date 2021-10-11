@@ -69,7 +69,6 @@ mach_header_load (macho_t *macho)
 mach_header_type_t
 mach_header_verify (uint32_t magic)
 {
-    debugf("magic: 0x%08x\n", magic);
     switch (magic) {
         case MACH_MAGIC_32:
         case MACH_CIGAM_32:
