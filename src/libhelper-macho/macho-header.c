@@ -176,6 +176,7 @@ mach_header_get_file_type_string (uint32_t type)
         case MACH_TYPE_DYLINKER:
             return "Mach Dyanmic Linker (MH_DYLINKER)";
         default:
+            warningf ("mach type not supported: 0x%08x\n", type);
             return "Mach Unknown";
     }
 }
