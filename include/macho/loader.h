@@ -436,6 +436,17 @@ struct fvmlib_command {
     struct fvmlib       fvmlib;         /* the library identification */
 };
 
+/**
+ *  \brief      The entry_point_command is a replacement for the thread_command. It
+ *              is used for main executables to specify the location (file offset)
+ *              of main().
+ */
+struct entry_point_command {
+    uint32_t    cmd;            /* LC_MAIN, only used in MH_EXECUTE types */
+    uint32_t    cmdsize;        /* 24 */
+    uint32_t    entryoff;       /* file (__TEXT) offset of main() */
+    uint32_t    stacksize;      /* if not zero, initial stack size */
+};
 
 /**
  *  \brief      The source_version_command is an optional load command containing
@@ -638,6 +649,22 @@ struct rpath_command {
 };
 
 /**
+ *  \brief      The linkedit data command contains the offsets and sizes of a blob
+ *              of data in the __LINKEDIT segment. There are a few commands that use
+ *              this structure, including:
+ *
+ *                  LC_CODE_SIGNATURE, LC_SEGMENT_SPLIT_INFO, LC_FUNCTION_STARTS,
+ *                  LC_DATA_IN_CODE, LC_DYLIB_CODE_SIGN_DRS, LC_LINKER_OPTIMIZATION_HINT,
+ *                  LC_DYLD_EXPORTS_TRIE or LC_DYLD_CHAINED_FIXUPS.
+ */
+struct linkedit_data_command {
+    uint32_t        cmd;            /* A few possible command types */
+    uint32_t        cmdsize;        /* sizeof (struct linkedit_data_command) */
+    uint32_t        dataoff;        /* file offset of data in __LINKEDIT segment */
+    uint32_t        datasize;       /* file size of data in __LINKEDIT segment */
+};
+
+/**
  * \brief       The build_version_command contains the min OS version on which this
  *              binary was built to run for its platform.  The list of known platforms and
  *              tool values following it.
@@ -674,6 +701,30 @@ struct build_tool_version {
 #define TOOL_SWIFT                      2
 #define TOOL_LD                         3
 
+/**
+ *  \brief      The dyld_info_command contains the file offsets and sizes of the new
+ *              compressed form of the information dyld needs to load the image.
+ *
+ */
+struct dyld_info_command {
+    uint32_t        cmd;
+    uint32_t        cmdsize;
+
+    uint32_t        rebase_off;
+    uint32_t        rebase_size;
+
+    uint32_t        bind_off;
+    uint32_t        bind_size;
+
+    uint32_t        weak_bind_off;
+    uint32_t        weak_bind_size;
+
+    uint32_t        lazy_bind_off;
+    uint32_t        lazy_bind_size;
+
+    uint32_t        export_off;
+    uint32_t        export_size;
+};
 
 
 #ifdef __cplusplus

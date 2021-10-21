@@ -793,6 +793,13 @@ typedef struct fvmlib_command                       mach_fvmlib_command_t;
 /////////////////////////////////////////////////////////////////////////////////
 
 /**
+ *  \brief      Redefinition of entry_point_command load command as libhelper type.
+ */
+typedef struct entry_point_command                  mach_entry_point_command_t;
+
+/////////////////////////////////////////////////////////////////////////////////
+
+/**
  *  \brief      Redefinition of dylib_command as a libhelper type.
  */
 typedef struct dylib_command                        mach_dylib_command_t;
@@ -955,6 +962,19 @@ struct __libhelper_build_tool_info {
 extern mach_build_version_info_t *
 mach_load_command_build_version_info (mach_build_version_command_t *bvc, uint32_t offset, macho_t *macho);
 
+/////////////////////////////////////////////////////////////////////////////////
+
+/**
+ *  \brief      Redefinition of dyld_info_command as a libhelper type.
+ */
+typedef struct dyld_info_command                    mach_dyld_info_command_t;
+
+/////////////////////////////////////////////////////////////////////////////////
+
+/**
+ *  \brief      Redefinition of linkedit_data_command as libhelper type.
+ */
+typedef struct linkedit_data_command                mach_linkedit_data_command_t;
 
 
 
