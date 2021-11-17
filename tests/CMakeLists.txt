@@ -15,7 +15,7 @@
 ##  You should have received a copy of the GNU General Public License
 ##  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
-##  Copyright (C) 2021, Is This On? Holdings
+##  Copyright (C) 2021, Is This On? Holdings Limited
 ##  
 ##  Harry Moulton <me@h3adsh0tzz.com>
 ##
@@ -38,3 +38,11 @@ add_executable(libhelper-macho-test)
 target_sources(libhelper-macho-test PUBLIC libhelper-macho-test.c)
 target_include_directories(libhelper-macho-test PUBLIC ${CMAKE_SOURCE_DIR}/include)
 target_link_libraries(libhelper-macho-test libhelper)
+
+##  Libhelper FAT Tests
+##
+add_executable(libhelper-fat-test)
+target_sources(libhelper-fat-test PUBLIC libhelper-fat-test.c)
+target_include_directories(libhelper-fat-test PUBLIC ${CMAKE_SOURCE_DIR}/include)
+target_link_libraries(libhelper-fat-test libhelper)
+

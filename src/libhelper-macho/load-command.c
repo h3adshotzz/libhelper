@@ -17,7 +17,7 @@
 //
 //  Copyright (C) 2019, Is This On?, @h3adsh0tzz
 //  Copyright (C) 2020, Is This On?, @h3adsh0tzz
-//  Copyright (C) 2021, Is This On? Holdings
+//  Copyright (C) 2021, Is This On? Holdings Limited
 //  
 //  Harry Moulton <me@h3adsh0tzz.com>
 //
@@ -29,7 +29,7 @@
 /**
  *  Load Command translation table.
  */
-static struct __libhelper_lc_string {
+struct __libhelper_lc_string {
     uint32_t         lc;        /* Load command ID */
     char            *str;       /* Load command name */;
 };
@@ -100,15 +100,9 @@ static struct __libhelper_lc_string lc_list[] =
 
 
 mach_load_command_info_t *
-mach_load_command_info_create ()
-{
-    return (mach_load_command_info_t *) calloc (1, sizeof (mach_load_command_info_t));
-}
-
-mach_load_command_info_t *
 mach_load_command_info_load (const char *data, uint32_t offset)
 {
-    mach_load_command_info_t *lc_inf = mach_load_command_info_create ();
+    mach_load_command_info_t *lc_inf = calloc (1, sizeof (mach_load_command_info_t));
 
     /* Load bytes from data + offset */
     lc_inf->lc = (mach_load_command_t *) (data + offset);
@@ -143,8 +137,10 @@ lc_find_name_fail:
 mach_load_command_info_t *
 mach_load_command_find_command_by_type (macho_t *macho, uint32_t cmd)
 {
-    uint32_t lc_count = (uint32_t) h_slist_length (macho->lcmds);
-    for (uint32_t i = 0; i < lc_count; i++) {
+    HSList *lcmds = macho->lcmds;
+    int c = h_slist_length (lcmds);
+
+    for (int i = 0; i < c; i++) {
         mach_load_command_info_t *tmp = (mach_load_command_info_t *) h_slist_nth_data (macho->lcmds, i);
         if (tmp->lc->cmd == cmd) return tmp;
     }

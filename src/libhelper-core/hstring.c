@@ -15,7 +15,7 @@
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-//  Copyright (C) 2021, Is This On? Holdings
+//  Copyright (C) 2021, Is This On? Holdings Limited
 //  
 //  Harry Moulton <me@h3adsh0tzz.com>
 //
@@ -331,6 +331,10 @@ int __libhelper_printf(log_type msg_type, char *fmt, ...) {
 #else
         return 1;
 #endif      
+    } else if (msg_type == LOG_TEST_SUCCESS) {
+        fmt = mstrappend("%s%s%s", ANSI_COLOR_GREEN "[TEST_SUCCESS] ", fmt, ANSI_COLOR_GREEN ANSI_COLOR_RESET);
+    } else if (msg_type == LOG_TEST_FAIL) {
+        fmt = mstrappend("%s%s%s", ANSI_COLOR_RED "[ TEST_FAILED] ", fmt, ANSI_COLOR_RED ANSI_COLOR_RESET);
     }
 
     // Initialize a variable argument list with arg & fmt

@@ -17,7 +17,7 @@
 //
 //  Copyright (C) 2019, Is This On?, @h3adsh0tzz
 //  Copyright (C) 2020, Is This On?, @h3adsh0tzz
-//  Copyright (C) 2021, Is This On? Holdings
+//  Copyright (C) 2021, Is This On? Holdings Limited
 //  
 //  Harry Moulton <me@h3adsh0tzz.com>
 //
@@ -73,17 +73,54 @@ macho_64_create_from_buffer (unsigned char *data)
 
             /* add to segments list */
             scmds = h_slist_append (scmds, seginf);
+
+        } else if (lc->cmd == LC_ID_DYLIB || lc->cmd == LC_LOAD_DYLIB ||
+                   lc->cmd == LC_LOAD_WEAK_DYLIB || lc->cmd == LC_REEXPORT_DYLIB) {
+
+            /**
+             *  NOTE:   Because a Mach-O can have multiple dynamically linked libraries
+             *          which means there are multiple LC_DYLIB-like load commands, it is
+             *          easier to store them all in a separate list.
+             */
+
+            /* create a dylib info struct */
+            mach_dylib_command_info_t *dylib_inf = calloc (1, sizeof (mach_dylib_command_info_t));
+            uint32_t cmdsize = lc->cmdsize;
+
+            /* create the raw dylib command */
+            mach_dylib_command_t *raw = calloc (1, sizeof (mach_dylib_command_t));
+            memcpy (raw, macho->data + offset, sizeof (mach_dylib_command_t));
+
+            /* load the name of the dylib. This is located after the load commnad and is
+             *  included in the cmdsize
+             */
+            char *name = mach_load_command_load_string (macho, cmdsize, sizeof (mach_dylib_command_t), offset, raw->dylib.name.offset);
+
+            /* set the name, raw cmd struct and type */
+            dylib_inf->name = name;
+            dylib_inf->dylib = raw;
+            dylib_inf->type = lc->cmd;
+
+            /* add the offset to the load command */
+            mach_load_command_info_t *inf = calloc (1, sizeof (mach_load_command_info_t));
+            inf->lc = lc;
+            inf->offset = offset;
+
+            /* add them both to the lists */
+            dylibs = h_slist_append (dylibs, dylib_inf);
+            lcmds = h_slist_append (lcmds, inf);
+
+
         } else {
 
             /* any other commands are stored as load command info structs */
-            mach_load_command_info_t *inf = mach_load_command_info_create ();
+            mach_load_command_info_t *inf = calloc (1, sizeof (mach_load_command_info_t));
             inf->lc = lc;
             inf->offset = offset;
 
             lcmds = h_slist_append (lcmds, inf);        
         }
 
-        debugf ("lc_type[%d]: %s\n", i, mach_load_command_get_name (lc));
         offset += lc->cmdsize;
     }
 

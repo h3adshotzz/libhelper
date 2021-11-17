@@ -17,7 +17,7 @@
 //
 //  Copyright (C) 2019, Is This On?, @h3adsh0tzz
 //  Copyright (C) 2020, Is This On?, @h3adsh0tzz
-//  Copyright (C) 2021, Is This On? Holdings
+//  Copyright (C) 2021, Is This On? Holdings Limited
 //  
 //  Harry Moulton <me@h3adsh0tzz.com>
 //
@@ -92,13 +92,14 @@ extern "C" {
 
 #include <stdint.h>
 #include <libhelper-hlibc.h>
+#include <libhelper-macho.h>
 
 /**
  *  If LIBHELPER_MACHO_USE_SYSTEM_HEADERS is defined, we can use the system
- *  loader.h and any other required headers. 
- * 
+ *  loader.h and any other required headers.
+ *
  *  This is not advised as changes made to system headers could affect libhelper
- *  if certain changes are made to structures and definitions. 
+ *  if certain changes are made to structures and definitions.
  */
 #ifdef LIBHELPER_MACHO_USE_SYSTEM_HEADERS
 #   include <mach/loader.h>
@@ -131,6 +132,7 @@ extern "C" {
  *              Binaries. This appears at the top of a universal file, with a summary 
  *              of all the architectures contained within it.
  */
+typedef struct fat_header               fat_header_t;
 struct fat_header {
     uint32_t        magic;          /* FAT_MAGIC */
     uint32_t        nfat_arch;      /* number of fat_arch structs that follow */
@@ -141,6 +143,7 @@ struct fat_header {
  *              contained within a FAT archive, these follow directly after the fat 
  *              header in a file.
  */
+typedef struct fat_arch                 fat_arch_t;
 struct fat_arch {
     cpu_type_t      cputype;        /* cpu specifier for this architecture */
     cpu_subtype_t   cpusubtype;     /* cpu subtype specifier for this architecture */
@@ -149,19 +152,25 @@ struct fat_arch {
     uint32_t        align;          /* byte align */
 };
 
-/* libhelper-fat alias */
-typedef struct fat_header               fat_header_t;
-typedef struct fat_arch                 fat_arch_t;
-
 /**
  *  \brief      FAT Archive Info. This libhelper wrapper contains the FAT/Universal
  *              Binaries Header & architecture descriptors.
  */
+typedef struct __libhelper_fat_info     fat_info_t;
 struct __libhelper_fat_info {
     fat_header_t    *header;        /* FAT/Universal Binary Header */
     HSList          *archs;         /* list of contained architectures (fat_arch_t) */
 };
-typedef struct __libhelper_fat_info     fat_info_t;
+
+
+fat_info_t *
+macho_universal_load (const char *filename);
+
+fat_header_t *
+swap_fat_header_bytes (fat_header_t *hdr);
+
+fat_arch_t *
+swap_fat_arch_bytes (fat_arch_t *fa);
 
 /* redefine funcs from libhelper-2.0.0 */
 
