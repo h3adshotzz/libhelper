@@ -1022,6 +1022,15 @@ typedef struct linkedit_data_command                mach_linkedit_data_command_t
 
 /////////////////////////////////////////////////////////////////////////////////
 
+struct fileset_entry_command {
+    uint32_t        cmd;        /* LC_FILESET_ENTRY */
+    uint32_t        cmdsize;    /* includes id string */
+    uint64_t        vmaddr;     /* memory address of the dylib */
+    uint64_t        fileoff;    /* file offset of the dylib */
+    union lc_str    entry_id;   /* contained entry id */
+    uint32_t        reserved;   /* entry_id is 32-bits long, so this is the reserved padding */
+};
+
 /**
  *  \brief      Redefinition of fileset_entry_command as libhelper type.
  * 

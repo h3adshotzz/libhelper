@@ -158,7 +158,7 @@ int main (int argc, char *argv[])
 
     /* mach_load_command_find_command_by_type */
     mach_load_command_info_t *cmd_inf_2 = mach_load_command_find_command_by_type (macho, LC_SYMTAB);
-    if (!cmd_inf_2->lc) {
+    if (!cmd_inf_2) {
         test_failuref ("mach_load_command_find_command_by_type\n");
     } else {
         test_successf ("mach_load_command_find_command_by_type\n");
@@ -283,6 +283,35 @@ int main (int argc, char *argv[])
     test_failuref ("mach_load_command_dylib_format_version\n");
 
 
+    ///////////////////////////////////////////////////////////////////////////
+
+    printf ("\n**Running Fileset Entry Test**\n");
+
+    HSList *fileset_entries = NULL;
+    for (int i = 0; i < h_slist_length (macho->lcmds); i++) {
+        mach_load_command_info_t *lc = (mach_load_command_info_t *) h_slist_nth_data (macho->lcmds, i);
+        if (lc->lc->cmd == LC_FILESET_ENTRY)
+            fileset_entries = h_slist_append (fileset_entries, lc);
+    }
+
+    for (int i = 0; i < h_slist_length (fileset_entries); i++) {
+        mach_load_command_info_t *inf = (mach_load_command_info_t *) h_slist_nth_data (fileset_entries, i);
+        mach_fileset_entry_command_t *fse = inf->lc;
+
+        printf("vmaddr: 0x%08llx, fileoff: 0x%08llx, entry_id: %s\n",
+            fse->vmaddr, fse->fileoff,
+            mach_load_command_load_string (macho, fse->cmdsize, sizeof (mach_fileset_entry_command_t),
+                inf->offset, fse->entry_id.offset));
+    }
+
+    /*
+    mach_load_command_info_t *fileset_entry_info = mach_load_command_find_command_by_type (macho, LC_FILESET_ENTRY);
+    mach_fileset_entry_command_t *fileset_entry = (mach_fileset_entry_command_t *) fileset_entry_info->lc;
+    printf ("vmaddr: 0x%08llx, fileoff: 0x%08llx, entry_id: %s\n",
+        fileset_entry->vmaddr, fileset_entry->fileoff,
+        mach_load_command_load_string (macho, fileset_entry->cmdsize, sizeof (mach_fileset_entry_command_t), 
+                                        fileset_entry_info->offset, fileset_entry->entry_id.offset));
+        */
     ///////////////////////////////////////////////////////////////////////////
 
     printf ("\n**Running Example Tool**\n");
