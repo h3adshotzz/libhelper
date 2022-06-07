@@ -54,6 +54,7 @@ dkms.conf
 
 # Meson build directory and test directory
 .obj/
+tmp/
 build/
 arm64_build/
 test/

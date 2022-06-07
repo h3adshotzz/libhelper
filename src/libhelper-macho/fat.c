@@ -1,4 +1,4 @@
-//===--------------------------- libhelper ----------------------------===//
+//===----------------------------------------------------------------------===//
 //
 //                         The Libhelper Project
 //
@@ -15,154 +15,113 @@
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-//
 //  Copyright (C) 2019, Is This On?, @h3adsh0tzz
-//	Copyright (C) 2020, Is This On?, @h3adsh0tzz
+//  Copyright (C) 2020, Is This On?, @h3adsh0tzz
+//  Copyright (C) 2021, Is This On? Holdings Limited
+//  
+//  Harry Moulton <me@h3adsh0tzz.com>
 //
-//  me@h3adsh0tzz.com.
-//
-//
-//===------------------------------------------------------------------===//
+//===----------------------------------------------------------------------===//
 
-#include "libhelper/libhelper.h"
-#include "libhelper/libhelper-macho.h"
-#include "libhelper/libhelper-fat.h"
+#include "libhelper-logger.h"
+#include "libhelper-macho.h"
+#include "libhelper-fat.h"
 
-//===-----------------------------------------------------------------------===//
-/*-- FAT (Universal Binary)                              				      -*/
-//===-----------------------------------------------------------------------===//
+#include "macho.h"
 
-/**
- *  Function:   swap_header_bytes
- *  ------------------------------------
- * 
- *  Swaps the bytes of a fat_header_t. 
- * 
- *  returns:    A swapped fat_header_t struct.
- * 
- */
-fat_header_t *swap_header_bytes (fat_header_t *header)
+
+fat_header_t *
+swap_fat_header_bytes (fat_header_t *hdr)
 {
-    header->magic = OSSwapInt32(header->magic);
-    header->nfat_arch = OSSwapInt32(header->nfat_arch);
-    return header;
+    hdr->magic = OSSwapInt32 (hdr->magic);
+    hdr->nfat_arch = OSSwapInt32 (hdr->nfat_arch);
+    return hdr;
 }
 
-
-/**
- *  Function:   swap_mach_header_bytes
- *  ------------------------------------
- * 
- *  Swaps the bytes of a mach_header_t. 
- * 
- *  returns:    A swapped mach_header_t struct.
- * 
- */
-mach_header_t *swap_mach_header_bytes (mach_header_t *header)
+fat_arch_t *
+swap_fat_arch_bytes (fat_arch_t *fa)
 {
-    header->magic = OSSwapInt32(header->magic);
-    header->cputype = OSSwapInt32(header->cputype);
-    header->cpusubtype = OSSwapInt32(header->cpusubtype);
-    header->filetype = OSSwapInt32(header->filetype);
-    header->ncmds = OSSwapInt32(header->ncmds);
-    header->sizeofcmds = OSSwapInt32(header->sizeofcmds);
-    header->flags = OSSwapInt32(header->flags);
-    header->reserved = OSSwapInt32(header->reserved);
-    return header;
+    fa->cputype = OSSwapInt32(fa->cputype);
+    fa->cpusubtype = OSSwapInt32(fa->cpusubtype);
+    fa->offset = OSSwapInt32(fa->offset);
+    fa->size = OSSwapInt32(fa->size);
+    fa->align = OSSwapInt32(fa->align);
+    return fa;
 }
 
-
-/**
- *  Function:   swap_fat_arch_bytes
- *  ------------------------------------
- * 
- *  Swaps the bytes of a fat_arch. 
- * 
- *  returns:    A swapped fat_arch struct.
- * 
- */
-struct fat_arch *swap_fat_arch_bytes (struct fat_arch *a)
+mach_header_t *
+swap_mach_header_bytes (mach_header_t *hdr)
 {
-    a->cputype = OSSwapInt32(a->cputype);
-    a->cpusubtype = OSSwapInt32(a->cpusubtype);
-    a->offset = OSSwapInt32(a->offset);
-    a->size = OSSwapInt32(a->size);
-    a->align = OSSwapInt32(a->align);
-    return a;
+    hdr->magic = OSSwapInt32(hdr->magic);
+    hdr->cputype = OSSwapInt32(hdr->cputype);
+    hdr->cpusubtype = OSSwapInt32(hdr->cpusubtype);
+    hdr->filetype = OSSwapInt32(hdr->filetype);
+    hdr->ncmds = OSSwapInt32(hdr->ncmds);
+    hdr->sizeofcmds = OSSwapInt32(hdr->sizeofcmds);
+    hdr->flags = OSSwapInt32(hdr->flags);
+    hdr->reserved = OSSwapInt32(hdr->reserved);
+    return hdr;
 }
 
-
-/**
- *  Function:   swap_fat_header_bytes
- *  ------------------------------------
- * 
- *  Swaps the bytes of a fat_header_t. 
- * 
- *  returns:    A swapped fat_header_t struct.
- * 
- */
-fat_header_t *swap_fat_header_bytes (fat_header_t *h)
+fat_info_t *
+macho_universal_load (const char *filename)
 {
-    h->magic = OSSwapInt32(h->magic);
-    h->nfat_arch = OSSwapInt32(h->nfat_arch);
-    return h;
-}
-
-
-/**
- *  Function:   mach_universal_load
- *  ----------------------------------
- * 
- *  Loads a raw Universal Mach-O Header from a given offset in a verified file, and
- *  returns the resulting structure.
- *  
- *  file:       The verified file.
- * 
- *  Returns:    A verified Universal/FAT Mach Header structure.
- */
-fat_header_info_t *mach_universal_load (file_t *file)
-{
-
-    // Create the FAT header so we can read some data from
-    // the file. The header starts at 0x0 in the file. It
-    // is also in Little-Endian form, so we have to swap
-    // the byte order.
-    fat_header_t *fat_header = file_dup_data (file, 0, sizeof (fat_header_t));
-    fat_header = swap_header_bytes (fat_header);
-
-    // Check the number of architectures
-    if (!fat_header->nfat_arch) {
-        errorf ("Empty Mach-O Universal Binary");
-        exit (0);
+    /**
+     *  Check we are actually loading a FAT/Universal binary file.
+     */
+    if (macho_check_arch (filename) != MH_TYPE_FAT) {
+        errorf ("mach_universal_load: Could not load a non-FAT file as a Universal Binary.\n");
+        return NULL;
     }
-
-    if (fat_header->nfat_arch > 1) 
-        debugf ("fat.c: mach_universal_load(): %s: Mach-O Universal Binary. Found %d architectures.\n", file->path, fat_header->nfat_arch);
-
-    // Arch list
+    file_t *f = macho_load_file_from_filename (filename);
+    
+    /**
+     *  Create the FAT header, which starts at 0x0. The header is
+     *  in little-endian format, so we have to use the swap bytes
+     *  functions.
+     */
+    fat_header_t *hdr = (fat_header_t *) file_dup_data (f, 0, sizeof (fat_header_t));
+    hdr = swap_fat_header_bytes (hdr);
+    
+    /* check the number of architectures */
+    if (!hdr->nfat_arch) {
+        errorf ("mach_universal_load: FAT file does not contain any Mach-O's\n");
+        return NULL;
+    }
+    // should be a debugf
+    printf ("mach_universal_load: Found %d architectures in file: %s\n", hdr->nfat_arch, filename);
+    
+    /* list of archs */
     HSList *archs = NULL;
-
-    // Create an offset to move through the archs.
-    uint32_t offset = sizeof(fat_header_t);
-    for (uint32_t i = 0; i < fat_header->nfat_arch; i++) {
-
-        // Current arch. Also needs to swap the bytes.
-        struct fat_arch *arch = file_dup_data (file, offset, sizeof (struct fat_arch));
-
+    uint32_t off = sizeof (fat_header_t);
+    
+    for (int i = 0; i < hdr->nfat_arch; i++) {
+        
+        /* dup the data, we can't modify *file->data */
+        fat_arch_t *arch = (fat_arch_t *) file_dup_data (f, off, sizeof (fat_arch_t));
         arch = swap_fat_arch_bytes (arch);
-
-        // Add to the list
+        
+        /* add the arch to the list */
         archs = h_slist_append (archs, arch);
-
-        // Increment the offset
-        offset += sizeof(struct fat_arch);
-        free (arch);
+        
+        /* increment offset */
+        off += sizeof (fat_arch_t);
     }
-
-    fat_header_info_t *ret = malloc (sizeof(fat_header_info_t));
-    ret->header = fat_header;
-    ret->archs = archs;
-
-    free (fat_header);
-    return ret;
+    
+    fat_info_t *fat = calloc (1, sizeof (fat_info_t));
+    fat->header = hdr;
+    fat->archs = archs;
+    
+    return fat;
 }
+
+
+
+
+
+
+
+
+
+
+
