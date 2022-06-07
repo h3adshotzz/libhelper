@@ -41,8 +41,7 @@ target_sources(libhelper
         segment.c
         section.c
 
-        load-commands/source_version_command.c
-        load-commands/build_version_command.c
+        load-commands/version_commands.c
         load-commands/dylib_command.c
         load-commands/uuid.c
 

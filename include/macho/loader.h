@@ -665,6 +665,20 @@ struct linkedit_data_command {
 };
 
 /**
+ * \brief       The version_min_command contains the min OS version on which this 
+ *              binary was built to run. A few load commands use this structure:
+ *
+ *                  LC_VERSION_MIN_MACOSX, LC_VERSION_MIN_IPHONEOS, LC_VERSION_MIN_WATCHOS
+ *                  or LC_VERSION_MIN_TVOS.
+ */
+struct version_min_command {
+    uint32_t	    cmd;            /* A few possible command types */
+    uint32_t	    cmdsize;	    /* sizeof(struct min_version_command) */
+    uint32_t	    version;	    /* X.Y.Z is encoded in nibbles xxxx.yy.zz */
+    uint32_t	    sdk;		    /* X.Y.Z is encoded in nibbles xxxx.yy.zz */
+};
+
+/**
  * \brief       The build_version_command contains the min OS version on which this
  *              binary was built to run for its platform.  The list of known platforms and
  *              tool values following it.

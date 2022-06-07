@@ -15,16 +15,57 @@
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-//  Copyright (C) 2019, Is This On?, @h3adsh0tzz
-//  Copyright (C) 2020, Is This On?, @h3adsh0tzz
-//  Copyright (C) 2021, Is This On? Holdings Limited
-//
-//  Harry Moulton <me@h3adsh0tzz.com>
+//  Copyright (C) 2019-2020, Is This On?, @h3adsh0tzz
+//  Copyright (C) 2021-2022, Is This On? Holdings Limited
+//  
+//  Contact: Harry Moulton <me@h3adsh0tzz.com>
 //
 //===----------------------------------------------------------------------===//
 
+/**
+ *  This file includes handlers for:
+ *      - source_version_command
+ *      - build_version_command
+ *      - version_min_command
+ */
+
 #include "libhelper-logger.h"
 #include "libhelper-macho.h"
+
+static char *
+unpack_nibble_encoded_version (uint32_t vers)
+{
+    char *ret = malloc (10);
+    if (vers == 0) {
+        ret = "(null)";
+    } else {
+        if ((vers & 0xff) == 0) snprintf (ret, 10, "%u.%u", vers >> 16, (vers >> 8) & 0xff);
+        else snprintf (ret, 10, "%u.%u.%u", vers >> 16, (vers >> 8) & 0xff, vers & 0xff);
+    }
+    debugf ("nibble_encoded_version: %s\n", ret);
+    return ret;
+}
+
+static char *
+unpack_abcde_encoded_version (uint64_t vers)
+{
+    char *ret = calloc (1, 20);
+    uint64_t a, b, c, d, e;
+
+    a = (vers >> 40) & 0xffffff;
+    b = (vers >> 30) & 0x3ff;
+    c = (vers >> 20) & 0x3ff;
+    d = (vers >> 10) & 0x3ff;
+    e = vers & 0x3ff;
+
+    if (e != 0) snprintf (ret, 20, "%llu.%llu.%llu.%llu.%llu", a, b, c, d, e);
+    else if (d != 0) snprintf (ret, 16, "%llu.%llu.%llu.%llu", a, b, c, d);
+    else if (c != 0) snprintf (ret, 12, "%llu.%llu.%llu", a, b, c);
+    else snprintf (ret, 8, "%llu.%llu", a, b);
+    
+    debugf ("abcde_encoded_version: %s\n", ret);
+    return ret;
+}
 
 mach_build_version_info_t *
 mach_load_command_build_version_info (mach_build_version_command_t *bvc, uint32_t offset, macho_t *macho)
@@ -68,27 +109,9 @@ mach_load_command_build_version_info (mach_build_version_command_t *bvc, uint32_
             break;
     }
 
-    /* set the minos */
-    char *minos_tmp = malloc (10);
-    if ((bvc->minos & 0xff) == 0) {
-        snprintf (minos_tmp, 10, "%u.%u", bvc->minos >> 16, (bvc->minos >> 8) & 0xff);
-    } else {
-        snprintf (minos_tmp, 10, "%u.%u", bvc->minos >> 16, (bvc->minos >> 8) & 0xff);
-    }
-    info->minos = minos_tmp;
-
-    /* set the sdk */
-    char *sdk_tmp = malloc (10);
-    if (bvc->sdk == 0) {
-        sdk_tmp = "(null)";
-    } else {
-        if ((bvc->sdk & 0xff) == 0) {
-            snprintf (sdk_tmp, 10, "%u.%u", bvc->sdk >> 16, (bvc->sdk >> 8) & 0xff);
-        } else {
-            snprintf (sdk_tmp, 10, "%u.%u.%u", bvc->sdk >> 16, (bvc->sdk >> 8) & 0xff, bvc->sdk & 0xff);
-        }
-    }
-    info->sdk = sdk_tmp;
+    /* set the minos and sdk versions */
+    info->minos = unpack_nibble_encoded_version (bvc->minos);
+    info->sdk = unpack_nibble_encoded_version (bvc->sdk);
 
     /* set the tools */
     info->ntools = bvc->ntools;
@@ -115,12 +138,28 @@ mach_load_command_build_version_info (mach_build_version_command_t *bvc, uint32_
         }
 
         inf->version = btv->version;
-
         info->tools = h_slist_append (info->tools, inf);
-
         next_off += sizeof(mach_build_version_command_t);
     }
 
     /* return */
     return (info) ? info : NULL;
+}
+
+char *
+mach_load_command_get_source_version_string (mach_source_version_command_t *svc)
+{
+    return unpack_abcde_encoded_version (svc->version);
+}
+
+char *
+mach_load_command_get_min_version (mach_version_min_command_t *vmc)
+{
+    return unpack_abcde_encoded_version (vmc->version);
+}
+
+char *
+mach_load_command_get_min_version_sdk (mach_version_min_command_t *vmc)
+{
+    return unpack_abcde_encoded_version (vmc->sdk);
 }

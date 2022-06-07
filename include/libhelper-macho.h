@@ -757,18 +757,6 @@ mach_section_find_at_index (HSList              *segments,
 typedef struct source_version_command           mach_source_version_command_t;
 
 /**
- *  \brief      Search a Mach-O for the `LC_SOURCE_VERSION` Load Command, load it into
- *              a structure and return it back.
- *
- *  \param macho    The Mach-O to search.
- *
- *  \returns    Returns a `mach_source_version_command_t` structure, or NULL if the
- *              operation failed.
- */
-extern mach_source_version_command_t *
-mach_load_command_find_source_version_command (macho_t  *macho);
-
-/**
  *  \brief      Unpack a version string from an `LC_SOURCE_VERSION` Load Command and
  *              return the result as a formatted string.
  *
@@ -779,6 +767,37 @@ mach_load_command_find_source_version_command (macho_t  *macho);
  */
 extern char *
 mach_load_command_get_source_version_string (mach_source_version_command_t      *svc);
+
+/////////////////////////////////////////////////////////////////////////////////
+
+/**
+ *  \brief      Redefinition of source command as a libhelper type.
+ */
+typedef struct version_min_command                  mach_version_min_command_t;
+
+/**
+ *  \brief      Unpack a version string from an `LC_VERSION_MIN` Load Command and
+ *              return the result as a formatted string.
+ *
+ *  \param vmc      The version min Load Command.
+ *
+ *  \returns    Returns a formatted string for the unpacked version, or NULL if the 
+ *              operation failed.
+ */
+extern char *
+mach_load_command_get_min_version (mach_version_min_command_t *vmc);
+
+/**
+ *  \brief      Unpack a SDK version string from an `LC_VERSION_MIN` Load Command and
+ *              return the result as a formatted string.
+ *
+ *  \param vmc      The version min Load Command.
+ *
+ *  \returns    Returns a formatted string for the unpacked SDK version, or NULL if 
+ *              the operation failed.
+ */
+extern char *
+mach_load_command_get_min_version_sdk (mach_version_min_command_t *vmc);
 
 /////////////////////////////////////////////////////////////////////////////////
 
@@ -1007,7 +1026,7 @@ mach_load_command_build_version_info (mach_build_version_command_t *bvc, uint32_
 /**
  *  \brief      Redefinition of dyld_info_command as a libhelper type.
  * 
- *              c
+ *              There are no helper functions for this load command.
  */
 typedef struct dyld_info_command                    mach_dyld_info_command_t;
 
@@ -1038,6 +1057,8 @@ struct fileset_entry_command {
  *              string can be read using the load string function.
  */
 typedef struct fileset_entry_command                mach_fileset_entry_command_t;
+
+/////////////////////////////////////////////////////////////////////////////////
 
 
 #ifdef __cplusplus

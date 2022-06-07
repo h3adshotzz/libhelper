@@ -261,16 +261,12 @@ int main (int argc, char *argv[])
     }
 
 
-    /* mach_load_command_find_source_version_command */
-    mach_source_version_command_t *svc = mach_load_command_find_source_version_command (macho);
-    if (!svc) {
-        test_failuref ("mach_load_command_find_source_version_command\n");
-    } else {
-        test_successf ("mach_load_command_find_source_version_command\n");
-    }
+    /* mach_load_command_get_source_version_string */ 
+    mach_load_command_info_t *svc_inf = mach_load_command_find_command_by_type (macho, LC_SOURCE_VERSION);
+    mach_source_version_command_t *svc = (mach_source_version_command_t *) svc_inf->lc;    
+    if (!svc)
+        test_failuref ("could not find LC_SOURCE_VERSION_COMMAND\n");
 
-
-    /* mach_load_command_get_source_version_string */
     char *svc_str = mach_load_command_get_source_version_string (svc);
     if (!svc_str) {
         test_failuref ("mach_load_command_get_source_version_string\n");
@@ -278,6 +274,14 @@ int main (int argc, char *argv[])
         test_successf ("mach_load_command_get_source_version_string\n");
     }
 
+
+    /* mach_load_command_build_version_info */
+    mach_load_command_info_t *bvc_inf = mach_load_command_find_command_by_type (macho, LC_BUILD_VERSION);
+    mach_build_version_command_t *bvc = (mach_build_version_command_t *) bvc_inf->lc;    
+    if (!bvc)
+        test_failuref ("could not find LC_BUILD_VERSION_COMMAND\n");
+
+    mach_build_version_info_t *bvc_parsed = mach_load_command_build_version_info (bvc, bvc_inf->offset, macho);
 
     /* mach_load_command_dylib_format_version */
     test_failuref ("mach_load_command_dylib_format_version\n");
@@ -303,15 +307,8 @@ int main (int argc, char *argv[])
             mach_load_command_load_string (macho, fse->cmdsize, sizeof (mach_fileset_entry_command_t),
                 inf->offset, fse->entry_id.offset));
     }
+    
 
-    /*
-    mach_load_command_info_t *fileset_entry_info = mach_load_command_find_command_by_type (macho, LC_FILESET_ENTRY);
-    mach_fileset_entry_command_t *fileset_entry = (mach_fileset_entry_command_t *) fileset_entry_info->lc;
-    printf ("vmaddr: 0x%08llx, fileoff: 0x%08llx, entry_id: %s\n",
-        fileset_entry->vmaddr, fileset_entry->fileoff,
-        mach_load_command_load_string (macho, fileset_entry->cmdsize, sizeof (mach_fileset_entry_command_t), 
-                                        fileset_entry_info->offset, fileset_entry->entry_id.offset));
-        */
     ///////////////////////////////////////////////////////////////////////////
 
     printf ("\n**Running Example Tool**\n");
