@@ -60,5 +60,6 @@ dkms.conf
 
 # Other
 .obj/
+.kateproject
 build/
 test_files/

@@ -15,24 +15,21 @@
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
+//  Copyright (C) 2019, Is This On?, @h3adsh0tzz
+//  Copyright (C) 2020, Is This On?, @h3adsh0tzz
 //  Copyright (C) 2021, Is This On? Holdings Limited
-//  
+//
 //  Harry Moulton <me@h3adsh0tzz.com>
 //
 //===----------------------------------------------------------------------===//
 
-/* libhelper-version */
+#include "libhelper-logger.h"
+#include "libhelper-macho.h"
 
-#include <stdio.h>
-#include <libhelper.h>
-
-int main ()
+char *
+mach_load_command_dylib_format_version (uint32_t vers)
 {
-	printf ("Copyright (C) 2021, Is This On? Holdings Limited\n\n");
-	printf ("The Libhelper Project (%s)\n", libhelper_get_version());
-	printf ("  Build Time:\t\t" __TIMESTAMP__ "\n");
-	printf ("  Default Target:\t%s-%s\n", libhelper_get_build_target(), libhelper_get_build_arch());
-	printf ("  Libhelper:\t\t%s\n", libhelper_get_version_string());
-	
-	return 0;
+    char *buf = calloc(1, 10);
+    snprintf (buf, 10, "%d.%d.%d", vers >> 16, (vers >> 8) & 0xf, vers & 0xf);
+    return (buf) ? buf : NULL;
 }

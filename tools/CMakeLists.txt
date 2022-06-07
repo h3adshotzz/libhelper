@@ -15,7 +15,7 @@
 ##  You should have received a copy of the GNU General Public License
 ##  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
-##  Copyright (C) 2021, Is This On? Holdings
+##  Copyright (C) 2021, Is This On? Holdings Limited
 ##  
 ##  Harry Moulton <me@h3adsh0tzz.com>
 ##
@@ -31,3 +31,9 @@ add_executable(libhelper-version)
 target_sources(libhelper-version PUBLIC libhelper-version.c)
 target_include_directories(libhelper-version PUBLIC ${CMAKE_SOURCE_DIR}/include)
 target_link_libraries(libhelper-version libhelper)
+
+add_executable(arch-test)
+target_sources(arch-test PUBLIC arch-test.c)
+target_include_directories(arch-test PUBLIC ${CMAKE_SOURCE_DIR}/include)
+target_link_libraries(arch-test libhelper)
+

@@ -17,22 +17,15 @@
 //
 //  Copyright (C) 2019, Is This On?, @h3adsh0tzz
 //  Copyright (C) 2020, Is This On?, @h3adsh0tzz
-//  Copyright (C) 2021, Is This On? Holdings
+//  Copyright (C) 2021, Is This On? Holdings Limited
 //  
 //  Harry Moulton <me@h3adsh0tzz.com>
 //
 //===----------------------------------------------------------------------===//
 
 #include "libhelper-macho.h"
+#include "libhelper-hlibc.h"
 #include "libhelper-logger.h"
-
-mach_header_t *
-mach_header_create ()
-{
-    mach_header_t *ret = malloc (sizeof (mach_header_t));
-    memset (ret, '\0', sizeof (mach_header_t));
-    return ret;
-}
 
 mach_header_t *
 mach_header_load (macho_t *macho)
@@ -42,7 +35,7 @@ mach_header_load (macho_t *macho)
     /* Check that the macho_t given was initialised properly */
     if (macho) {
         unsigned char *data = macho->data;
-        hdr = mach_header_create ();
+        hdr = calloc(1, sizeof (mach_header_t));
 
         /* Copy bytes from data to hdr */
         memcpy (hdr, &data[0], sizeof (mach_header_t));
@@ -55,7 +48,6 @@ mach_header_load (macho_t *macho)
 
         /* Check the magic value */
         mach_header_type_t mh_type = mach_header_verify (hdr->magic);
-        free (hdr);
 
         if (mh_type == MH_TYPE_MACHO64) {
             debugf ("mach_header_load(): detected mach-o 64-bit.\n");
@@ -78,12 +70,12 @@ mach_header_type_t
 mach_header_verify (uint32_t magic)
 {
     switch (magic) {
-        case MACH_MAGIC_64:
-        case MACH_CIGAM_64:
-            return MH_TYPE_MACHO64;
         case MACH_MAGIC_32:
         case MACH_CIGAM_32:
             return MH_TYPE_MACHO32;
+        case MACH_MAGIC_64:
+        case MACH_CIGAM_64:
+            return MH_TYPE_MACHO64;
         case MACH_MAGIC_UNIVERSAL:
         case MACH_CIGAM_UNIVERSAL:
             return MH_TYPE_FAT;
@@ -103,12 +95,17 @@ mach_header_get_cpu_string (cpu_type_t      cpu_type,
 
         /* ARM64 CPUs */
         case CPU_TYPE_ARM64:
-            switch (cpu_subtype) {
-                case CPU_SUBTYPE_ARM64_V8:
-                    return "arm64";     /* ARMv8-A */
-                case CPU_SUBTYPE_ARM64E:
-                    return "arm64e";
-            }
+
+            if ((cpu_subtype & CPU_SUBTYPE_ARM64_V8) == CPU_SUBTYPE_ARM64_V8)
+                return "arm64";
+
+            if ((cpu_subtype & CPU_SUBTYPE_ARM64E) == CPU_SUBTYPE_ARM64E)
+                return "arm64e";
+
+            if ((cpu_subtype & CPU_SUBTYPE_ARM64_ALL) == CPU_SUBTYPE_ARM64_ALL)
+                return "arm64";
+
+            return "arm64_unknown";
 
         /* ARM64_32 CPUs */
         case CPU_TYPE_ARM64_32:
@@ -121,6 +118,44 @@ mach_header_get_cpu_string (cpu_type_t      cpu_type,
         /* Any other unknown CPU type */
         default:
             return "unknown_cpu";
+    }
+}
+
+char *
+mach_header_get_cpu_descriptor (cpu_type_t      cpu_type,
+                                cpu_subtype_t   cpu_subtype)
+{
+    HString *str = NULL;
+    switch (cpu_type) {
+
+        /* ARM64 */
+        case CPU_TYPE_ARM64:
+
+            /* All ARM64 CPUs are ARMv8 */
+            str = h_string_new ("ARMv8");
+
+            /* Check if this is arm64e or not */
+            if (cpu_subtype & CPU_SUBTYPE_ARM64E)
+                str = h_string_append_len (str, ".5-A", 4);
+            else
+                str = h_string_append_len (str, "-A", 2);
+
+            /* Check for CPU extensions */
+            if (cpu_subtype & CPU_SUBTYPE_ARM64E_MTE_MASK)
+                str = h_string_append_len (str, ", MTE", 5);
+
+            if (cpu_subtype & CPU_SUBTYPE_ARM64_PTR_AUTH_MASK)
+                str = h_string_append_len (str, ", PAC", 5);
+
+            /* CPU extensions display as "ARMv8-A, <ext>, <ext>" */
+            return str->str;
+
+
+        /* Anything other than ARM64 */
+        case CPU_TYPE_ARM64_32:
+        case CPU_TYPE_X86_64:
+        default:
+            return mach_header_get_cpu_string (cpu_type, cpu_subtype);
     }
 }
 
@@ -141,6 +176,7 @@ mach_header_get_file_type_string (uint32_t type)
         case MACH_TYPE_DYLINKER:
             return "Mach Dyanmic Linker (MH_DYLINKER)";
         default:
+            warningf ("mach type not supported: 0x%08x\n", type);
             return "Mach Unknown";
     }
 }

@@ -17,7 +17,7 @@
 //
 //  Copyright (C) 2019, Is This On?, @h3adsh0tzz
 //  Copyright (C) 2020, Is This On?, @h3adsh0tzz
-//  Copyright (C) 2021, Is This On? Holdings
+//  Copyright (C) 2021, Is This On? Holdings Limited
 //  
 //  Harry Moulton <me@h3adsh0tzz.com>
 //
@@ -27,37 +27,60 @@
 #include "libhelper-logger.h"
 #include "libhelper-macho.h"
 #include "libhelper-file.h"
+#include "libhelper-fat.h"
 
-void *
-macho_load (const char *filename)
+#include "macho.h"
+
+file_t *
+macho_load_file_from_filename (const char *filename)
 {
-    file_t      *file = NULL;
-    void        *macho = NULL;
-
     /* Check the filename is set */
     if (!filename) {
-        errorf ("macho_load(): No filename specified.\n");
+        errorf ("macho_load_file_from_filename(): No filename specified.\n");
         return NULL;
     }
 
     /* Load the file */
-    file = file_load (filename);
+    file_t *file = file_load (filename);
     if (!file) {
-        errorf ("macho_load(): Filename invalid. Could not load the file.\n");
+        errorf ("macho_load_file_from_filename(): Filename invalid. Could not load the file.\n");
         free (file);
         return NULL;
     }
 
     /* Verify the file loaded correctly */
     if (file->size <= 0) {
-        errorf ("macho_load(): File could not be loaded properly. Filesize invalid.\n");
+        errorf ("macho_load_file_from_filename(): File could not be loaded properly. Filesize invalid.\n");
         free (file);
         return NULL;
     }
+    return file;
+}
 
-    /* We use macho_create_from_buffer() to reuse more code */
-    debugf ("macho_load(): creating mach-o struct.\n");
-    macho = macho_create_from_buffer ((unsigned char *) file_get_data (file, 0));
+mach_header_type_t
+macho_check_arch (const char *filename)
+{
+    /* load the file and check the magic */
+    file_t *file = macho_load_file_from_filename (filename);
+    mach_header_type_t type = mach_header_verify (*(uint32_t *) file_get_data (file, 0));
+
+    /* free the file */
+    file_close (file);
+
+    /* return mach_header_verify() */
+    return type;
+}
+
+macho_t *
+macho_64_load (const char *filename)
+{
+    file_t      *file = NULL;
+    void        *macho = NULL;
+
+    file = macho_load_file_from_filename (filename);
+
+    /* We use macho_64_create_from_buffer() to load the macho from a pointer */
+    macho = macho_64_create_from_buffer (file->data);
 
     /* Verify the Mach-O */
     if (macho == NULL) {
@@ -66,39 +89,15 @@ macho_load (const char *filename)
         return NULL;
     }
 
+    /* the file structure is no longer needed, as the data is copied to the macho */
+    free (file);
+
     debugf ("macho_load(): all is well.\n");
     return macho;
 }
 
-macho_t *
-macho_create_from_buffer (unsigned char *data)
-{
-    /* Check that the data pointer is valid */
-    if (!data) {
-        errorf ("macho_create_from_buffer(): Invalid data pointer.\n");
-        return NULL;
-    }
-
-    /* Check if the data is a FAT file */
-    if (FAT(data)) {
-        errorf ("macho_create_from_buffer(): Cannot handle FAT archive with this function.\n");
-        return NULL;
-    }
-
-    /* Try to load the mach header here. */
-    mach_header_t *hdr = (mach_header_t *) data;
-    mach_header_type_t type = mach_header_verify (hdr->magic);
-
-    /* Handle the file based on the architecture */
-    if (type == MH_TYPE_MACHO64) {
-        /* return macho_64_create_from_buffer (data) */
-    } else if (type == MH_TYPE_MACHO32) {
-        /* return macho_32_create_from_buffer (data) */
-    } else {
-        errorf ("macho_create_from_buffer(): Cannot handle file with magic: 0x%08x\n", hdr->magic);
-        return NULL;
-    }
-}
+//macho_32_t *
+//macho_32_load()
 
 void *
 macho_load_bytes (void *macho, size_t size, uint32_t offset)
@@ -114,7 +113,7 @@ void
 macho_read_bytes (void *macho, uint32_t offset, void *buffer, size_t size)
 {
     macho_t *tmp = (macho_t *) macho;
-    memcpy (buffer, macho_get_bytes (tmp->data, offset), size);
+    memcpy (buffer, (tmp->data + offset), size);
 }
 
 void *
