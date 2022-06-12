@@ -41,5 +41,6 @@ target_sources(libhelper
         version.c
         hstring.c
         hslist.c
+        logger.c
         file.c
 )

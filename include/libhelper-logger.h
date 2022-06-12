@@ -83,6 +83,15 @@ __libhelper_printf (log_type     msg_type,
 #define test_failuref(fmt, ...)          __libhelper_printf (LOG_TEST_FAIL, fmt, ##__VA_ARGS__)
 #define test_successf(fmt, ...)          __libhelper_printf (LOG_TEST_SUCCESS, fmt, ##__VA_ARGS__)
 
+/**
+ * 
+ */
+void
+hlog_print_list_header (char *header);
+void
+hlog_print_list_subheader (char *padding, char *header);
+void
+hlog_print_list_item (char *padding, char *name, char *fmt, ...);
 
 #ifdef __cplusplus
 }
