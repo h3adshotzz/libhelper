@@ -46,3 +46,11 @@ target_sources(libhelper-fat-test PUBLIC libhelper-fat-test.c)
 target_include_directories(libhelper-fat-test PUBLIC ${CMAKE_SOURCE_DIR}/include)
 target_link_libraries(libhelper-fat-test libhelper)
 
+####################### SPECIFIC LIBHELPER TESTS ############################
+
+## Mach Thread Command Test
+##
+add_executable(mach-thread-command-test)
+target_sources(mach-thread-command-test PUBLIC mach-thread-command-test.c)
+target_include_directories(mach-thread-command-test PUBLIC ${CMAKE_SOURCE_DIR}/include)
+target_link_libraries(mach-thread-command-test libhelper)

@@ -1060,6 +1060,41 @@ typedef struct fileset_entry_command                mach_fileset_entry_command_t
 
 /////////////////////////////////////////////////////////////////////////////////
 
+/*
+ *  Thread State Flavors
+ */
+#define ARM_THREAD_STATE		                    1
+#define ARM_UNIFIED_THREAD_STATE                    ARM_THREAD_STATE
+#define ARM_VFP_STATE			                    2
+#define ARM_EXCEPTION_STATE		                    3
+#define ARM_DEBUG_STATE			                    4 /* pre-armv8 */
+#define THREAD_STATE_NONE		                    5
+#define ARM_THREAD_STATE64		                    6
+#define ARM_EXCEPTION_STATE64	                    7
+// ARM_THREAD_STATE_LAST (legacy)                   8
+#define ARM_THREAD_STATE32		                    9
+#define ARM_DEBUG_STATE32		                    14
+#define ARM_DEBUG_STATE64		                    15
+#define ARM_NEON_STATE			                    16
+#define ARM_NEON_STATE64		                    17
+#define ARM_CPMU_STATE64		                    18
+
+/**
+ * Thread State Count
+ */
+#define ARM_THREAD_STATE_COUNT                      17
+#define ARM_THREAD_STATE32_COUNT                    ARM_THREAD_STATE_COUNT
+#define ARM_THREAD_STATE64_COUNT                    68
+#define ARM_UNIFIED_THREAD_STATE_COUNT              149
+
+/**
+ *  \brief      Redefinition of thread_command as libhelper type.
+ * 
+ *              There are no helper functions for this load command.
+ */
+typedef struct thread_command                       mach_thread_command_t;
+
+
 
 #ifdef __cplusplus
 }

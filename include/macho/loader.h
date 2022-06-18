@@ -449,6 +449,22 @@ struct entry_point_command {
 };
 
 /**
+ *  \brief      The thread_command defines the default CPU state.
+ */
+struct thread_command {
+    uint32_t cmd;               /* LC_THREAD or LC_UNIXTHREAD */
+    uint32_t cmdsize;           /* sizeof (thread_command) */
+    uint32_t flavour;           /* thread state flavour */
+    uint32_t count;             /* thread state size in bytes */
+    uint64_t regs[29];          /* registers x0-x29 */
+    uint64_t fp;                /* frame pointer */
+    uint64_t lr;                /* link register */
+    uint64_t sp;                /* stack pointer */
+    uint64_t pc;                /* program counter */
+    uint32_t cpsr;              /* current program status register */
+};
+
+/**
  *  \brief      The source_version_command is an optional load command containing
  *              the version of the sources used to build the binary.
  */
