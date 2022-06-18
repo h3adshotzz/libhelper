@@ -148,21 +148,29 @@ file_dup_data (file_t       *file,
                size_t        size);
 
 /**
- *  \brief      File API Write Buffer.
+ *  \brief      File API Write.
  * 
- *  Write a given buffer to a file.
+ *  Write a given file structure to the filesystem using the path within the file type.
  * 
- *  \param  filename    File name to write to.
- *  \param  buf         Buffer to write to the file.
- *  \param  size        Amount of bytes from buf base to write.
+ *  \param  file    File to use.
  * 
- *  \return     File write result.
  */
-extern int
-file_write_new (file_t          *file,
-                unsigned char   *buf,
-                size_t           size);
+extern void
+file_write_new (file_t *file);
 
+/**
+ *  \brief      File API Create with Data.
+ * 
+ *  Creates a new file with given name, data and size.
+ * 
+ *  \param  name    File name/path,
+ *  \param  data    Data to write.
+ *  \param  size    Amount of bytes to copy from `data`.
+ * 
+ *  \returns    New file structure.
+ */
+extern file_t *
+file_create_with_data (char *name, unsigned char *data, size_t size);
 
 
 #ifdef __cplusplus

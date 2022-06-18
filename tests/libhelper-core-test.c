@@ -28,6 +28,7 @@
 #include <libhelper.h>
 #include <libhelper-file.h>
 #include <libhelper-hlibc.h>
+#include <libhelper-logger.h>
 
 /**
  *  HSList tests
@@ -92,9 +93,14 @@ void _libhelper_hstring_tests ()
  */
 void _libhelper_file_tests (char *path)
 {
+	debugf ("Testing File API Loading...\n");
 	file_t *test = file_load ((const char *) path);
 	if (test)
 		printf ("success: %zu\n", test->size);
+
+	debugf ("Testing File API Writing...\n");
+	file_t *test2 = file_create_with_data ("test.bin", test->data, test->size);
+	file_write_new (test2);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

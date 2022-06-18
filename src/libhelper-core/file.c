@@ -32,14 +32,37 @@
 #include <libhelper.h>
 #include <libhelper-file.h>
 
-file_t *file_create ()
+file_t *
+file_create ()
 {
     file_t *file = malloc (sizeof (file_t));
 	memset (file, '\0', sizeof (file_t));
 	return file;
 }
 
-file_t *file_load (const char *path)
+file_t *
+file_create_with_data (char *name, unsigned char *data, size_t size)
+{
+	file_t *ret = file_create ();
+	ret->path = strdup (name);
+	ret->data = data;
+	ret->size = size;
+
+	file_write_new (ret);
+
+	return ret;
+}
+
+void
+file_write_new (file_t *file)
+{
+	FILE *fp = fopen (file->path, "w");
+	fwrite (file->data, file->size, 1, fp);
+	fclose (fp);
+}
+
+file_t *
+file_load (const char *path)
 {
 	file_t *file = file_create ();
 
@@ -70,7 +93,8 @@ file_t *file_load (const char *path)
 	return (file->data) ? file : NULL;
 }
 
-void file_close (file_t *file)
+void 
+file_close (file_t *file)
 {
     file = NULL;
     free (file);
