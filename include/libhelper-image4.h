@@ -41,8 +41,8 @@ extern "C" {
 #    include <openssl/sha.h>
 #endif
 
-#include <libhelper-hlib.h>
-#include <libhelper-asn1.h>
+#include "libhelper-hlib.h"
+#include "libhelper-asn1.h"
 
 
 /**
