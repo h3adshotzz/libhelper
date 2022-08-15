@@ -25,39 +25,18 @@ cmake_minimum_required(VERSION 3.15)
 
 ############################ CONFIGURATION #####################################
 
-# Include a file from config/defaults.cmake which has default values.
+# Check this module should be built
+#if (NOT LIBHELPER_)
 
-# The default build type should be DEBUG. The build type can be set with
-# -DCMAKE_BUILD_TYPE.
-if (NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE "DEBUG" CACHE STRING "Build type: RELEASE, DEBUG" FORCE)
-endif()
-
-############################## PROJECT #########################################
-
-set(LIBHELPER_VERSION "3.0.0")
-
-# Declare the project
-project("The Libhelper Project" VERSION ${LIBHELPER_VERSION} LANGUAGES C)
-add_library(libhelper SHARED)
-
-set_property(TARGET libhelper PROPERTY C_STANDARD 11)
-
-# Libhelper public headers.
+# Libhelper-core is not built as a separate module, instead it's compiled directly
+# as the library. 
 target_include_directories(libhelper
-    PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-# Libhelper-core is actually the direct source files for libhelper, it's not
-# built as a static library and then linked like the others.
-add_subdirectory(src/libhelper-core)
-add_subdirectory(src/libhelper-macho)
-add_subdirectory(src/libhelper-compression)
-add_subdirectory(src/libhelper-image4)
-
-# Add other subdirectories
-add_subdirectory(tools)
-add_subdirectory(tests)
-
-#include(config/install.cmake)
+target_sources(libhelper
+    PUBLIC
+        image4.c
+        asn1.c
+)

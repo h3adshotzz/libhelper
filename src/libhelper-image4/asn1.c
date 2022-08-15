@@ -21,8 +21,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "asn1.h"
-#include "image4.h"
+#include "libhelper-asn1.h"
+#include "libhelper-image4.h"
 
 
 asn1_elem_len_t asn1_len (const char *buf)

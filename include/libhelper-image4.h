@@ -41,7 +41,7 @@ extern "C" {
 #    include <openssl/sha.h>
 #endif
 
-#include "libhelper-hlib.h"
+#include "libhelper-hlibc.h"
 #include "libhelper-asn1.h"
 
 
@@ -127,6 +127,31 @@ struct _im4p
 #define IM4P_FLAG_FILE_COMPRESSED_NONE 		(1 << 5)	/* IM4P payload is not compressed */
 #define IM4P_FLAG_INCLUDES_KBAG				(1 << 6)	/* IM4P payload contains a KBAG */
 #define IM4P_FLAG_NO_KBAG					(1 << 7)	/* IM4P payload does not contain a KBAG */
+
+
+/**
+ * 
+ */
+typedef struct _manifest_property		manp_t;
+struct _manifest_property {
+	char 			*name;
+	char			*value;
+};
+
+/**
+ * 
+ */
+typedef struct _im4m				im4m_t;
+struct _im4m 
+{
+	uint32_t	 	 offset; 	/* IM4M offset within Image4 */
+	uint32_t	 	 size; 		/* IM4M Size */
+	uint32_t		 flags;		/* Flags */
+
+	uint64_t		 version;
+	HSList			*manp;		/* IM4M Manifest Properties */
+};
+
 
 
 /**
@@ -231,6 +256,8 @@ image4_get_component_type_description (image4_t *image4);
 extern int
 image4_get_compression_type (char *buf);
 
+im4p_t *
+image4_parse_im4p (unsigned char *buf);
 
 
 

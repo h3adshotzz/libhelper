@@ -23,6 +23,10 @@
 
 /* libhelper-image4: */
 
+#include <sys/stat.h>
+#include <unistd.h>
+#include <fcntl.h>
+
 #include "libhelper-asn1.h"
 #include "libhelper-image4.h"
 
@@ -61,6 +65,9 @@ image4_load_file (const char *path)
     return (image4) ? image4 : NULL;
 }
 
+void *      // im4m_t
+image4_parse_im4m (unsigned char *buf);
+
 image4_t *
 image4_load (const char *path)
 {
@@ -83,12 +90,75 @@ image4_load (const char *path)
         char *magic;
         size_t l;
 
-        /* Check for an IM4P */
+        asn1_get_sequence_name (image4->data, &magic, &l);
+
+        if (strncmp("IMG4", magic, l)) {
+            errorf ("Expected \"IMG4\", got \"%s\"\n", magic);
+            goto FAIL_RETURN_NULL;
+        }
+
+        /**
+         *  Check for an IM4P.
+         * 
+         *  If there is an IM4P in this .img4, it should be the first element
+         *  at index 1.
+         */
+        char *im4p_raw = (char *) asn1_element_at_index (image4->data, 1);
+        asn1_get_sequence_name (im4p_raw, &magic, &l);
+        if (!strncmp (magic, "IM4P", 4)) {
+            /* set the flag and im4p struct */
+            image4->flags |= IMAGE4_FLAG_INCLUDES_IM4P;
+            image4->im4p = image4_parse_im4p (im4p_raw);
+
+            if (image4->im4p == NULL) goto FAIL_RETURN_NULL;
+        }
+
+
+        /**
+         *  Check for an IM4M
+         */
+        char *im4m_raw = (char *) asn1_element_at_index (image4->data, 2);
+        if (((asn1_tag_t *) im4m_raw)->tag_class != kASN1TagClassContextSpecific) {
+            errorf ("Unexpected Tag 0x%02x, expected SET\n", *(unsigned char*) im4m_raw);
+            goto FAIL_RETURN_NULL;
+        }
+
+        im4m_raw += asn1_len (im4m_raw + 1).size_bytes + 1;
+        asn1_get_sequence_name (im4m_raw, &magic, &l);
+        if (!strncmp ("IM4M", magic, 4)) {
+            debugf ("IM4M found\n");
+            image4_parse_im4m (im4m_raw);
+        } else {
+            warningf ("IM4M NOT FOUND\n");
+        }
+
+
+        /**
+         *  Check for an IM4R
+         */
+        char *im4r_raw = (char *) asn1_element_at_index (image4->data, 2);
+        if (((asn1_tag_t *) im4r_raw)->tag_class != kASN1TagClassContextSpecific) {
+            errorf ("Unexpected Tag 0x%02x, expected SET\n", *(unsigned char*) im4r_raw);
+            goto FAIL_RETURN_NULL;
+        }
+
+        im4r_raw += asn1_len (im4r_raw + 1).size_bytes + 1;
+        asn1_get_sequence_name (im4r_raw, &magic, &l);
+        if (!strncmp ("IM4R", magic, 4)) {
+            debugf ("IM4R found\n");
+        } else {
+            warningf ("IM4R NOT FOUND\n");
+        }
+
+
+
+
+        /* Check for an IM4P 
         char *im4p_raw = (char *) asn1_element_at_index (image4->data, 1);
         asn1_get_sequence_name (im4p_raw, &magic, &l);
 
         if (!strncmp (magic, "IM4P", 4)) {
-            /* set the flag and im4p struct */
+            /* set the flag and im4p struct 
             image4->flags |= IMAGE4_FLAG_INCLUDES_IM4P;
             image4->im4p = image4_parse_im4p (im4p_raw);
 
@@ -96,6 +166,9 @@ image4_load (const char *path)
                 goto FAIL_RETURN_NULL;
         }
 
+
+        Check for an IM4M */
+        
 
 
         warningf ("IMG4 parsing not yet implemented.\n");
@@ -159,7 +232,7 @@ image4_parse_im4p (unsigned char *buf)
     }
 
     /* check if the payload is compressed (if it's encrypted, the flag can be set during decryption */
-    im4p->flags |= img4_check_compression_type (buf);    
+    im4p->flags |= image4_get_compression_type (buf);    
 
     /* check, get and set the KBAG value */
     char *kbag_octet = (char *) asn1_element_at_index (buf, 4);
@@ -167,7 +240,7 @@ image4_parse_im4p (unsigned char *buf)
 
         /* set the im4p flag that the payload is encrypted */
         im4p->flags |= IM4P_FLAG_FILE_ENCRYPTED;
-        im4p->flags |= IM4P_FLAG_INCLUDES_KBAG
+        im4p->flags |= IM4P_FLAG_INCLUDES_KBAG;
 
         /* get the length of the kbag tag octet */
         asn1_elem_len_t octet_len = asn1_len (++kbag_octet);
@@ -244,6 +317,105 @@ image4_parse_im4p (unsigned char *buf)
 }
 
 
+void *      // im4m_t
+image4_parse_im4m (unsigned char *buf)
+{
+    /* verify the magic is an im4p */
+    char *magic;
+    size_t l;
+
+    asn1_get_sequence_name (buf, &magic, &l);
+    if (strncmp (magic, "IM4M", 4)) {
+        warningf ("image4_parse_im4M: provided buffer is not an IM4M.\n");
+        return NULL;
+    }
+
+
+    int elems = asn1_elements_in_object (buf);
+    if (elems < 2) errorf ("Expecting at least 2 elements\n");
+
+    if (--elems > 0) {
+        
+        // version
+        uint64_t version = asn1_get_number_from_tag ((asn1_tag_t *) asn1_element_at_index (buf, 1));
+        printf ("version: %d\n", version);
+    
+        // manifest body
+        asn1_tag_t *manifest_body = (asn1_tag_t *) asn1_element_at_index (buf, 2);
+        if (manifest_body->tag_number != kASN1TagSET) {
+            errorf ("Expecting SET\n");
+            return NULL;
+        }
+
+        asn1_tag_t *privtag = manifest_body + asn1_len ((char *) manifest_body + 1).size_bytes + 1;
+
+        size_t sb;
+        printf ("get_private_tagnum: %d\n", asn1_get_private_tagnum (privtag++, &sb));
+
+        char *manifest_body_seq = (char *) privtag + sb;
+        manifest_body_seq += asn1_len (manifest_body_seq).size_bytes + 1;
+
+        asn1_get_sequence_name (manifest_body_seq, &magic, &l);
+        if (strncmp("MANB", magic, l)) {
+            errorf ("Expected \"MANB\", got \"%s\"\n", magic);
+            return NULL;
+        }
+
+        int manbelemcount = asn1_elements_in_object (manifest_body_seq);
+        if (manbelemcount < 2) {
+            errorf ("not enough elements in MANB\n");
+            return NULL;
+        }
+
+        char *manb = (char *) asn1_element_at_index (manifest_body_seq, 1);
+        for (int i = 0; i < asn1_elements_in_object (manb); i++) {
+
+            asn1_tag_t *manb_elem = (asn1_tag_t *) asn1_element_at_index (manb, i);
+
+            //This prints the property name
+    		size_t privTag = 0;
+	    	if (*(char *) manb_elem == kASN1TagPrivate) {
+
+                HString *tag = h_string_new ("");
+
+                size_t sb;
+                size_t privTag = asn1_get_private_tagnum(manb_elem, &sb);
+                char *ptag = (char *) &privTag;
+                int len = 0;
+                while (*ptag) ptag++, len++;
+                while (len--) h_string_append_c (tag, *--ptag);
+                
+                printf("%s\n", tag->str);
+                //while (len--) printf ("%d", len); //strcpy (p_name[len], *--ptag);
+
+                manb_elem += sb;
+
+            } else {
+                manb_elem++;
+            }
+
+            manb_elem += asn1_len ((char *) manb_elem).size_bytes;
+
+            if (((asn1_tag_t *) buf)->tag_number == kASN1TagSEQUENCE)
+                printf ("kASN1TagSEQUENCE\n");
+
+            printf("0: %s", asn1_get_string_from_tag ((asn1_tag_t *) asn1_element_at_index (manb_elem, 0)));
+            printf("1: %s", asn1_get_string_from_tag ((asn1_tag_t *) asn1_element_at_index (manb_elem, 1)));
+        }
+
+    
+    }
+
+
+
+
+
+
+
+    return NULL;
+}
+
+
 img4type_t
 image4_get_file_type (image4_t *image4)
 {
@@ -274,10 +446,10 @@ FAIL:
 char *
 image4_get_file_type_name (img4type_t type)
 {
-    if (type == IMAGE4_TYPE_IMG4) return "IMG4";
-    else if (type == IMAGE4_TYPE_IM4P) return "IM4P";
-    else if (type == IMAGE4_TYPE_IM4M) return "IM4M";
-    else if (type == IMAGE4_TYPE_IM4R) return "IM4R";
+    if (type == IMAGE4_COMP_TYPE_IMG4) return "IMG4";
+    else if (type == IMAGE4_COMP_TYPE_IM4P) return "IM4P";
+    else if (type == IMAGE4_COMP_TYPE_IM4M) return "IM4M";
+    else if (type == IMAGE4_COMP_TYPE_IM4R) return "IM4R";
     else return "UNKNOWN";
 }
 
@@ -382,10 +554,10 @@ image4_get_compression_type (char *buf)
 {
     /* Get the element count and ensure buf is an im4p */
     int c = asn1_elements_in_object (buf);
-    if (c < 4) [
+    if (c < 4) {
         errorf ("Not enough elements in given payload.\n");
         return -1;
-    ]
+    }
 
     /* Try to select the payload tag from the buffer */
     char *tag = asn1_element_at_index (buf, 3) + 1;
@@ -394,10 +566,10 @@ image4_get_compression_type (char *buf)
 
     /* Check for either lzss or bvx2/lzfse */
     if (!strncmp (data, "complzss", 8)) {
-            return IMAGE4_FILE_COMPRESSED_LZSS;
+            return IM4P_FLAG_FILE_COMPRESSED_LZSS;
     } else if (!strncmp (data, "bvx2", 4)) {
-            return IMAGE4_FILE_COMPRESSED_BVX2;
+            return IM4P_FLAG_FILE_COMPRESSED_BVX2;
     } else {
-            return IMAGE4_FILE_COMPRESSED_NONE;
+            return IM4P_FLAG_FILE_COMPRESSED_NONE;
     }
 }
