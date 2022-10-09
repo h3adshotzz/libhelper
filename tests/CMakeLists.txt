@@ -46,3 +46,10 @@ target_sources(libhelper-fat-test PUBLIC libhelper-fat-test.c)
 target_include_directories(libhelper-fat-test PUBLIC ${CMAKE_SOURCE_DIR}/include)
 target_link_libraries(libhelper-fat-test libhelper)
 
+##  Libhelper ASN1 Tests
+##
+add_executable(libhelper-asn1-test)
+target_sources(libhelper-asn1-test PUBLIC libhelper-asn1.c)
+target_include_directories(libhelper-asn1-test PUBLIC ${CMAKE_SOURCE_DIR}/include)
+target_link_libraries(libhelper-asn1-test libhelper)
+
