@@ -30,6 +30,52 @@
 #include "libhelper-asn1.h"
 #include "libhelper-image4.h"
 
+void hexdump (char *title, char *mem, uint32_t size)
+{
+    debugf ("hexdump: %s\n", title);
+    uint8_t offset = 0x0;
+    int lines = size / 16;
+    int pos = 0;  //pos
+
+    for (int i = 0; i < lines; i++) {
+
+        printf ("%08x  ", offset);
+
+        uint8_t ln[16];
+
+        for (int j = 0; j < 16; j++) {
+            uint8_t byte = (uint8_t) mem[pos];
+            printf ("%02x ", byte);
+
+            if (j == 7) printf (" ");
+
+            pos++;
+            ln[j] = byte;
+        }
+
+        printf ("  |");
+
+        for (int k = 0; k < 16; k++) {
+
+            if (ln[k] < 0x20 || ln[k] > 0x7e) {
+                printf (".");
+            } else {
+                printf ("%c", (char) ln[k]);
+            }
+
+        }
+
+        printf ("|\n");
+
+        offset += 0x10;
+    }
+
+    printf ("\n");
+}
+
+//===----------------------------------------------------------------------===//
+/*                      Image4 Struct Loaders                                 */
+//===----------------------------------------------------------------------===//
 
 static image4_t *
 image4_load_file (const char *path)
@@ -43,63 +89,65 @@ image4_load_file (const char *path)
         return NULL;
     }
     image4->path = (char *) strdup (path);
-    
+
     /* create the file descriptor */
     int fd = open (image4->path, O_RDONLY);
-    
+
     /* calculate the file size */
     struct stat st;
     fstat (fd, &st);
     image4->size = st.st_size;
-    
+
     /* mmap the file */
     image4->data = mmap (NULL, image4->size, PROT_READ, MAP_PRIVATE, fd, 0);
     close (fd);
-    
+
     /* verify the map was successful */
     if (image4->data == MAP_FAILED) {
         errorf ("htool_image4ary_load: failed to map file at path: %s\n", image4->path);
         return NULL;
     }
-    
+
     return (image4) ? image4 : NULL;
 }
 
-void *      // im4m_t
-image4_parse_im4m (unsigned char *buf);
 
 image4_t *
 image4_load (const char *path)
 {
-    /* load the file at the path into a new struct */
+    /* load the file at the given path into a new image4_t struct */
     image4_t *image4 = image4_load_file (path);
 
     /* verify the load */
-    if (!image4)
-        goto FAIL;
+    if (!image4) goto FAIL;
 
     /* check and set the image4 file type */
     image4->type = image4_get_file_type (image4);
+    debugf ("image4->type: %d\n", image4->type);
+
+    /**
+     *  Depending on the type set above, parse the data within the
+     *  image4_t struct.
+     */
     if (image4->type == IMAGE4_COMP_TYPE_IMG4) {
 
         /**
-         *  If we have a full .img4 we need to check what components are
-         *  embedded. Once a component is found we can set the flag and
-         *  the field in the image4 struct.
+         *  A full Image4 file can contain an IM4P, IM4M and an IM4R. We'll
+         *  check if each exists, and parse them.
          */
         char *magic;
         size_t l;
 
+        /* Verify that the image4->data is an IMG4 tag */
         asn1_get_sequence_name (image4->data, &magic, &l);
-
-        if (strncmp("IMG4", magic, l)) {
+        if (strncmp (magic, "IMG4", l)) {
             errorf ("Expected \"IMG4\", got \"%s\"\n", magic);
             goto FAIL_RETURN_NULL;
         }
 
         /**
          *  Check for an IM4P.
-         * 
+         *
          *  If there is an IM4P in this .img4, it should be the first element
          *  at index 1.
          */
@@ -111,8 +159,8 @@ image4_load (const char *path)
             image4->im4p = image4_parse_im4p (im4p_raw);
 
             if (image4->im4p == NULL) goto FAIL_RETURN_NULL;
+            debugf ("IM4P FOUND\n");
         }
-
 
         /**
          *  Check for an IM4M
@@ -126,12 +174,12 @@ image4_load (const char *path)
         im4m_raw += asn1_len (im4m_raw + 1).size_bytes + 1;
         asn1_get_sequence_name (im4m_raw, &magic, &l);
         if (!strncmp ("IM4M", magic, 4)) {
-            debugf ("IM4M found\n");
-            image4_parse_im4m (im4m_raw);
-        } else {
-            warningf ("IM4M NOT FOUND\n");
-        }
+            /* set the flag and im4m struct */
+            image4->flags |= IMAGE4_FLAG_INCLUDES_IM4M;
+            image4->im4m = image4_parse_im4m (im4m_raw);
 
+            debugf ("IM4M FOUND\n");
+        }
 
         /**
          *  Check for an IM4R
@@ -145,55 +193,50 @@ image4_load (const char *path)
         im4r_raw += asn1_len (im4r_raw + 1).size_bytes + 1;
         asn1_get_sequence_name (im4r_raw, &magic, &l);
         if (!strncmp ("IM4R", magic, 4)) {
-            debugf ("IM4R found\n");
-        } else {
-            warningf ("IM4R NOT FOUND\n");
+            image4->flags |= IMAGE4_FLAG_INCLUDES_IM4R;
+            debugf ("IM4M FOUND\n");
         }
 
-
-
-
-        /* Check for an IM4P 
-        char *im4p_raw = (char *) asn1_element_at_index (image4->data, 1);
-        asn1_get_sequence_name (im4p_raw, &magic, &l);
-
-        if (!strncmp (magic, "IM4P", 4)) {
-            /* set the flag and im4p struct 
-            image4->flags |= IMAGE4_FLAG_INCLUDES_IM4P;
-            image4->im4p = image4_parse_im4p (im4p_raw);
-
-            if (image4->im4p == NULL)
-                goto FAIL_RETURN_NULL;
-        }
-
-
-        Check for an IM4M */
-        
-
-
-        warningf ("IMG4 parsing not yet implemented.\n");
     } else if (image4->type == IMAGE4_COMP_TYPE_IM4P) {
 
-        warningf ("IM4P parsing not yet implemented.\n");
+        /* check that the file type is an IM4P */
+        char *magic;
+        size_t l;
+
+        asn1_get_sequence_name (image4->data, &magic, &l);
+        if (!strncmp (magic, "IM4P", 4)) {
+            debugf ("magic: %s\n", magic);
+
+            /* set the flag and im4p struct */
+            image4->flags |= IMAGE4_FLAG_SINGLE_COMPONENT;
+            image4->im4p = image4_parse_im4p (image4->data);
+
+            if (image4->im4p == NULL) goto FAIL_RETURN_NULL;
+        }
+
     } else if (image4->type == IMAGE4_COMP_TYPE_IM4M) {
 
-        warningf ("IM4M parsing not yet implemented.\n");
-    } else if (image4->type == IMAGE4_COMP_TYPE_IM4R) {
+        /* check that the file type is an IM4M */
+        char *magic;
+        size_t l;
 
-        warningf ("IM4R parsing not yet implemented.\n");
-    } else {
-        
-        errorf ("Could not determine Image4 type.\n");
-        goto FAIL_RETURN_NULL;
+        asn1_get_sequence_name (image4->data, &magic, &l);
+        if (!strncmp (magic, "IM4M", 4)) {
+            debugf ("magic: %s\n", magic);
+
+            /* set the flag and im4m struct */
+            image4->flags |= IMAGE4_FLAG_SINGLE_COMPONENT;
+            image4->im4m = image4_parse_im4m (image4->data);
+
+            if (image4->im4m == NULL) goto FAIL_RETURN_NULL;
+        }
     }
-
-
 
 FAIL:
     return (image4) ? image4 : NULL;
 
 FAIL_RETURN_NULL:
-    errorf ("An error occured while parsing the Image4\n");
+    errorf ("An error occured while parsing the Image4: %s\n", path);
     return NULL;
 }
 
@@ -232,7 +275,7 @@ image4_parse_im4p (unsigned char *buf)
     }
 
     /* check if the payload is compressed (if it's encrypted, the flag can be set during decryption */
-    im4p->flags |= image4_get_compression_type (buf);    
+    im4p->flags |= image4_get_compression_type (buf);
 
     /* check, get and set the KBAG value */
     char *kbag_octet = (char *) asn1_element_at_index (buf, 4);
@@ -251,11 +294,11 @@ image4_parse_im4p (unsigned char *buf)
 
             /* create the kbag struct */
             kbag_t *kbag = calloc (1, sizeof (kbag_t));
-            
+
             /* pick the value */
             char *seq = (char *) asn1_element_at_index (kbag_octet, i);
             int elems = asn1_elements_in_object (seq);
-    
+
             /**
              *  With KBAGs, we often get multiple types: PRODUCTION and DEVELOPMENT. Typically the
              *  KBAG marked PRODUCTION is the first one. This code will parse however many KBAGs
@@ -276,7 +319,7 @@ image4_parse_im4p (unsigned char *buf)
                     /**
                      *  Parse the KBAG IV. Load the tag from the KBAG sequence, get the length
                      *  and string for the IV, and write byte-by-byte into the iv buffer in the
-                     *  kbag struct. 
+                     *  kbag struct.
                      */
                     asn1_tag_t *tag_iv = asn1_element_at_index (seq, 1);
                     asn1_elem_len_t tag_iv_len = asn1_len ((char *) tag_iv + 1);
@@ -292,7 +335,7 @@ image4_parse_im4p (unsigned char *buf)
                      */
                     asn1_tag_t *tag_key = asn1_element_at_index (seq, 2);
                     asn1_elem_len_t tag_key_len = asn1_len ((char *) tag_key + 1);
-                    
+
                     j = 0;
                     unsigned char *tag_key_str = (unsigned char *) tag_key + tag_key_len.size_bytes + 1;
                     while (tag_key_len.data_len--) kbag->key[j] = (uint8_t) *tag_key_str++, j++;
@@ -317,104 +360,185 @@ image4_parse_im4p (unsigned char *buf)
 }
 
 
-void *      // im4m_t
+im4m_t *
 image4_parse_im4m (unsigned char *buf)
 {
-    /* verify the magic is an im4p */
+    im4m_t *im4m = calloc (1, sizeof (im4m_t));
     char *magic;
     size_t l;
 
+
+    /**
+     *  The IM4M is an ASN1 Sequence. There are 5 elements in this sequence, the first
+     *  being the Image4 tag, which should be "IM4M" here.
+     */
+    hexdump ("im4m/buf", buf, 64);
     asn1_get_sequence_name (buf, &magic, &l);
-    if (strncmp (magic, "IM4M", 4)) {
-        warningf ("image4_parse_im4M: provided buffer is not an IM4M.\n");
+    if (strncmp (magic, "IM4M", l)) {
+        warningf ("image4_parse_im4m: provided buffer is not an IM4M\n");
         return NULL;
     }
 
+    /**
+     *  The second element in `buf` should be the IM4M version.
+     */
+    im4m->version = asn1_get_number_from_tag ((asn1_tag_t *) asn1_element_at_index (buf, 1));
+    debugf ("im4m->version: %d\n", im4m->version);
 
-    int elems = asn1_elements_in_object (buf);
-    if (elems < 2) errorf ("Expecting at least 2 elements\n");
+    /**
+     *  The third element is an ASN1 SET containing the manifest. 
+     * 
+     *  This SET contains a private tag. The private tag then contains a string, identifying
+     *  it as a "MANB", or manifest body. And another SET containing however many manifest
+     *  entries there are.
+     * 
+     *  First we want to verify that this third element is a SET, that the SET contains a private
+     *  tag, and that the private tag is a "MANB".
+     */
+    asn1_tag_t *manifest_set = (asn1_tag_t *) asn1_element_at_index (buf, 2);
+    hexdump ("manifest_set", manifest_set, 64);
+    if (manifest_set->tag_number != kASN1TagSET) {
+        errorf ("image4_parse_im4m: expected a kASN1TagSET as the third element in the IM4M.\n");
+        return NULL;
+    }
 
-    if (--elems > 0) {
-        
-        // version
-        uint64_t version = asn1_get_number_from_tag ((asn1_tag_t *) asn1_element_at_index (buf, 1));
-        printf ("version: %d\n", version);
-    
-        // manifest body
-        asn1_tag_t *manifest_body = (asn1_tag_t *) asn1_element_at_index (buf, 2);
-        if (manifest_body->tag_number != kASN1TagSET) {
-            errorf ("Expecting SET\n");
-            return NULL;
-        }
+    /* skip over the private tag */
+    size_t sb;
+    asn1_tag_t *priv_tag = manifest_set + asn1_len ((char *) manifest_set + 1).size_bytes + 1;
 
-        asn1_tag_t *privtag = manifest_body + asn1_len ((char *) manifest_body + 1).size_bytes + 1;
+    debugf ("priv_tag tagnum: %d, sizebytes: %d\n", asn1_get_private_tagnum (priv_tag, &sb), sb);
+    hexdump ("priv_tag", priv_tag, 64);
+
+    /**
+     *  This locates the start of the manifest SEQUENCE, skipping over the private tag.
+     *  Contained in this tag should be two elements - the "MANB" string, and a SET
+     *  containing all the manifest entries.
+     */
+    asn1_tag_t *manifest_sequence = (asn1_tag_t *) priv_tag + sb;
+    manifest_sequence += asn1_len (manifest_sequence).size_bytes;
+   
+    hexdump ("manifest_sequence", manifest_sequence, 64);
+    debugf ("manifest_sequence->tag_number: %d\n", manifest_sequence->tag_number);
+    debugf ("manifest_sequence: sequence_count: %d\n", asn1_elements_in_object (manifest_sequence));
+
+    /* verify that manifest_sequence contains the "MANB" string */
+    asn1_get_sequence_name (manifest_sequence, &magic, &l);
+    if (strncmp (magic, "MANB", l)) {
+        errorf ("image4_parse_im4m: expected \"MANB\", got \"%s\"\n", magic);
+        hexdump ("magic", magic, 64);
+    }
+
+    /**
+     *  After the "MANB" string, another SET contains a collection of SETs that each
+     *  have a list of manifest entries.
+     * 
+     * 
+     */
+    asn1_tag_t *manifest_body = asn1_element_at_index (manifest_sequence, 1);
+    int manifest_body_elems = asn1_elements_in_object (manifest_body);
+    hexdump ("manifest_body", manifest_body, 64);
+    debugf ("manifest_body_elems: %d\n", manifest_body_elems);
+
+    HSList *manifest_list = NULL;
+
+    debugf ("-----------------\n");
+    for (int i = 0; i < 1; i++) {
 
         size_t sb;
-        printf ("get_private_tagnum: %d\n", asn1_get_private_tagnum (privtag++, &sb));
+        manifest_t *manifest = calloc (1, sizeof (manifest));
 
-        char *manifest_body_seq = (char *) privtag + sb;
-        manifest_body_seq += asn1_len (manifest_body_seq).size_bytes + 1;
+        /**
+         *  This loop goes through each of the SEQUENCE's in the IM4M Manifest Body
+         *  SET.
+         * 
+         *  In this set we have a collection of private tags, these tags contain manifests,
+         *  and manifest entries. The first thing to do here is to work out the name for the
+         *  manifest, and then we can parse all the entries.
+         * 
+         *  Start by getting the private tag at `i`, and then working out the pointer for
+         *  the SEQUENCE tag directly after it.
+         */
+        asn1_tag_t *priv_tag = (asn1_tag_t *) asn1_element_at_index (manifest_body, i);
+        asn1_tag_t *sequence = priv_tag + asn1_len ((char *) priv_tag + 1).size_bytes + 4;
+        
+        //hexdump ("priv_tag", priv_tag, 64);
+        //hexdump ("sequence", sequence, 32);
 
-        asn1_get_sequence_name (manifest_body_seq, &magic, &l);
-        if (strncmp("MANB", magic, l)) {
-            errorf ("Expected \"MANB\", got \"%s\"\n", magic);
-            return NULL;
+        /**
+         *  This SEQUENCE should contain two elements: an IA5String, and another SET containg
+         *  all the manifest entries.
+         */
+        int sequence_elems = asn1_elements_in_object (sequence);
+        debugf ("sequence: elems: %d\n", sequence_elems);
+        if (sequence_elems < 2) {
+            errorf ("image4_parse_im4m: expected more than two elements in sequence: %d\n", i);
+            break;
         }
 
-        int manbelemcount = asn1_elements_in_object (manifest_body_seq);
-        if (manbelemcount < 2) {
-            errorf ("not enough elements in MANB\n");
-            return NULL;
+        /**
+         *  We can now set the manifest name
+         */
+        asn1_tag_t *manifest_name_tag = (asn1_tag_t *) asn1_element_at_index (sequence, 0);
+        manifest->name = asn1_get_string_from_tag (manifest_name_tag);
+
+        /**
+         *  And start parsing the manifest entries
+         */
+        asn1_tag_t *manifest_entries = (asn1_tag_t *) asn1_element_at_index (sequence, 1);
+        int entries = 1; //asn1_elements_in_object (manifest_entries)
+        for (int i = 0; i < entries; i++) {
+
+            asn1_tag_t *tmp = (asn1_tag_t *) asn1_element_at_index (manifest_entries, i);
+            hexdump ("tmp", tmp, 64);
+
+            asn1_tag_t *entry_priv_tag = tmp + asn1_len ((char *) tmp + 1).size_bytes + 2;
+            debugf ("entry_priv_tag->tag_number: %d\n", entry_priv_tag->tag_number);
+            hexdump ("entry_priv_tag", entry_priv_tag, 32);
+
+            asn1_tag_t *entry_name_tag = (asn1_tag_t *) asn1_element_at_index (entry_priv_tag, 0);
+            asn1_tag_t *entry_data_tag = (asn1_tag_t *) asn1_element_at_index (entry_priv_tag, 1);
+
+            debugf ("[%d]: entry_name_tag: name: %s\n", entry_name_tag->tag_number, asn1_get_string_from_tag (entry_name_tag));
+            debugf ("[%d]: entry_name_tag: data: %s\n", entry_data_tag->tag_number, (char *) entry_data_tag);
+
         }
 
-        char *manb = (char *) asn1_element_at_index (manifest_body_seq, 1);
-        for (int i = 0; i < asn1_elements_in_object (manb); i++) {
 
-            asn1_tag_t *manb_elem = (asn1_tag_t *) asn1_element_at_index (manb, i);
 
-            //This prints the property name
-    		size_t privTag = 0;
-	    	if (*(char *) manb_elem == kASN1TagPrivate) {
 
-                HString *tag = h_string_new ("");
 
-                size_t sb;
-                size_t privTag = asn1_get_private_tagnum(manb_elem, &sb);
-                char *ptag = (char *) &privTag;
-                int len = 0;
-                while (*ptag) ptag++, len++;
-                while (len--) h_string_append_c (tag, *--ptag);
-                
-                printf("%s\n", tag->str);
-                //while (len--) printf ("%d", len); //strcpy (p_name[len], *--ptag);
-
-                manb_elem += sb;
-
-            } else {
-                manb_elem++;
-            }
-
-            manb_elem += asn1_len ((char *) manb_elem).size_bytes;
-
-            if (((asn1_tag_t *) buf)->tag_number == kASN1TagSEQUENCE)
-                printf ("kASN1TagSEQUENCE\n");
-
-            printf("0: %s", asn1_get_string_from_tag ((asn1_tag_t *) asn1_element_at_index (manb_elem, 0)));
-            printf("1: %s", asn1_get_string_from_tag ((asn1_tag_t *) asn1_element_at_index (manb_elem, 1)));
-        }
-
-    
+        manifest_list = h_slist_append (manifest_list, manifest);
+        debugf ("-----------------\n");
     }
 
 
 
+    // test
+    for (int i = 0; i < h_slist_length(manifest_list); i++) {
+        manifest_t *man = h_slist_nth_data (manifest_list, i);
+        printf ("manifest->name: %s\n", man->name);
+        printf ("manifest entry count: %d\n", h_slist_length (man->entries));
+    }
+
+
+
+    //debugf ("manifest_set: elems: %d\n", asn1_elements_in_object (manifest_set));
+    //asn1_tag_t *manifest_priv = (asn1_tag_t *) asn1_element_at_index (manifest_set, 0);
+    //hexdump ("manifest_priv", manifest_priv, 64);
+
+
+
+   
 
 
 
 
-    return NULL;
+    return im4m;
 }
 
+//===----------------------------------------------------------------------===//
+/*                      Image4 Field Getters                                  */
+//===----------------------------------------------------------------------===//
 
 img4type_t
 image4_get_file_type (image4_t *image4)
@@ -453,15 +577,51 @@ image4_get_file_type_name (img4type_t type)
     else return "UNKNOWN";
 }
 
+char *
+image4_get_file_type_description (image4_t *image4)
+{
+    if (image4->type != IMAGE4_COMP_TYPE_IMG4) {
+        return image4_get_file_type_name (image4->type);
+    } else {
+
+        HSList *comps = NULL;
+
+        if (image4->flags & IMAGE4_FLAG_INCLUDES_IM4P)
+            comps = h_slist_append (comps, "IM4P");
+        if (image4->flags & IMAGE4_FLAG_INCLUDES_IM4M)
+            comps = h_slist_append (comps, "IM4M");
+        if (image4->flags & IMAGE4_FLAG_INCLUDES_IM4R)
+            comps = h_slist_append (comps, "IM4R");
+
+        char *ret = "IMG4 (";
+        int max = h_slist_length (comps);
+        for (int i = 0; i < max; i++) {
+            ret = strappend (ret, (char *) h_slist_nth_data (comps, i));
+            if ((i+1) != max) ret = strappend (ret, ", ");
+        }
+
+        ret = strappend (ret, ")");
+        return ret;
+    }
+}
 
 char *
 image4_get_component_type_name (image4_t *image4)
 {
     char *comp_name;
+    char *raw;
 	size_t l;
 
-	asn1_get_sequence_name (image4->data, &comp_name, &l);
-	char *raw = asn1_element_at_index (image4->data, 1) + 2;
+    /* If the image is an IMG4, then the location of the component
+     * tag is a little further, as the IMG4 tag is placed before it
+     */
+    asn1_get_sequence_name (image4->data, &comp_name, &l);
+    if (image4->type = IMAGE4_COMP_TYPE_IMG4) {
+        debugf ("img4_fixup\n");
+        raw = (char *) asn1_element_at_index (asn1_element_at_index (image4->data, 1), 1) + 2;
+    } else {
+        raw = asn1_element_at_index (image4->data, 1) + 2;
+    }
 
 	if (!strncmp (raw, IMAGE_TYPE_IBOOT, 4))                    return IMAGE_TYPE_IBOOT;
 	else if (!strncmp (raw, IMAGE_TYPE_IBEC, 4))                return IMAGE_TYPE_IBEC;
@@ -484,7 +644,8 @@ image4_get_component_type_name (image4_t *image4)
 	else if (!strncmp (raw, IMAGE_TYPE_BATTERYFULL, 4))         return IMAGE_TYPE_BATTERYFULL;
 	else if (!strncmp (raw, IMAGE_TYPE_OS_RESTORE, 4))          return IMAGE_TYPE_OS_RESTORE;
 	else if (!strncmp (raw, IMAGE_TYPE_HAMMER, 4))              return IMAGE_TYPE_HAMMER;
-    
+    else return "ERROR";
+
     /* otherwise, return the substring */
     char *comp = malloc (8);
     memcpy (comp, comp_name + 4, 8);
@@ -500,6 +661,7 @@ image4_get_component_type_description (image4_t *image4)
 	size_t l;
 
 	char *raw = asn1_element_at_index (image4->data, 1) + 2;
+    debugf ("image4_get_component_type_description: %d\n", image4->type);
 
 	if (!strncmp (raw, "ibot", 4)) {
 		return "iBoot";

@@ -30,6 +30,9 @@
 extern "C" {
 #endif
 
+#include <stdint.h>
+#include <stdarg.h>
+
 /**
  *  \brief      Log Levels
  */

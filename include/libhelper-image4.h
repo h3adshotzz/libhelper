@@ -129,13 +129,18 @@ struct _im4p
 #define IM4P_FLAG_NO_KBAG					(1 << 7)	/* IM4P payload does not contain a KBAG */
 
 
-/**
- * 
- */
-typedef struct _manifest_property		manp_t;
-struct _manifest_property {
-	char 			*name;
-	char			*value;
+typedef struct _manifest_entry		manifest_entry_t;
+struct _manifest_entry
+{
+	char			*name;
+	char			*data;
+};
+
+typedef struct _manifest			manifest_t;
+struct _manifest
+{
+	char			*name;		/* manifest name */
+	HSList			*entries;	/* manifest entries */
 };
 
 /**
@@ -171,7 +176,7 @@ struct _image4
 	/* Components */
 	img4type_t 		 type;
 	im4p_t 			*im4p;
-	//im4m
+	im4m_t			*im4m;
 	//im4r
 };
 
@@ -224,6 +229,9 @@ image4_get_file_type (image4_t *image4);
 extern char *
 image4_get_file_type_name (img4type_t type);
 
+extern char *
+image4_get_file_type_description (image4_t *image4);
+
 /**
  * 	\brief		Get the name of the firmware component contained within an image, e.g. "ibot"
  * 
@@ -258,6 +266,9 @@ image4_get_compression_type (char *buf);
 
 im4p_t *
 image4_parse_im4p (unsigned char *buf);
+
+im4m_t *
+image4_parse_im4m (unsigned char *buf);
 
 
 
