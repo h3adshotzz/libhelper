@@ -472,7 +472,7 @@ image4_parse_im4m (unsigned char *buf)
         debugf ("sequence: elems: %d\n", sequence_elems);
         if (sequence_elems < 2) {
             errorf ("image4_parse_im4m: expected more than two elements in sequence: %d\n", i);
-            break;
+            continue;
         }
 
         /**
@@ -485,21 +485,26 @@ image4_parse_im4m (unsigned char *buf)
          *  And start parsing the manifest entries
          */
         asn1_tag_t *manifest_entries = (asn1_tag_t *) asn1_element_at_index (sequence, 1);
-        int entries = 1; //asn1_elements_in_object (manifest_entries)
+        int entries = asn1_elements_in_object (manifest_entries);
         for (int i = 0; i < entries; i++) {
 
-            asn1_tag_t *tmp = (asn1_tag_t *) asn1_element_at_index (manifest_entries, i);
-            hexdump ("tmp", tmp, 64);
+            /**
+             *  Manifest Entries are encoded as a SEQUENCE, with a name and a data field. The
+             *  data field is not always an IA5String, so we need to check its tag_number and
+             *  work from there.
+             */
+            asn1_tag_t *priv = (asn1_tag_t *) asn1_element_at_index (manifest_entries, i);
+            asn1_tag_t *entry_sequence = priv + asn1_len ((char *) priv + 1).size_bytes + 2;
+            hexdump ("entry_sequence", entry_sequence, 64);
 
-            asn1_tag_t *entry_priv_tag = tmp + asn1_len ((char *) tmp + 1).size_bytes + 2;
-            debugf ("entry_priv_tag->tag_number: %d\n", entry_priv_tag->tag_number);
-            hexdump ("entry_priv_tag", entry_priv_tag, 32);
-
-            asn1_tag_t *entry_name_tag = (asn1_tag_t *) asn1_element_at_index (entry_priv_tag, 0);
-            asn1_tag_t *entry_data_tag = (asn1_tag_t *) asn1_element_at_index (entry_priv_tag, 1);
+            /**
+             *  Create tags for the name and data fields.
+             */
+            asn1_tag_t *entry_name_tag = (asn1_tag_t *) asn1_element_at_index (entry_sequence, 0);
+            asn1_tag_t *entry_data_tag = (asn1_tag_t *) asn1_element_at_index (entry_sequence, 1);
 
             debugf ("[%d]: entry_name_tag: name: %s\n", entry_name_tag->tag_number, asn1_get_string_from_tag (entry_name_tag));
-            debugf ("[%d]: entry_name_tag: data: %s\n", entry_data_tag->tag_number, (char *) entry_data_tag);
+            //debugf ("[%d]: entry_name_tag: data: %s\n", entry_data_tag->tag_number, (char *) entry_data_tag);
 
         }
 
