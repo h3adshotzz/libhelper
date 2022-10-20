@@ -158,15 +158,30 @@ int main (int argc, char *argv[])
 
     /* mach_load_command_find_command_by_type */
     mach_load_command_info_t *cmd_inf_2 = mach_load_command_find_command_by_type (macho, LC_SYMTAB);
-    if (!cmd_inf_2->lc) {
-        test_failuref ("mach_load_command_find_command_by_type\n");
+    if (!cmd_inf_2) {
+        test_failuref ("mach_load_command_find_command_by_type returned NULL\n");
     } else {
-        test_successf ("mach_load_command_find_command_by_type\n");
+        if (!cmd_inf_2->lc) {
+            test_failuref ("mach_load_command_find_command_by_type\n");
+        } else {
+            test_successf ("mach_load_command_find_command_by_type\n");
+        }
     }
 
 
     /* mach_load_command_load_string */
-    test_failuref("mach_load_command_load_string\n");
+    mach_load_command_info_t *fileset_cmd = mach_load_command_find_command_by_type (macho, LC_FILESET_ENTRY);
+    if (fileset_cmd) {
+        mach_fileset_entry_command_t *fs_cmd = (mach_fileset_entry_command_t *) fileset_cmd->lc;
+        char *str = mach_load_command_load_string (macho, fs_cmd->cmdsize, sizeof (mach_fileset_entry_command_t), fileset_cmd->offset, fs_cmd->entry_id.offset);
+        if (str) {
+            test_successf ("mach_load_command_load_string\n");
+        } else {
+            test_failuref("mach_load_command_load_string\n");
+        }
+    } else {
+        test_failuref("mach_load_command_load_string: test not supported\n");
+    }
 
 
     /* mach_segment_info_search */

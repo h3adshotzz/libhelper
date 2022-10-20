@@ -976,6 +976,14 @@ typedef struct dyld_info_command                    mach_dyld_info_command_t;
  */
 typedef struct linkedit_data_command                mach_linkedit_data_command_t;
 
+/////////////////////////////////////////////////////////////////////////////////
+
+/**
+ *  \brief      Redfinition of fileset_entry_command as libhelper type.
+ */
+typedef struct fileset_entry_command                mach_fileset_entry_command_t;
+
+/////////////////////////////////////////////////////////////////////////////////
 
 
 #ifdef __cplusplus

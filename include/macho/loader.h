@@ -727,6 +727,21 @@ struct dyld_info_command {
 };
 
 
+/**
+ *  \brief      The fileset_entry_command contains the address, file offset, and
+ *              bundle identifer of a Filset Entry. 
+ * 
+ */
+struct fileset_entry_command {
+    uint32_t        cmd;            /* LC_FILESET_ENTRY */
+    uint32_t        cmdsize;        /* includes id string */
+    uint64_t        vmaddr;         /* memory address of the dylib */
+    uint64_t        fileoff;        /* file offset of the dylib */
+    union lc_str    entry_id;       /* contained entry id */
+    uint32_t        reserved;       /* entry_id is 32-bits long, so this is the reserved padding */
+};
+
+
 #ifdef __cplusplus
 }
 #endif
