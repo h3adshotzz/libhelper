@@ -442,7 +442,8 @@ image4_parse_im4m (unsigned char *buf)
     HSList *manifest_list = NULL;
 
     debugf ("-----------------\n");
-    for (int i = 0; i < 1; i++) {
+    int skip = 9;
+    for (int i = 0; i < manifest_body_elems; i++) {
 
         size_t sb;
         manifest_t *manifest = calloc (1, sizeof (manifest));
@@ -459,10 +460,12 @@ image4_parse_im4m (unsigned char *buf)
          *  the SEQUENCE tag directly after it.
          */
         asn1_tag_t *priv_tag = (asn1_tag_t *) asn1_element_at_index (manifest_body, i);
-        asn1_tag_t *sequence = priv_tag + asn1_len ((char *) priv_tag + 1).size_bytes + 4;
+        //int skip = asn1_len ((char *) priv_tag + 1).size_bytes + 4;
+        asn1_tag_t *sequence = priv_tag + skip;
+        if (i == 0) skip--;
         
-        //hexdump ("priv_tag", priv_tag, 64);
-        //hexdump ("sequence", sequence, 32);
+        hexdump ("priv_tag", priv_tag, 64);
+        hexdump ("sequence", sequence, 32);
 
         /**
          *  This SEQUENCE should contain two elements: an IA5String, and another SET containg
@@ -471,7 +474,7 @@ image4_parse_im4m (unsigned char *buf)
         int sequence_elems = asn1_elements_in_object (sequence);
         debugf ("sequence: elems: %d\n", sequence_elems);
         if (sequence_elems < 2) {
-            errorf ("image4_parse_im4m: expected more than two elements in sequence: %d\n", i);
+            errorf ("image4_parse_im4m: expected more than two elements in sequence: %d\n", sequence_elems);
             continue;
         }
 
@@ -492,10 +495,17 @@ image4_parse_im4m (unsigned char *buf)
              *  Manifest Entries are encoded as a SEQUENCE, with a name and a data field. The
              *  data field is not always an IA5String, so we need to check its tag_number and
              *  work from there.
+             * 
+             *  The SEQUENCE starts 7 bytes after the priv tag.
              */
             asn1_tag_t *priv = (asn1_tag_t *) asn1_element_at_index (manifest_entries, i);
-            asn1_tag_t *entry_sequence = priv + asn1_len ((char *) priv + 1).size_bytes + 2;
-            hexdump ("entry_sequence", entry_sequence, 64);
+            //asn1_len ((char *) priv + 1).size_bytes + 2;
+            asn1_tag_t *entry_sequence = priv + 7;
+
+            /* Check that at least two elements exist */
+            int entry_sequence_elems = asn1_elements_in_object (entry_sequence);
+            if (entry_sequence_elems < 2)
+                errorf ("entry_sequence_elems < 2: %d\n", entry_sequence_elems);
 
             /**
              *  Create tags for the name and data fields.
@@ -503,14 +513,28 @@ image4_parse_im4m (unsigned char *buf)
             asn1_tag_t *entry_name_tag = (asn1_tag_t *) asn1_element_at_index (entry_sequence, 0);
             asn1_tag_t *entry_data_tag = (asn1_tag_t *) asn1_element_at_index (entry_sequence, 1);
 
-            debugf ("[%d]: entry_name_tag: name: %s\n", entry_name_tag->tag_number, asn1_get_string_from_tag (entry_name_tag));
-            //debugf ("[%d]: entry_name_tag: data: %s\n", entry_data_tag->tag_number, (char *) entry_data_tag);
+            debugf ("\t[%d]: entry_name_tag: name: %s\n", entry_name_tag->tag_number, asn1_get_string_from_tag (entry_name_tag));
 
+            /**
+             *  Work out the data tag type, and parse based on that.
+             */
+            char *entry_data = "DATA";
+            if (entry_data_tag->tag_number == kASN1TagOCTET)
+                debugf ("\t[%d]: entry_name_tag: kASN1TagOCTET\n\n", entry_data_tag->tag_number);
+            else if (entry_data_tag->tag_number == kASN1TagINTEGER)
+                debugf ("\t[%d]: entry_name_tag: kASN1TagINTEGER\n\n", entry_data_tag->tag_number);
+            else if (entry_data_tag->tag_number == kASN1TagBOOLEAN)
+                debugf ("\t[%d]: entry_name_tag: kASN1TagBOOLEAN\n\n", entry_data_tag->tag_number);
+            else
+                debugf ("\t[%d]: entry_name_tag: UNKNOWN\n\n", entry_data_tag->tag_number);
+
+            /* Create the manifest entry struct and add it to the manifest */
+            manifest_entry_t *m_entry = calloc (1, sizeof (manifest_entry_t));
+            m_entry->name = asn1_get_string_from_tag (entry_name_tag);
+            m_entry->data = entry_data;
+
+            manifest->entries = h_slist_append (manifest->entries, m_entry);
         }
-
-
-
-
 
         manifest_list = h_slist_append (manifest_list, manifest);
         debugf ("-----------------\n");
@@ -521,8 +545,11 @@ image4_parse_im4m (unsigned char *buf)
     // test
     for (int i = 0; i < h_slist_length(manifest_list); i++) {
         manifest_t *man = h_slist_nth_data (manifest_list, i);
-        printf ("manifest->name: %s\n", man->name);
-        printf ("manifest entry count: %d\n", h_slist_length (man->entries));
+        printf ("manifest: %s [%d]\n", man->name, h_slist_length (man->entries));
+        for (int j = 0; j < h_slist_length (man->entries); j++) {
+            manifest_entry_t *entry = (manifest_entry_t *) h_slist_nth_data (man->entries, j);
+            printf ("\t%s: %s\n", entry->name, entry->data);
+        }
     }
 
 
