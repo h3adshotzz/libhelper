@@ -443,7 +443,7 @@ image4_parse_im4m (unsigned char *buf)
 
     debugf ("-----------------\n");
     int skip = 9;
-    for (int i = 0; i < manifest_body_elems; i++) {
+    for (int i = 0; i < 1; i++) {
 
         size_t sb;
         manifest_t *manifest = calloc (1, sizeof (manifest));
@@ -464,8 +464,8 @@ image4_parse_im4m (unsigned char *buf)
         asn1_tag_t *sequence = priv_tag + skip;
         if (i == 0) skip--;
         
-        hexdump ("priv_tag", priv_tag, 64);
-        hexdump ("sequence", sequence, 32);
+        //hexdump ("priv_tag", priv_tag, 64);
+        //hexdump ("sequence", sequence, 32);
 
         /**
          *  This SEQUENCE should contain two elements: an IA5String, and another SET containg
@@ -519,9 +519,33 @@ image4_parse_im4m (unsigned char *buf)
              *  Work out the data tag type, and parse based on that.
              */
             char *entry_data = "DATA";
-            if (entry_data_tag->tag_number == kASN1TagOCTET)
+            if (entry_data_tag->tag_number == kASN1TagIA5String) {
+                debugf ("\t[%d]: entry_name_tag: kASN1TagIA5String\n\n", entry_data_tag->tag_number);
+                entry_data = asn1_get_string_from_tag (entry_data_tag);
+            } else if (entry_data_tag->tag_number == kASN1TagOCTET) {
                 debugf ("\t[%d]: entry_name_tag: kASN1TagOCTET\n\n", entry_data_tag->tag_number);
-            else if (entry_data_tag->tag_number == kASN1TagINTEGER)
+                
+                /**
+                 *  An OCTET string is encoded in the file like:
+                 * 
+                 *      04 20 XX XX XX
+                 * 
+                 *  0x04 being the identifier for an OCTET string, and 0x20 being the size.
+                 */
+
+                asn1_elem_len_t str_len = asn1_len (entry_data_tag + 1);
+                unsigned char *string = (unsigned char *) entry_data_tag + str_len.size_bytes + 1;
+                
+                char tmp[4];
+                char *octet = calloc (1, str_len.data_len + 1);
+                while (str_len.data_len--) {
+                    snprintf (tmp, 4, "%02x", *string++);
+                    octet = mstrappend ("%s%s", octet, tmp);
+                }
+                octet = strappend (octet, "\0");
+                entry_data = octet;
+
+            } else if (entry_data_tag->tag_number == kASN1TagINTEGER)
                 debugf ("\t[%d]: entry_name_tag: kASN1TagINTEGER\n\n", entry_data_tag->tag_number);
             else if (entry_data_tag->tag_number == kASN1TagBOOLEAN)
                 debugf ("\t[%d]: entry_name_tag: kASN1TagBOOLEAN\n\n", entry_data_tag->tag_number);
@@ -551,19 +575,6 @@ image4_parse_im4m (unsigned char *buf)
             printf ("\t%s: %s\n", entry->name, entry->data);
         }
     }
-
-
-
-    //debugf ("manifest_set: elems: %d\n", asn1_elements_in_object (manifest_set));
-    //asn1_tag_t *manifest_priv = (asn1_tag_t *) asn1_element_at_index (manifest_set, 0);
-    //hexdump ("manifest_priv", manifest_priv, 64);
-
-
-
-   
-
-
-
 
     return im4m;
 }
