@@ -154,7 +154,7 @@ struct _im4m
 	uint32_t		 flags;		/* Flags */
 
 	uint64_t		 version;
-	HSList			*manp;		/* IM4M Manifest Properties */
+	HSList			*manifests;		/* IM4M Manifest Properties */
 };
 
 

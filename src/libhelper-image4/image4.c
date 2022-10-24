@@ -30,6 +30,8 @@
 #include "libhelper-asn1.h"
 #include "libhelper-image4.h"
 
+#define IMAGE4_DEBUG        1
+
 void hexdump (char *title, char *mem, uint32_t size)
 {
     debugf ("hexdump: %s\n", title);
@@ -443,7 +445,7 @@ image4_parse_im4m (unsigned char *buf)
 
     debugf ("-----------------\n");
     int skip = 9;
-    for (int i = 0; i < 1; i++) {
+    for (int i = 0; i < manifest_body_elems; i++) {
 
         size_t sb;
         manifest_t *manifest = calloc (1, sizeof (manifest));
@@ -545,12 +547,20 @@ image4_parse_im4m (unsigned char *buf)
                 octet = strappend (octet, "\0");
                 entry_data = octet;
 
-            } else if (entry_data_tag->tag_number == kASN1TagINTEGER)
+            } else if (entry_data_tag->tag_number == kASN1TagINTEGER) {
                 debugf ("\t[%d]: entry_name_tag: kASN1TagINTEGER\n\n", entry_data_tag->tag_number);
-            else if (entry_data_tag->tag_number == kASN1TagBOOLEAN)
+
+                entry_data = calloc (1, 32);
+                sprintf (entry_data, "%d", asn1_get_number_from_tag (entry_data_tag));
+
+            } else if (entry_data_tag->tag_number == kASN1TagBOOLEAN) {
                 debugf ("\t[%d]: entry_name_tag: kASN1TagBOOLEAN\n\n", entry_data_tag->tag_number);
-            else
+                if (*(char *) entry_data_tag + 2 == 0) entry_data = "FALSE";
+                else entry_data = "TRUE";
+            } else {
                 debugf ("\t[%d]: entry_name_tag: UNKNOWN\n\n", entry_data_tag->tag_number);
+                entry_data = "UNKNOWN";
+            }
 
             /* Create the manifest entry struct and add it to the manifest */
             manifest_entry_t *m_entry = calloc (1, sizeof (manifest_entry_t));
@@ -564,17 +574,8 @@ image4_parse_im4m (unsigned char *buf)
         debugf ("-----------------\n");
     }
 
-
-
-    // test
-    for (int i = 0; i < h_slist_length(manifest_list); i++) {
-        manifest_t *man = h_slist_nth_data (manifest_list, i);
-        printf ("manifest: %s [%d]\n", man->name, h_slist_length (man->entries));
-        for (int j = 0; j < h_slist_length (man->entries); j++) {
-            manifest_entry_t *entry = (manifest_entry_t *) h_slist_nth_data (man->entries, j);
-            printf ("\t%s: %s\n", entry->name, entry->data);
-        }
-    }
+    /* Set */
+    im4m->manifests = manifest_list;
 
     return im4m;
 }
