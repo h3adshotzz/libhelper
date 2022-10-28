@@ -374,7 +374,6 @@ image4_parse_im4m (unsigned char *buf)
      *  The IM4M is an ASN1 Sequence. There are 5 elements in this sequence, the first
      *  being the Image4 tag, which should be "IM4M" here.
      */
-    hexdump ("im4m/buf", buf, 64);
     asn1_get_sequence_name (buf, &magic, &l);
     if (strncmp (magic, "IM4M", l)) {
         warningf ("image4_parse_im4m: provided buffer is not an IM4M\n");
@@ -398,7 +397,6 @@ image4_parse_im4m (unsigned char *buf)
      *  tag, and that the private tag is a "MANB".
      */
     asn1_tag_t *manifest_set = (asn1_tag_t *) asn1_element_at_index (buf, 2);
-    hexdump ("manifest_set", manifest_set, 64);
     if (manifest_set->tag_number != kASN1TagSET) {
         errorf ("image4_parse_im4m: expected a kASN1TagSET as the third element in the IM4M.\n");
         return NULL;
@@ -409,7 +407,6 @@ image4_parse_im4m (unsigned char *buf)
     asn1_tag_t *priv_tag = manifest_set + asn1_len ((char *) manifest_set + 1).size_bytes + 1;
 
     debugf ("priv_tag tagnum: %d, sizebytes: %d\n", asn1_get_private_tagnum (priv_tag, &sb), sb);
-    hexdump ("priv_tag", priv_tag, 64);
 
     /**
      *  This locates the start of the manifest SEQUENCE, skipping over the private tag.
@@ -419,7 +416,6 @@ image4_parse_im4m (unsigned char *buf)
     asn1_tag_t *manifest_sequence = (asn1_tag_t *) priv_tag + sb;
     manifest_sequence += asn1_len (manifest_sequence).size_bytes;
    
-    hexdump ("manifest_sequence", manifest_sequence, 64);
     debugf ("manifest_sequence->tag_number: %d\n", manifest_sequence->tag_number);
     debugf ("manifest_sequence: sequence_count: %d\n", asn1_elements_in_object (manifest_sequence));
 
@@ -427,7 +423,6 @@ image4_parse_im4m (unsigned char *buf)
     asn1_get_sequence_name (manifest_sequence, &magic, &l);
     if (strncmp (magic, "MANB", l)) {
         errorf ("image4_parse_im4m: expected \"MANB\", got \"%s\"\n", magic);
-        hexdump ("magic", magic, 64);
     }
 
     /**
@@ -438,12 +433,9 @@ image4_parse_im4m (unsigned char *buf)
      */
     asn1_tag_t *manifest_body = asn1_element_at_index (manifest_sequence, 1);
     int manifest_body_elems = asn1_elements_in_object (manifest_body);
-    hexdump ("manifest_body", manifest_body, 64);
-    debugf ("manifest_body_elems: %d\n", manifest_body_elems);
 
     HSList *manifest_list = NULL;
 
-    debugf ("-----------------\n");
     int skip = 9;
     for (int i = 0; i < manifest_body_elems; i++) {
 
@@ -474,7 +466,6 @@ image4_parse_im4m (unsigned char *buf)
          *  all the manifest entries.
          */
         int sequence_elems = asn1_elements_in_object (sequence);
-        debugf ("sequence: elems: %d\n", sequence_elems);
         if (sequence_elems < 2) {
             errorf ("image4_parse_im4m: expected more than two elements in sequence: %d\n", sequence_elems);
             continue;
@@ -515,17 +506,13 @@ image4_parse_im4m (unsigned char *buf)
             asn1_tag_t *entry_name_tag = (asn1_tag_t *) asn1_element_at_index (entry_sequence, 0);
             asn1_tag_t *entry_data_tag = (asn1_tag_t *) asn1_element_at_index (entry_sequence, 1);
 
-            debugf ("\t[%d]: entry_name_tag: name: %s\n", entry_name_tag->tag_number, asn1_get_string_from_tag (entry_name_tag));
-
             /**
              *  Work out the data tag type, and parse based on that.
              */
             char *entry_data = "DATA";
             if (entry_data_tag->tag_number == kASN1TagIA5String) {
-                debugf ("\t[%d]: entry_name_tag: kASN1TagIA5String\n\n", entry_data_tag->tag_number);
                 entry_data = asn1_get_string_from_tag (entry_data_tag);
             } else if (entry_data_tag->tag_number == kASN1TagOCTET) {
-                debugf ("\t[%d]: entry_name_tag: kASN1TagOCTET\n\n", entry_data_tag->tag_number);
                 
                 /**
                  *  An OCTET string is encoded in the file like:
@@ -548,17 +535,14 @@ image4_parse_im4m (unsigned char *buf)
                 entry_data = octet;
 
             } else if (entry_data_tag->tag_number == kASN1TagINTEGER) {
-                debugf ("\t[%d]: entry_name_tag: kASN1TagINTEGER\n\n", entry_data_tag->tag_number);
 
                 entry_data = calloc (1, 32);
                 sprintf (entry_data, "%d", asn1_get_number_from_tag (entry_data_tag));
 
             } else if (entry_data_tag->tag_number == kASN1TagBOOLEAN) {
-                debugf ("\t[%d]: entry_name_tag: kASN1TagBOOLEAN\n\n", entry_data_tag->tag_number);
                 if (*(char *) entry_data_tag + 2 == 0) entry_data = "FALSE";
                 else entry_data = "TRUE";
             } else {
-                debugf ("\t[%d]: entry_name_tag: UNKNOWN\n\n", entry_data_tag->tag_number);
                 entry_data = "UNKNOWN";
             }
 
@@ -571,7 +555,6 @@ image4_parse_im4m (unsigned char *buf)
         }
 
         manifest_list = h_slist_append (manifest_list, manifest);
-        debugf ("-----------------\n");
     }
 
     /* Set */
