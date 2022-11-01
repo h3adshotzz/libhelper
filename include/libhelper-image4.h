@@ -44,6 +44,7 @@ extern "C" {
 #include "libhelper-hlibc.h"
 #include "libhelper-asn1.h"
 
+#define BLOCK_SIZE		(16)
 
 /**
  *  Image4 component type collection.
@@ -264,12 +265,18 @@ image4_get_component_type_description (image4_t *image4);
 extern int
 image4_get_compression_type (char *buf);
 
+extern char *
+image4_get_compression_description (image4_t *image4);
+
 im4p_t *
 image4_parse_im4p (unsigned char *buf);
 
 im4m_t *
 image4_parse_im4m (unsigned char *buf);
 
+
+
+void hexdump (char *title, char *mem, uint32_t size);
 
 
 

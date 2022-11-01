@@ -273,8 +273,10 @@ image4_parse_im4p (unsigned char *buf)
     if (data->tag_number != kASN1TagOCTET) {
         warningf ("image4_parse_im4p: skipped an unexpected tag where an OCTETSTRING was expected\n");
     } else {
-	im4p->size = asn1_len((char *) data + 1).data_len;
+	    im4p->size = asn1_len((char *) data + 1).data_len;
     }
+
+    //NOTE: Should also set im4p->offset here.
 
     /* check if the payload is compressed (if it's encrypted, the flag can be set during decryption */
     im4p->flags |= image4_get_compression_type (buf);
@@ -581,6 +583,7 @@ image4_get_file_type (image4_t *image4)
      *  types. Return the correct img4type_t.
      */
     asn1_get_sequence_name(image4->data, &magic, &l);
+    free (buffer);
 
     if (!strncmp("IMG4", magic, l)) return IMAGE4_COMP_TYPE_IMG4;
     else if (!strncmp("IM4P", magic, l)) return IMAGE4_COMP_TYPE_IM4P;
@@ -635,49 +638,29 @@ image4_get_file_type_description (image4_t *image4)
 char *
 image4_get_component_type_name (image4_t *image4)
 {
-    char *comp_name;
-    char *raw;
-	size_t l;
-
-    /* If the image is an IMG4, then the location of the component
-     * tag is a little further, as the IMG4 tag is placed before it
-     */
-    asn1_get_sequence_name (image4->data, &comp_name, &l);
-    if (image4->type = IMAGE4_COMP_TYPE_IMG4) {
-        debugf ("img4_fixup\n");
-        raw = (char *) asn1_element_at_index (asn1_element_at_index (image4->data, 1), 1) + 2;
-    } else {
-        raw = asn1_element_at_index (image4->data, 1) + 2;
-    }
-
-	if (!strncmp (raw, IMAGE_TYPE_IBOOT, 4))                    return IMAGE_TYPE_IBOOT;
-	else if (!strncmp (raw, IMAGE_TYPE_IBEC, 4))                return IMAGE_TYPE_IBEC;
-	else if (!strncmp (raw, IMAGE_TYPE_IBSS, 4))                return IMAGE_TYPE_IBSS;
-	else if (!strncmp (raw, IMAGE_TYPE_LLB, 4))                 return IMAGE_TYPE_LLB;
-	else if (!strncmp (raw, IMAGE_TYPE_SEP_OS, 4))              return IMAGE_TYPE_SEP_OS;
-	else if (!strncmp (raw, IMAGE_TYPE_SEP_OS_RESTORE, 4))      return IMAGE_TYPE_SEP_OS_RESTORE;
-	else if (!strncmp (raw, IMAGE_TYPE_DEVTREE, 4))             return IMAGE_TYPE_DEVTREE;
-	else if (!strncmp (raw, IMAGE_TYPE_RAMDISK, 4))             return IMAGE_TYPE_RAMDISK;
-	else if (!strncmp (raw, IMAGE_TYPE_KERNELCACHE, 4))         return IMAGE_TYPE_KERNELCACHE;
-	else if (!strncmp (raw, IMAGE_TYPE_LOGO, 4))                return IMAGE_TYPE_LOGO;
-	else if (!strncmp (raw, IMAGE_TYPE_RECMODE, 4))             return IMAGE_TYPE_RECMODE;
-	else if (!strncmp (raw, IMAGE_TYPE_NEEDSERVICE, 4))         return IMAGE_TYPE_NEEDSERVICE;
-    else if (!strncmp (raw, IMAGE_TYPE_GLYPHCHRG, 4))           return IMAGE_TYPE_GLYPHCHRG;
-    else if (!strncmp (raw, IMAGE_TYPE_GLYPHPLUGIN, 4))         return IMAGE_TYPE_GLYPHPLUGIN;
-	else if (!strncmp (raw, IMAGE_TYPE_BATTERYCHARGING0, 4))    return IMAGE_TYPE_BATTERYCHARGING0;
-	else if (!strncmp (raw, IMAGE_TYPE_BATTERYCHARGING1, 4))    return IMAGE_TYPE_BATTERYCHARGING1;
-	else if (!strncmp (raw, IMAGE_TYPE_BATTERYLOW0, 4))         return IMAGE_TYPE_BATTERYLOW0;
-	else if (!strncmp (raw, IMAGE_TYPE_BATTERYLOW1, 4))         return IMAGE_TYPE_BATTERYLOW1;
-	else if (!strncmp (raw, IMAGE_TYPE_BATTERYFULL, 4))         return IMAGE_TYPE_BATTERYFULL;
-	else if (!strncmp (raw, IMAGE_TYPE_OS_RESTORE, 4))          return IMAGE_TYPE_OS_RESTORE;
-	else if (!strncmp (raw, IMAGE_TYPE_HAMMER, 4))              return IMAGE_TYPE_HAMMER;
+    char *magic = image4->im4p->comp;
+	if (!strncmp (magic, IMAGE_TYPE_IBOOT, 4))                    return IMAGE_TYPE_IBOOT;
+	else if (!strncmp (magic, IMAGE_TYPE_IBEC, 4))                return IMAGE_TYPE_IBEC;
+	else if (!strncmp (magic, IMAGE_TYPE_IBSS, 4))                return IMAGE_TYPE_IBSS;
+	else if (!strncmp (magic, IMAGE_TYPE_LLB, 4))                 return IMAGE_TYPE_LLB;
+	else if (!strncmp (magic, IMAGE_TYPE_SEP_OS, 4))              return IMAGE_TYPE_SEP_OS;
+	else if (!strncmp (magic, IMAGE_TYPE_SEP_OS_RESTORE, 4))      return IMAGE_TYPE_SEP_OS_RESTORE;
+	else if (!strncmp (magic, IMAGE_TYPE_DEVTREE, 4))             return IMAGE_TYPE_DEVTREE;
+	else if (!strncmp (magic, IMAGE_TYPE_RAMDISK, 4))             return IMAGE_TYPE_RAMDISK;
+	else if (!strncmp (magic, IMAGE_TYPE_KERNELCACHE, 4))         return IMAGE_TYPE_KERNELCACHE;
+	else if (!strncmp (magic, IMAGE_TYPE_LOGO, 4))                return IMAGE_TYPE_LOGO;
+	else if (!strncmp (magic, IMAGE_TYPE_RECMODE, 4))             return IMAGE_TYPE_RECMODE;
+	else if (!strncmp (magic, IMAGE_TYPE_NEEDSERVICE, 4))         return IMAGE_TYPE_NEEDSERVICE;
+    else if (!strncmp (magic, IMAGE_TYPE_GLYPHCHRG, 4))           return IMAGE_TYPE_GLYPHCHRG;
+    else if (!strncmp (magic, IMAGE_TYPE_GLYPHPLUGIN, 4))         return IMAGE_TYPE_GLYPHPLUGIN;
+	else if (!strncmp (magic, IMAGE_TYPE_BATTERYCHARGING0, 4))    return IMAGE_TYPE_BATTERYCHARGING0;
+	else if (!strncmp (magic, IMAGE_TYPE_BATTERYCHARGING1, 4))    return IMAGE_TYPE_BATTERYCHARGING1;
+	else if (!strncmp (magic, IMAGE_TYPE_BATTERYLOW0, 4))         return IMAGE_TYPE_BATTERYLOW0;
+	else if (!strncmp (magic, IMAGE_TYPE_BATTERYLOW1, 4))         return IMAGE_TYPE_BATTERYLOW1;
+	else if (!strncmp (magic, IMAGE_TYPE_BATTERYFULL, 4))         return IMAGE_TYPE_BATTERYFULL;
+	else if (!strncmp (magic, IMAGE_TYPE_OS_RESTORE, 4))          return IMAGE_TYPE_OS_RESTORE;
+	else if (!strncmp (magic, IMAGE_TYPE_HAMMER, 4))              return IMAGE_TYPE_HAMMER;
     else return "ERROR";
-
-    /* otherwise, return the substring */
-    char *comp = malloc (8);
-    memcpy (comp, comp_name + 4, 8);
-
-    return comp;
 }
 
 
@@ -761,4 +744,13 @@ image4_get_compression_type (char *buf)
     } else {
             return IM4P_FLAG_FILE_COMPRESSED_NONE;
     }
+}
+
+char *
+image4_get_compression_description (image4_t *image4)
+{
+    if (image4->im4p->flags & IM4P_FLAG_FILE_ENCRYPTED) return "Encrypted";
+    else if (image4->im4p->flags & IM4P_FLAG_FILE_COMPRESSED_LZSS) return "Compressed (LZSS)";
+    else if (image4->im4p->flags & IM4P_FLAG_FILE_COMPRESSED_BVX2) return "Compressed (BVX2)";
+    else return "Uncompressed, Not Encrypted";
 }
