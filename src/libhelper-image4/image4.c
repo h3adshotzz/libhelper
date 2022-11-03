@@ -269,11 +269,13 @@ image4_parse_im4p (unsigned char *buf)
         im4p->desc = asn1_get_string_from_tag ((asn1_tag_t *) asn1_element_at_index (buf, 2));
 
     /* get and set the payload size */
-    asn1_tag_t *data = (asn1_tag_t *) asn1_element_at_index (buf, 3);
-    if (data->tag_number != kASN1TagOCTET) {
-        warningf ("image4_parse_im4p: skipped an unexpected tag where an OCTETSTRING was expected\n");
-    } else {
-	    im4p->size = asn1_len((char *) data + 1).data_len;
+    if (--elems > 0) { 
+        asn1_tag_t *data = (asn1_tag_t *) asn1_element_at_index (buf, 3);
+        if (data->tag_number != kASN1TagOCTET) {
+            warningf ("image4_parse_im4p: skipped an unexpected tag where an OCTETSTRING was expected\n");
+        } else {
+	        im4p->size = asn1_len((char *) data + 1).data_len;
+        }
     }
 
     //NOTE: Should also set im4p->offset here.
@@ -282,82 +284,84 @@ image4_parse_im4p (unsigned char *buf)
     im4p->flags |= image4_get_compression_type (buf);
 
     /* check, get and set the KBAG value */
-    char *kbag_octet = (char *) asn1_element_at_index (buf, 4);
-    if (kbag_octet != NULL && ((asn1_tag_t *) kbag_octet)->tag_number == kASN1TagOCTET) {
+    if (--elems > 0) {
+        unsigned char *kbag_octet = (unsigned char *) asn1_element_at_index (buf, 4);
+        if (kbag_octet != NULL) { //&& ((asn1_tag_t *) kbag_octet)->tag_number == kASN1TagOCTET
 
-        /* set the im4p flag that the payload is encrypted */
-        im4p->flags |= IM4P_FLAG_FILE_ENCRYPTED;
-        im4p->flags |= IM4P_FLAG_INCLUDES_KBAG;
+            /* set the im4p flag that the payload is encrypted */
+            im4p->flags |= IM4P_FLAG_FILE_ENCRYPTED;
+            im4p->flags |= IM4P_FLAG_INCLUDES_KBAG;
 
-        /* get the length of the kbag tag octet */
-        asn1_elem_len_t octet_len = asn1_len (++kbag_octet);
-        kbag_octet += octet_len.size_bytes;
+            /* get the length of the kbag tag octet */
+            asn1_elem_len_t octet_len = asn1_len (++kbag_octet);
+            kbag_octet += octet_len.size_bytes;
 
-        /* parse the kbag */
-        for (int i = 0; i < asn1_elements_in_object (kbag_octet); i++) {
+            /* parse the kbag */
+            for (int i = 0; i < asn1_elements_in_object (kbag_octet); i++) {
 
-            /* create the kbag struct */
-            kbag_t *kbag = calloc (1, sizeof (kbag_t));
+                /* create the kbag struct */
+                kbag_t *kbag = calloc (1, sizeof (kbag_t));
 
-            /* pick the value */
-            char *seq = (char *) asn1_element_at_index (kbag_octet, i);
-            int elems = asn1_elements_in_object (seq);
+                /* pick the value */
+                char *seq = (char *) asn1_element_at_index (kbag_octet, i);
+                int elems = asn1_elements_in_object (seq);
 
-            /**
-             *  With KBAGs, we often get multiple types: PRODUCTION and DEVELOPMENT. Typically the
-             *  KBAG marked PRODUCTION is the first one. This code will parse however many KBAGs
-             *  are contained here, and mark the first two accordingly. Any extras are marked as
-             *  UNKNOWN.
-             */
-            if (elems--) {
-                asn1_tag_t *num = (asn1_tag_t *) asn1_element_at_index (seq, 0);
+                /**
+                 *  With KBAGs, we often get multiple types: PRODUCTION and DEVELOPMENT. Typically the
+                 *  KBAG marked PRODUCTION is the first one. This code will parse however many KBAGs
+                 *  are contained here, and mark the first two accordingly. Any extras are marked as
+                 *  UNKNOWN.
+                 */
+                if (elems--) {
+                    asn1_tag_t *num = (asn1_tag_t *) asn1_element_at_index (seq, 0);
 
-                if (num->tag_number == kASN1TagINTEGER) {
-                    int j;
+                    if (num->tag_number == kASN1TagINTEGER) {
+                        int j;
 
-                    /* set the kbag type, depending on i */
-                    if (i == 0) kbag->type = IMAGE4_KBAG_PRODUCTION;
-                    else if (i == 1) kbag->type = IMAGE4_KBAG_DEVELOPMENT;
-                    else kbag->type = IMAGE4_KBAG_UNKNOWN;
+                        /* set the kbag type, depending on i */
+                        if (i == 0) kbag->type = IMAGE4_KBAG_PRODUCTION;
+                        else if (i == 1) kbag->type = IMAGE4_KBAG_DEVELOPMENT;
+                        else kbag->type = IMAGE4_KBAG_UNKNOWN;
 
-                    /**
-                     *  Parse the KBAG IV. Load the tag from the KBAG sequence, get the length
-                     *  and string for the IV, and write byte-by-byte into the iv buffer in the
-                     *  kbag struct.
-                     */
-                    asn1_tag_t *tag_iv = asn1_element_at_index (seq, 1);
-                    asn1_elem_len_t tag_iv_len = asn1_len ((char *) tag_iv + 1);
+                        /**
+                         *  Parse the KBAG IV. Load the tag from the KBAG sequence, get the length
+                         *  and string for the IV, and write byte-by-byte into the iv buffer in the
+                         *  kbag struct.
+                         */
+                        asn1_tag_t *tag_iv = asn1_element_at_index (seq, 1);
+                        asn1_elem_len_t tag_iv_len = asn1_len ((char *) tag_iv + 1);
 
-                    j = 0;
-                    unsigned char *tag_iv_str = (unsigned char *) tag_iv + tag_iv_len.size_bytes + 1;
-                    while (tag_iv_len.data_len--) kbag->iv[j] = (uint8_t) *tag_iv_str++, j++;
+                        j = 0;
+                        unsigned char *tag_iv_str = (unsigned char *) tag_iv + tag_iv_len.size_bytes + 1;
+                        while (tag_iv_len.data_len--) kbag->iv[j] = (uint8_t) *tag_iv_str++, j++;
 
 
-                    /**
-                     *  Parse the KBAG Key. This is the same process as with the IV. The only difference
-                     *  between the two is that the key is 32 bytes and the IV is only 16 bytes.
-                     */
-                    asn1_tag_t *tag_key = asn1_element_at_index (seq, 2);
-                    asn1_elem_len_t tag_key_len = asn1_len ((char *) tag_key + 1);
+                        /**
+                         *  Parse the KBAG Key. This is the same process as with the IV. The only difference
+                         *  between the two is that the key is 32 bytes and the IV is only 16 bytes.
+                         */
+                        asn1_tag_t *tag_key = asn1_element_at_index (seq, 2);
+                        asn1_elem_len_t tag_key_len = asn1_len ((char *) tag_key + 1);
 
-                    j = 0;
-                    unsigned char *tag_key_str = (unsigned char *) tag_key + tag_key_len.size_bytes + 1;
-                    while (tag_key_len.data_len--) kbag->key[j] = (uint8_t) *tag_key_str++, j++;
+                        j = 0;
+                        unsigned char *tag_key_str = (unsigned char *) tag_key + tag_key_len.size_bytes + 1;
+                        while (tag_key_len.data_len--) kbag->key[j] = (uint8_t) *tag_key_str++, j++;
 
-                } else {
-                    /* we didn't expect this tag here */
-                    warningf ("image4_parse_im4p: skipping unexpected tag.\n");
+                    } else {
+                        /* we didn't expect this tag here */
+                        warningf ("image4_parse_im4p: skipping unexpected tag.\n");
+                    }
                 }
+
+                /* Add the KBAG to the im4p */
+                im4p->kbags = h_slist_append (im4p->kbags, kbag);
             }
 
-            /* Add the KBAG to the im4p */
-            im4p->kbags = h_slist_append (im4p->kbags, kbag);
+        } else {
+            // no kbag
+            im4p->flags |= IM4P_FLAG_FILE_NOT_ENCRYPTED;
+            im4p->flags |= IM4P_FLAG_NO_KBAG;
         }
-
-    } else {
-        // no kbag
-        im4p->flags |= IM4P_FLAG_FILE_NOT_ENCRYPTED;
-        im4p->flags |= IM4P_FLAG_NO_KBAG;
     }
 
     return im4p;
