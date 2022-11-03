@@ -33,6 +33,8 @@ if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "DEBUG" CACHE STRING "Build type: RELEASE, DEBUG" FORCE)
 endif()
 
+
+
 ############################## PROJECT #########################################
 
 set(LIBHELPER_VERSION "3.0.0")

@@ -28,19 +28,6 @@
 extern "C" {
 #endif
 
-/**
- * Determine whether to use CommonCrypto or OpenSSL based on the platform we're
- * compiling on. If on macOS, use CommonCrypto.framework, otherwise use OpenSSL.
- */
-#if defined(__APPLE__) && defined(__MACH__)
-#    define LIBHELPER_IMAGE4_CRYPTO_LIB_COMMONCRYPTO
-#    include <CommonCrypto/CommonCrypto.h>
-#elif
-#    define LIBHELPER_IMAGE4_CRYPTO_LIB_OPENSSL
-#    include <openssl/aes.h>
-#    include <openssl/sha.h>
-#endif
-
 #include "libhelper-hlibc.h"
 #include "libhelper-asn1.h"
 
