@@ -665,6 +665,23 @@ struct linkedit_data_command {
 };
 
 /**
+ * \brief       The thread state command contains the CPU flavour, count and thread
+ *              state to be restored when the Mach-O is loaded. Two Load Commands
+ *              use this structure:
+ *
+ *                  LC_THREAD and LC_UNIXTHREAD.
+ */
+struct thread_command {
+    uint32_t        cmd;            /* LC_THREAD, LC_UNIXTHREAD */
+    uint32_t        cmdsize;        /* total size of this command */
+
+    uint32_t        flavour;        /* flavour of thread state */
+    uint32_t        count;          /* count of longs in thread state */
+
+    /* struct XXX_thread_state state */
+};
+
+/**
  * \brief       The build_version_command contains the min OS version on which this
  *              binary was built to run for its platform.  The list of known platforms and
  *              tool values following it.

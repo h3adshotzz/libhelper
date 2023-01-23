@@ -919,6 +919,13 @@ mach_load_command_uuid_parse_string (mach_uuid_command_t        *uuid);
 /////////////////////////////////////////////////////////////////////////////////
 
 /**
+ * \brief       Redefinition of thread_command as a libhelper type.
+ */
+typedef struct thread_command                       mach_thread_state_command_t;
+
+/////////////////////////////////////////////////////////////////////////////////
+
+/**
  *  \brief      Redefinition of rpath_command as a libhelper type.
  *
  *              There are no helper functions for this load command.
