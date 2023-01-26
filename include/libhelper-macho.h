@@ -18,6 +18,7 @@
 //  Copyright (C) 2019, Is This On?, @h3adsh0tzz
 //  Copyright (C) 2020, Is This On?, @h3adsh0tzz
 //  Copyright (C) 2021, Is This On? Holdings Limited
+//  Copyright (C) 2023, Is This On? Holdings Limited
 //  
 //  Harry Moulton <me@h3adsh0tzz.com>
 //
@@ -107,6 +108,9 @@ extern "C" {
 #else
 #   include "macho/loader.h"
 #endif
+
+/* Mach-O Symbol definitions */
+#include "macho/symbols.h"
 
 /**
  *  Mach-O Magic's
@@ -895,6 +899,26 @@ typedef struct dylinker_command                     mach_dylinker_command_t;
  *              There are no helper functions for this load command.
  */
 typedef struct symtab_command                       mach_symtab_command_t;
+
+/**
+ *  \brief      Libhelper wrapper for the symtab command and list of symbols
+ *              in the symbol table.
+ *  
+ */
+typedef struct __libhelper_mach_symbol_table        mach_symbol_table_t;
+struct __libhelper_mach_symbol_table {
+    mach_symtab_command_t       *cmd;       /* LC_SYMTAB */
+    HSList                      *symbols;   /* list of symbols */
+};
+
+extern mach_symtab_command_t *
+mach_symtab_command_load (macho_t *macho, uint32_t offset);
+
+extern char *
+mach_symbol_table_find_symbol_name (macho_t *macho, nlist *sym, mach_symtab_command_t *table);
+
+#define LIBHELPER_MACHO_SYMBOL_NO_NAME          "(no name)"
+
 
 /////////////////////////////////////////////////////////////////////////////////
 

@@ -40,6 +40,7 @@ target_sources(libhelper
         load-command.c
         segment.c
         section.c
+        symbols.c
 
         load-commands/source_version_command.c
         load-commands/build_version_command.c
