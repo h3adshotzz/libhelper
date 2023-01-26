@@ -93,7 +93,9 @@ static struct __libhelper_lc_string lc_list[] =
     { LC_DYLD_EXPORTS_TRIE,             "LC_DYLD_EXPORTS_TRIE"          },
     { LC_DYLD_CHAINED_FIXUPS,           "LC_DYLD_CHAINED_FIXUPS"        },
 
-    { LC_FILESET_ENTRY,                 "LC_FILESET_ENTRY"              }
+    { LC_FILESET_ENTRY,                 "LC_FILESET_ENTRY"              },
+
+    { NULL,                             NULL                            }
 };
 
 #define LIBHELPER_LC_LIST_LEN              (sizeof (lc_list) / sizeof (lc_list[0])) - 1
@@ -127,6 +129,7 @@ mach_load_command_get_name (mach_load_command_t *lc)
     /* Check the LC name translation table */
     for (int i = 0; i < (int) LIBHELPER_LC_LIST_LEN; i++) {
         struct __libhelper_lc_string *cur = &lc_list[i];
+        //debugf ("lc->cmd: %d, cur->lc: %d\n", lc->cmd, cur->lc);
         if (lc->cmd == cur->lc) return cur->str;
     }
 
