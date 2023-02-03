@@ -35,7 +35,7 @@ extern "C" {
 #if defined(__APPLE__) && defined(__MACH__)
 #    define LIBHELPER_IMAGE4_CRYPTO_LIB_COMMONCRYPTO
 #    include <CommonCrypto/CommonCrypto.h>
-#elif
+#else
 #    define LIBHELPER_IMAGE4_CRYPTO_LIB_OPENSSL
 #    include <openssl/aes.h>
 #    include <openssl/sha.h>
