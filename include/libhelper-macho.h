@@ -179,6 +179,7 @@ struct __libhelper_macho {
     HSList              *lcmds;         /* list of all load commands (including LC_SEGMENT) */
     HSList              *scmds;         /* list of segment commands */
     HSList              *dylibs;        /* list of dynamic libraries */
+    HSList              *fileset;       /* list of fileset entry mach-o's */
     HSList              *symbols;       /* list of symbols */
     HSList              *strings;       /* list of strings */
 };
@@ -1013,6 +1014,14 @@ typedef struct linkedit_data_command                mach_linkedit_data_command_t
  *  \brief      Redfinition of fileset_entry_command as libhelper type.
  */
 typedef struct fileset_entry_command                mach_fileset_entry_command_t;
+
+typedef struct __libhelper_fileset_entry_info       mach_fileset_entry_info_t;
+struct __libhelper_fileset_entry_info
+{
+    mach_fileset_entry_command_t    *cmd;
+    macho_t                         *macho;
+    uint32_t                         offset;
+};
 
 /////////////////////////////////////////////////////////////////////////////////
 

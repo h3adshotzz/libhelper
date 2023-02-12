@@ -18,7 +18,7 @@
 //  Copyright (C) 2019, Is This On?, @h3adsh0tzz
 //  Copyright (C) 2020, Is This On?, @h3adsh0tzz
 //  Copyright (C) 2021, Is This On? Holdings Limited
-//  
+//
 //  Harry Moulton <me@h3adsh0tzz.com>
 //
 //===----------------------------------------------------------------------===//
@@ -49,7 +49,7 @@ macho_64_create_from_buffer (unsigned char *data)
     }
 
     /* create lists for load commands */
-    HSList *scmds = NULL, *lcmds = NULL, *dylibs = NULL;
+    HSList *scmds = NULL, *lcmds = NULL, *dylibs = NULL, *fileset = NULL;
     uint32_t offset = sizeof (mach_header_t);
 
     /* parse and load each load command */
@@ -57,7 +57,10 @@ macho_64_create_from_buffer (unsigned char *data)
 
         /* parse the basic load command first, then check it's type */
         mach_load_command_t *lc = (mach_load_command_t *) (macho->data + offset);
-        
+        mach_load_command_info_t *inf = calloc (1, sizeof (mach_load_command_info_t));
+        inf->lc = lc;
+        inf->offset = offset;
+
         /**
          *  NOTE:   Different types of Load Command are sorted into one of the three
          *          defined lists: scmds, lcmds or dylibs.
@@ -101,24 +104,30 @@ macho_64_create_from_buffer (unsigned char *data)
             dylib_inf->dylib = raw;
             dylib_inf->type = lc->cmd;
 
-            /* add the offset to the load command */
-            mach_load_command_info_t *inf = calloc (1, sizeof (mach_load_command_info_t));
-            inf->lc = lc;
-            inf->offset = offset;
-
             /* add them both to the lists */
             dylibs = h_slist_append (dylibs, dylib_inf);
             lcmds = h_slist_append (lcmds, inf);
 
+        } else if (lc->cmd == LC_FILESET_ENTRY) {
+
+            /**
+             *
+             */
+            mach_fileset_entry_command_t *entry_cmd = (mach_fileset_entry_command_t *) (macho->data + offset);
+            mach_fileset_entry_info_t *entry_info = calloc (1, sizeof (mach_fileset_entry_info_t));
+            macho_t *entry_macho = macho_64_create_from_buffer (macho->data + entry_cmd->fileoff);
+
+            if (entry_macho) {
+                entry_info->cmd = entry_cmd;
+                entry_info->macho = entry_macho;
+                entry_info->offset = offset;
+
+                fileset = h_slist_append (fileset, entry_info);
+            }
+            lcmds = h_slist_append (lcmds, inf);
 
         } else {
-
-            /* any other commands are stored as load command info structs */
-            mach_load_command_info_t *inf = calloc (1, sizeof (mach_load_command_info_t));
-            inf->lc = lc;
-            inf->offset = offset;
-
-            lcmds = h_slist_append (lcmds, inf);        
+            lcmds = h_slist_append (lcmds, inf);
         }
 
         offset += lc->cmdsize;
@@ -131,6 +140,7 @@ macho_64_create_from_buffer (unsigned char *data)
     macho->lcmds = lcmds;
     macho->scmds = scmds;
     macho->dylibs = dylibs;
+    macho->fileset = fileset;
 
     /* fix size */
     mach_segment_info_t *last_seg = (mach_segment_info_t *) h_slist_last (macho->scmds);
@@ -141,6 +151,6 @@ macho_64_create_from_buffer (unsigned char *data)
         mach_segment_command_32_t *segcmd = last_seg->segcmd;
         macho->size = segcmd->fileoff + segcmd->filesize;
     }
-   
+
     return macho;
 }
