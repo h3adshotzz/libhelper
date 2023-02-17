@@ -27,19 +27,19 @@
 #define __LIBHELPER_VERSION_H__
 
 /* Libhelper Build Version, i.e. 3.1.2 */
-#define LIBHELPER_BUILD_VERSION_MAJOR       "3"
-#define LIBHELPER_BUILD_VERSION_MINOR       "0"
-#define LIBHELPER_BUILD_VERSION_REVISION    "0"
-#define LIBHELPER_BUILD_VERSION             "3.0.0"
+#define LIBHELPER_BUILD_VERSION_MAJOR       "{{ LIBHELPER_BUILD_VERSION_MAJOR_VAL }}"
+#define LIBHELPER_BUILD_VERSION_MINOR       "{{ LIBHELPER_BUILD_VERSION_MINOR_VAL }}"
+#define LIBHELPER_BUILD_VERSION_REVISION    "{{ LIBHELPER_BUILD_VERSION_REVISION_VAL }}"
+#define LIBHELPER_BUILD_VERSION             "{{ LIBHELPER_BUILD_VERSION }}"
 
 /* Libhelper Build Type, i.e. INTERNAL, BETA, RELEASE */
-#define LIBHELPER_BUILD_TYPE                "DEBUG"
+#define LIBHELPER_BUILD_TYPE                "{{ LIBHELPER_BUILD_TYPE_VAL }}"
 
 /* Libhelper Source Version, i.e. 312.56.12 */
-#define LIBHELPER_SOURCE_VERSION_MAJOR      "35"
-#define LIBHELPER_SOURCE_VERSION_MINOR      "90"
+#define LIBHELPER_SOURCE_VERSION_MAJOR      "{{ LIBHELPER_SOURCE_VERSION_MAJOR_VAL }}"
+#define LIBHELPER_SOURCE_VERSION_MINOR      "{{ LIBHELPER_SOURCE_VERSION_MINOR_VAL }}"
 
-#define LIBHELPER_SOURCE_VERSION            "libhelper-300.35.90"
+#define LIBHELPER_SOURCE_VERSION            "{{ LIBHELPER_SOURCE_VERSION }}"
 
 /**
  *  Libhelper platform string. Correct value is set at compile time by the compiler.

@@ -1,0 +1,10 @@
+3.0.0
+35
+90
+# The first line of this file contains the master version number of Libhelper,
+# with the second and third lines denoting the major and minor source versions
+# for Libhelper.
+#
+# The minor source version is incremented on each build (every time `make` is
+# invoked), and the major source version is incremented each time the minor
+# version reaches 99.

@@ -24,21 +24,22 @@
 /* libhelper-core: version.c */
 
 #include <libhelper.h>
+#include <libhelper-hlibc.h>
 #include "version.h"
 
 char *libhelper_get_version ()
 {
-    return LIBHELPER_VERSION;
+    return LIBHELPER_BUILD_VERSION;
 }
 
 char *libhelper_get_version_string ()
 {
-    return LIBHELPER_VERS_WITH_ARCH;
+    return LIBHELPER_SOURCE_VERSION;
 }
 
 char *libhelper_get_build_type ()
 {
-    return LIBHELPER_VERSION_TYPE;
+    return LIBHELPER_BUILD_TYPE;
 }
 
 char *libhelper_get_build_target ()

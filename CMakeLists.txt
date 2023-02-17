@@ -35,8 +35,6 @@ endif()
 
 ############################## PROJECT #########################################
 
-set(LIBHELPER_VERSION "3.0.0")
-
 # Declare the project
 project("The Libhelper Project" VERSION ${LIBHELPER_VERSION} LANGUAGES C)
 add_library(libhelper SHARED)
@@ -48,6 +46,12 @@ target_include_directories(libhelper
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
+
+# Setup versioning script
+if (USE_VERSION_GENERATOR)
+    include (config/version.cmake)
+    add_dependencies(libhelper generate_version)
+endif()
 
 # Libhelper-core is actually the direct source files for libhelper, it's not
 # built as a static library and then linked like the others.
