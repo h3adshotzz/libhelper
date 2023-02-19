@@ -59,6 +59,7 @@ add_subdirectory(src/libhelper-core)
 add_subdirectory(src/libhelper-macho)
 add_subdirectory(src/libhelper-compression)
 add_subdirectory(src/libhelper-image4)
+add_subdirectory(src/macho-toolset)
 
 # Add other subdirectories
 add_subdirectory(tools)

@@ -139,7 +139,6 @@ mach_segment_info_search (HSList *segments, char *segname)
         char *check = (char *) seg->segcmd + 8;
 
         /* check if the names match */
-        debugf ("segname: %s, check: %s\n", check, segname);
         if (!strcmp (check, segname))
             return seg;
     }

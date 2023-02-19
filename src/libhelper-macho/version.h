@@ -27,43 +27,18 @@
 #define __LIBHELPER_VERSION_H__
 
 /* Libhelper Build Version, i.e. 3.1.2 */
-#define LIBHELPER_BUILD_VERSION_MAJOR       "3"
-#define LIBHELPER_BUILD_VERSION_MINOR       "0"
-#define LIBHELPER_BUILD_VERSION_REVISION    "0"
-#define LIBHELPER_BUILD_VERSION             "3.0.0"
+#define LIBHELPER_BUILD_VERSION_MAJOR       3
+#define LIBHELPER_BUILD_VERSION_MINOR       0
+#define LIBHELPER_BUILD_VERSION_REVISION    0
 
 /* Libhelper Build Type, i.e. INTERNAL, BETA, RELEASE */
 #define LIBHELPER_BUILD_TYPE                "DEBUG"
 
 /* Libhelper Source Version, i.e. 312.56.12 */
-#define LIBHELPER_SOURCE_VERSION_MAJOR      "36"
-#define LIBHELPER_SOURCE_VERSION_MINOR      "16"
+#define LIBHELPER_SOURCE_VERSION_MAJOR      35
+#define LIBHELPER_SOURCE_VERSION_MINOR      53
 
-#define LIBHELPER_SOURCE_VERSION            "libhelper-300.36.16"
+#define LIBHELPER_VERSION   LIBHELPER_BUILD_VERSION_MAJOR "." LIBHELPER_BUILD_VERSION_MINOR "." LIBHELPER_BUILD_VERSION_REVISION
 
-/**
- *  Libhelper platform string. Correct value is set at compile time by the compiler.
- */
-#ifdef __APPLE__
-#	define BUILD_TARGET				"darwin"
-#	define BUILD_TARGET_CAP			"Darwin"
-#else
-#	define BUILD_TARGET				"linux"
-#	define BUILD_TARGET_CAP			"Linux"
-#endif
-
-/**
- *	NOTE: As of libhelper-2000.16.4, support for 32-bit architecture is
- *		  no longer available.
- */
-#ifdef __x86_64__
-#	define BUILD_ARCH				"x86_64"
-#	define BUILD_ARCH_CAP			"X86_64"
-#elif __arm64__
-#	define BUILD_ARCH				"arm64"
-#	define BUILD_ARCH_CAP			"ARM64"
-#else
-#	error "Unsupported Archiecture."
-#endif
 
 #endif /* __libhelper_version_h__ */

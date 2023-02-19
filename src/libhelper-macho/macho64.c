@@ -121,6 +121,7 @@ macho_64_create_from_buffer (unsigned char *data)
                 entry_info->cmd = entry_cmd;
                 entry_info->macho = entry_macho;
                 entry_info->offset = offset;
+                entry_info->entry_id = mach_load_command_load_string (macho, entry_cmd->cmdsize, sizeof (mach_fileset_entry_command_t), offset, entry_cmd->entry_id.offset);
 
                 fileset = h_slist_append (fileset, entry_info);
             }
@@ -146,6 +147,11 @@ macho_64_create_from_buffer (unsigned char *data)
     mach_segment_info_t *last_seg = (mach_segment_info_t *) h_slist_last (macho->scmds);
     if (last_seg->arch == LIBHELPER_ARCH_64) {
         mach_segment_command_64_t *segcmd = last_seg->segcmd;
+        if (segcmd->filesize == 0) {
+            last_seg = (mach_segment_info_t *) h_slist_nth_data (macho->scmds, h_slist_length (macho->scmds) - 1);
+            segcmd = last_seg->segcmd;
+        }
+
         macho->size = segcmd->fileoff + segcmd->filesize;
     } else {
         mach_segment_command_32_t *segcmd = last_seg->segcmd;

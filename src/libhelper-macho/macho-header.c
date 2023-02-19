@@ -50,13 +50,13 @@ mach_header_load (macho_t *macho)
         mach_header_type_t mh_type = mach_header_verify (hdr->magic);
 
         if (mh_type == MH_TYPE_MACHO64) {
-            debugf ("mach_header_load(): detected mach-o 64-bit.\n");
+            //debugf ("mach_header_load(): detected mach-o 64-bit.\n");
             return hdr;
         } else if (mh_type == MH_TYPE_MACHO32) {
-            debugf ("mach_header_load(): detected mach-o 32-bit.\n");
+            //debugf ("mach_header_load(): detected mach-o 32-bit.\n");
             return hdr;
         } else if (mh_type == MH_TYPE_FAT) {
-            debugf ("mach_header_load(): detected mach-o fat/universal.\n");
+            //debugf ("mach_header_load(): detected mach-o fat/universal.\n");
             return hdr;
         } else {
             errorf ("mach_header_load(): Could not detect file magic: 0x%08x.\n", hdr->magic);

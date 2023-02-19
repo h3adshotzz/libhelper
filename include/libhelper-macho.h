@@ -1020,6 +1020,7 @@ struct __libhelper_fileset_entry_info
 {
     mach_fileset_entry_command_t    *cmd;
     macho_t                         *macho;
+    char                            *entry_id;
     uint32_t                         offset;
 };
 

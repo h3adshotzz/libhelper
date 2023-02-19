@@ -30,12 +30,13 @@ mach_source_version_command_t *
 mach_load_command_find_source_version_command (macho_t *macho)
 {
     size_t size = sizeof (mach_source_version_command_t);
-    mach_source_version_command_t *ret = calloc (1, size);
+    mach_source_version_command_t *ret;
 
     /* search the macho->lcmds list for the SVC */
     for (int i = 0; i < h_slist_length (macho->lcmds); i++) {
         mach_load_command_info_t *inf = (mach_load_command_info_t *) h_slist_nth_data (macho->lcmds, i);
         if (inf->lc->cmd == LC_SOURCE_VERSION) {
+            ret = calloc (1, size);
             ret = (mach_source_version_command_t *)
                     macho_load_bytes (macho, size, inf->offset);
             break;
@@ -73,6 +74,6 @@ mach_load_command_get_source_version_string (mach_source_version_command_t *svc)
     return ret;
 
 svc_error:
-    errorf ("mach_load_command_get_source_version_string: could not load source version string.\n");
-    return NULL;
+    //errorf ("mach_load_command_get_source_version_string: could not load source version string.\n");
+    return "0.0.0";
 }
