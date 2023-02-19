@@ -28,18 +28,18 @@
 
 /* Libhelper Build Version, i.e. 3.1.2 */
 #define LIBHELPER_BUILD_VERSION_MAJOR       "3"
-#define LIBHELPER_BUILD_VERSION_MINOR       "0"
+#define LIBHELPER_BUILD_VERSION_MINOR       "1"
 #define LIBHELPER_BUILD_VERSION_REVISION    "0"
-#define LIBHELPER_BUILD_VERSION             "3.0.0"
+#define LIBHELPER_BUILD_VERSION             "3.1.0"
 
 /* Libhelper Build Type, i.e. INTERNAL, BETA, RELEASE */
 #define LIBHELPER_BUILD_TYPE                "DEBUG"
 
 /* Libhelper Source Version, i.e. 312.56.12 */
 #define LIBHELPER_SOURCE_VERSION_MAJOR      "36"
-#define LIBHELPER_SOURCE_VERSION_MINOR      "16"
+#define LIBHELPER_SOURCE_VERSION_MINOR      "17"
 
-#define LIBHELPER_SOURCE_VERSION            "libhelper-300.36.16"
+#define LIBHELPER_SOURCE_VERSION            "libhelper-310.36.17"
 
 /**
  *  Libhelper platform string. Correct value is set at compile time by the compiler.
