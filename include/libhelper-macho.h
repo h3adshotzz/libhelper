@@ -941,6 +941,9 @@ typedef struct uuid_command                         mach_uuid_command_t;
 extern char *
 mach_load_command_uuid_parse_string (mach_uuid_command_t        *uuid);
 
+extern char *
+mach_load_command_uuid_string_from_macho (macho_t               *macho);
+
 /////////////////////////////////////////////////////////////////////////////////
 
 /**

@@ -47,3 +47,13 @@ mach_load_command_uuid_parse_string (mach_uuid_command_t *uuid)
 
     return (ret) ? ret : NULL;
 }
+
+char *
+mach_load_command_uuid_string_from_macho (macho_t *macho)
+{
+    mach_load_command_info_t *info = mach_load_command_find_command_by_type (macho, LC_UUID);
+    if (!info) return "(null)";
+
+    mach_uuid_command_t *uuid = (mach_uuid_command_t *) info->lc;
+    return mach_load_command_uuid_parse_string (uuid);
+}

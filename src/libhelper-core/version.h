@@ -37,9 +37,9 @@
 
 /* Libhelper Source Version, i.e. 312.56.12 */
 #define LIBHELPER_SOURCE_VERSION_MAJOR      "36"
-#define LIBHELPER_SOURCE_VERSION_MINOR      "17"
+#define LIBHELPER_SOURCE_VERSION_MINOR      "32"
 
-#define LIBHELPER_SOURCE_VERSION            "libhelper-310.36.17"
+#define LIBHELPER_SOURCE_VERSION            "libhelper-310.36.32"
 
 /**
  *  Libhelper platform string. Correct value is set at compile time by the compiler.
