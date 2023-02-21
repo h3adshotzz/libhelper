@@ -41,6 +41,10 @@ add_library(libhelper SHARED)
 
 set_property(TARGET libhelper PROPERTY C_STANDARD 11)
 
+# OpenSSL configuration
+find_package(OpenSSL REQUIRED)
+target_link_libraries(libhelper OpenSSL::Crypto)
+
 # Libhelper public headers.
 target_include_directories(libhelper
     PUBLIC

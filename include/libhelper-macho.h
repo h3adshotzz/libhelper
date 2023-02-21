@@ -112,6 +112,12 @@ extern "C" {
 /* Mach-O Symbol definitions */
 #include "macho/symbols.h"
 
+/* Thread state (linux only) */
+#ifndef __APPLE__
+#   include "macho/thread_status.h"
+#endif
+
+
 /**
  *  Mach-O Magic's
  * 
