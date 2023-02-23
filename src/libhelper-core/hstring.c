@@ -330,7 +330,9 @@ int __libhelper_printf(log_type msg_type, char *fmt, ...) {
         fmt = mstrappend("%s%s%s", ANSI_COLOR_CYAN "DEBUG: ", fmt, ANSI_COLOR_CYAN ANSI_COLOR_RESET);  
 #else
         return 1;
-#endif      
+#endif
+    } else if (msg_type == LOG_CI) {
+        fmt = mstrappend("%s%s%s", ANSI_COLOR_BLUE "[TEST_CI] ", fmt, ANSI_COLOR_RESET);   
     } else if (msg_type == LOG_TEST_SUCCESS) {
         fmt = mstrappend("%s%s%s", ANSI_COLOR_GREEN "[TEST_SUCCESS] ", fmt, ANSI_COLOR_GREEN ANSI_COLOR_RESET);
     } else if (msg_type == LOG_TEST_FAIL) {

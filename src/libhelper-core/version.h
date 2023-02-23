@@ -36,10 +36,10 @@
 #define LIBHELPER_BUILD_TYPE                "DEBUG"
 
 /* Libhelper Source Version, i.e. 312.56.12 */
-#define LIBHELPER_SOURCE_VERSION_MAJOR      "36"
-#define LIBHELPER_SOURCE_VERSION_MINOR      "34"
+#define LIBHELPER_SOURCE_VERSION_MAJOR      "38"
+#define LIBHELPER_SOURCE_VERSION_MINOR      "13"
 
-#define LIBHELPER_SOURCE_VERSION            "libhelper-310.36.34"
+#define LIBHELPER_SOURCE_VERSION            "libhelper-310.38.13"
 
 /**
  *  Libhelper platform string. Correct value is set at compile time by the compiler.

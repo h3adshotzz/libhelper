@@ -40,6 +40,7 @@ typedef enum {
     LOG_ERROR,
     LOG_WARNING,
     LOG_DEBUG,
+    LOG_CI,
     LOG_PRINT,
 
     LOG_TEST_FAIL,
@@ -82,6 +83,7 @@ __libhelper_printf (log_type     msg_type,
 #define errorf(fmt, ...)            __libhelper_printf (LOG_ERROR, fmt, ##__VA_ARGS__)
 #define debugf(fmt, ...)            __libhelper_printf (LOG_DEBUG, fmt, ##__VA_ARGS__)
 #define warningf(fmt, ...)          __libhelper_printf (LOG_WARNING, fmt, ##__VA_ARGS__)
+#define ci_logf(fmt, ...)         __libhelper_printf (LOG_CI, fmt, ##__VA_ARGS__)
 
 #define test_failuref(fmt, ...)          __libhelper_printf (LOG_TEST_FAIL, fmt, ##__VA_ARGS__)
 #define test_successf(fmt, ...)          __libhelper_printf (LOG_TEST_SUCCESS, fmt, ##__VA_ARGS__)
