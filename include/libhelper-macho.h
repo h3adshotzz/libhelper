@@ -190,7 +190,11 @@ struct __libhelper_macho {
     HSList              *strings;       /* list of strings */
 };
 
-/* TODO: Implement 32-bit mach-o */  
+/* TODO: Implement 32-bit mach-o */
+typedef struct __libhelper_macho_32     macho_32_t;
+struct __libhelper_macho_32 {
+    mach_header_32_t    *header;
+};
 
 /******************************************************************************
 * Libhelper Mach-O Header Parser.
