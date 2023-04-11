@@ -144,7 +144,7 @@ mach_segment_info_search (HSList *segments, char *segname)
     }
 
     /* error */
-    errorf ("mach_segment_info_search: could not find segment with name: %s\n", segname);
+    //errorf ("mach_segment_info_search: could not find segment with name: %s\n", segname);
     return NULL;
 }
 
